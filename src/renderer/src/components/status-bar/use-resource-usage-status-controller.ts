@@ -160,7 +160,7 @@ export function useResourceUsageStatusController() {
     ]
   )
 
-  // Why: after a kill unmounts the session, focus would fall to <body>; park a ref on the popover body to restore it stably for keyboard users.
+  // Why: after a kill unmounts the session, focus would fall to <body>; park a ref on the popover body to restore it reliably for keyboard users.
   const popoverBodyRef = useRef<HTMLDivElement | null>(null)
   const popoverBodyFocusFrameRef = useRef<number | null>(null)
   const mountedRef = useMountedRef()
