@@ -36,7 +36,7 @@ describe('pr comment audience filtering', () => {
 
   it('counts and filters human and bot comments', () => {
     const comments = [
-      comment({ id: 1, author: 'yasinkavakli' }),
+      comment({ id: 1, author: 'janedoe' }),
       comment({ id: 2, author: 'chatgpt-codex-connector', isBot: true }),
       comment({ id: 3, author: 'github-actions[bot]' })
     ]
@@ -53,13 +53,13 @@ describe('pr comment audience filtering', () => {
     expect(isBotPRComment(comment({ author: 'gretelflux' }))).toBe(false)
     expect(isBotPRComment(comment({ author: 'gretelflux' }), overrides)).toBe(true)
     expect(isBotPRComment(comment({ author: ' Gretelflux ' }), overrides)).toBe(true)
-    expect(isBotPRComment(comment({ author: 'yasinkavakli' }), overrides)).toBe(false)
+    expect(isBotPRComment(comment({ author: 'janedoe' }), overrides)).toBe(false)
   })
 
   it('applies overrides to counts and filters', () => {
     const overrides = createBotAuthorOverrideSet(['gretelflux'])
     const comments = [
-      comment({ id: 1, author: 'yasinkavakli' }),
+      comment({ id: 1, author: 'janedoe' }),
       comment({ id: 2, author: 'gretelflux' }),
       comment({ id: 3, author: 'github-actions[bot]' })
     ]

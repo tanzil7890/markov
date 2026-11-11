@@ -57,7 +57,7 @@ describe('deriveGitRemoteIdentity', () => {
       expect(
         deriveGitRemoteIdentity(
           [
-            'amoaba\thttps://github.com/AmoabaKelvin/markov.git (fetch)',
+            'examplefork\thttps://github.com/ExampleFork/markov.git (fetch)',
             `origin\thttps://github.com/tanzil7890/markov.git (fetch) [${filter}]`,
             'origin\thttps://github.com/another/markov.git (push)'
           ].join('\r\n')

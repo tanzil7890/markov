@@ -66,7 +66,7 @@ describe('MarkovRuntimeService', () => {
       {
         path: TEST_WORKTREE_PATH,
         head: 'abc',
-        branch: 'refs/heads/wolfiesch/markov-skill-smoke',
+        branch: 'refs/heads/dev/markov-skill-smoke',
         isBare: false,
         isMainWorktree: false
       }

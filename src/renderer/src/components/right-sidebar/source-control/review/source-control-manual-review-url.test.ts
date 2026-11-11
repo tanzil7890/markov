@@ -24,13 +24,13 @@ describe('buildSourceControlManualReviewUrl', () => {
     expect(
       buildSourceControlManualReviewUrl({
         baseRef: 'refs/remotes/origin/main',
-        branchName: 'slashdevcorpse/identifying-pwsh.exe-error',
+        branchName: 'contributor/identifying-pwsh.exe-error',
         repoRemoteName: 'origin',
         repoRemoteUrl: 'git@github.com:tanzil7890/markov.git',
-        upstreamName: 'origin/slashdevcorpse/identifying-pwsh.exe-error'
+        upstreamName: 'origin/contributor/identifying-pwsh.exe-error'
       })
     ).toBe(
-      'https://github.com/tanzil7890/markov/compare/main...slashdevcorpse/identifying-pwsh.exe-error?expand=1'
+      'https://github.com/tanzil7890/markov/compare/main...contributor/identifying-pwsh.exe-error?expand=1'
     )
   })
 

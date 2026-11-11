@@ -63,7 +63,7 @@ describe('RepositoryIconPicker GitHub avatar refresh', () => {
 
   it('refreshes stale GitHub avatar metadata lazily when repo settings opens', async () => {
     const updateRepo = vi.fn()
-    // Non-fork repo (upstream resolved to null) transferred tanzil7890 -> parkerrex.
+    // Non-fork repo (upstream resolved to null) transferred tanzil7890 -> acme-labs.
     const repo = makeRepo({
       upstream: null,
       repoIcon: {
@@ -74,7 +74,7 @@ describe('RepositoryIconPicker GitHub avatar refresh', () => {
       }
     })
     apiMocks.repoUpstream.mockResolvedValueOnce(null)
-    apiMocks.repoSlug.mockResolvedValueOnce({ owner: 'parkerrex', repo: 'markov' })
+    apiMocks.repoSlug.mockResolvedValueOnce({ owner: 'acme-labs', repo: 'markov' })
 
     act(() => {
       root.render(<RepositoryIconPicker repo={repo} updateRepo={updateRepo} />)
@@ -84,9 +84,9 @@ describe('RepositoryIconPicker GitHub avatar refresh', () => {
     expect(updateRepo).toHaveBeenCalledExactlyOnceWith('repo-1', {
       repoIcon: {
         type: 'image',
-        src: 'https://github.com/parkerrex.png?size=64',
+        src: 'https://github.com/acme-labs.png?size=64',
         source: 'github',
-        label: 'parkerrex/markov'
+        label: 'acme-labs/markov'
       }
     })
   })
@@ -105,7 +105,7 @@ describe('RepositoryIconPicker GitHub avatar refresh', () => {
     })
     // Failed upstream probes are ambiguous; never replace a known parent identity with same-name origin.
     apiMocks.repoUpstream.mockResolvedValueOnce(null)
-    apiMocks.repoSlug.mockResolvedValueOnce({ owner: 'parkerrex', repo: 'markov' })
+    apiMocks.repoSlug.mockResolvedValueOnce({ owner: 'acme-labs', repo: 'markov' })
 
     act(() => {
       root.render(<RepositoryIconPicker repo={repo} updateRepo={updateRepo} />)

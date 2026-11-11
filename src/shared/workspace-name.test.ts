@@ -77,7 +77,7 @@ describe('getWorkspaceIntentName', () => {
   it('uses explicit user intent for linked issues without copying long titles', () => {
     expect(
       getWorkspaceIntentName({
-        sourceText: 'https://github.com/mvanhorn/cli-printing-press/issues/2635 and fix it',
+        sourceText: 'https://github.com/acme/cli-printing-press/issues/2635 and fix it',
         workItem: {
           type: 'issue',
           number: 2635,
