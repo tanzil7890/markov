@@ -25,11 +25,35 @@ if [ -z "$MAGICK_BIN" ]; then
   exit 1
 fi
 
-# Each Icon Composer project and the docs site embed their own copy of the mark.
+# The logo draws consonant squares in ink and vowel circles in red; on dark grounds the ink turns paper.
+MARK_INK="#161514"
+MARK_PAPER="#EFE6D3"
+LOGO_ON_DARK="$TMP_DIR/logo-on-dark.svg"
+sed "s/$MARK_INK/$MARK_PAPER/g" "$LOGO" >"$LOGO_ON_DARK"
+
+# Usage: split_mark <path id> <output> [fill]; one layer of the logo, optionally recolored.
+split_mark() {
+  local root layer
+  root=$(grep -o '<svg[^>]*>' "$LOGO")
+  layer=$(grep -o "<path[^>]*id=\"$1\"[^>]*/>" "$LOGO")
+  if [ -n "${3:-}" ]; then
+    layer=$(echo "$layer" | sed -E "s/fill=\"[^\"]*\"/fill=\"$3\"/")
+  fi
+  printf '%s\n%s\n</svg>\n' "$root" "$layer" >"$2"
+}
+
+# Icon Composer colors each layer on its own, so every project gets the squares and circles separately.
 for project in icon blue watercolor; do
-  cp "$LOGO" "$SCRIPT_DIR/$project.icon/Assets/logo.svg"
+  mkdir -p "$SCRIPT_DIR/$project.icon/Assets"
+  split_mark vowels "$SCRIPT_DIR/$project.icon/Assets/vowels.svg"
 done
-cp "$LOGO" "$DOCS_PUBLIC_DIR/logo.svg"
+split_mark consonants "$SCRIPT_DIR/icon.icon/Assets/consonants.svg"
+# The alternates sit on color, so their squares are white.
+for project in blue watercolor; do
+  split_mark consonants "$SCRIPT_DIR/$project.icon/Assets/consonants.svg" '#FFFFFF'
+done
+# The docs site defaults to its dark theme.
+cp "$LOGO_ON_DARK" "$DOCS_PUBLIC_DIR/logo.svg"
 
 # Usage: compile_icon <project name>; writes $TMP_DIR/<name>/<name>.icns (requires Xcode).
 compile_icon() {
@@ -54,6 +78,11 @@ render_mark() {
     -fill "$2" -colorize 100 \
     -resize "$1" \
     "$3"
+}
+
+# Usage: render_logo <svg> <geometry> <output>; the mark in its own colors on transparency.
+render_logo() {
+  "$MAGICK_BIN" -background none -density 1200 "$1" -resize "$2" "$3"
 }
 
 compile_icon icon
@@ -124,30 +153,25 @@ cp "$BUILD_DIR/icon.ico" "$DOCS_PUBLIC_DIR/favicon.ico"
 echo "  -> docs/site/public/docs/favicon.ico"
 
 # iOS masks the corners itself, so the store icon is a full-bleed opaque square.
-render_mark 600x white "$TMP_DIR/mobile-mark.png"
-"$MAGICK_BIN" "$TMP_DIR/mobile-mark.png" \
-  \( +clone -alpha off -sparse-color Barycentric '0,0 #ffffff 0,%h #c4c4c4' \) \
-  +swap -compose CopyOpacity -composite \
-  \( +clone -background black -shadow 55x14+0+10 \) +swap \
-  -background none -compose Over -layers merge +repage \
-  "$TMP_DIR/mobile-mark-shaded.png"
-"$MAGICK_BIN" -size 1024x1024 gradient:'#363636'-'#040404' \
-  "$TMP_DIR/mobile-mark-shaded.png" -gravity center -composite \
+render_logo "$LOGO" 800x "$TMP_DIR/mobile-mark.png"
+"$MAGICK_BIN" -size 1024x1024 xc:"$MARK_PAPER" \
+  "$TMP_DIR/mobile-mark.png" -gravity center -composite \
   -alpha off "PNG24:$MOBILE_ASSETS_DIR/icon.png"
 echo "  -> mobile/assets/icon.png (1024x1024)"
 
-# Android draws the adaptive foreground over app.json's backgroundColor and crops to the safe zone.
-render_mark 400x '#e5e5e5' "$TMP_DIR/adaptive.png"
+# Android draws the adaptive foreground over app.json's backgroundColor (paper) and crops to the
+# 66dp safe circle; 480px wide keeps the mark's corners inside it.
+render_logo "$LOGO" 480x "$TMP_DIR/adaptive.png"
 "$MAGICK_BIN" "$TMP_DIR/adaptive.png" -background none -gravity center -extent 1024x1024 \
   "PNG32:$MOBILE_ASSETS_DIR/adaptive-icon.png"
-render_mark 360x white "$TMP_DIR/splash.png"
+render_logo "$LOGO_ON_DARK" 360x "$TMP_DIR/splash.png"
 "$MAGICK_BIN" "$TMP_DIR/splash.png" -background none -gravity center -extent 400x255 \
   "PNG32:$MOBILE_ASSETS_DIR/splash-icon.png"
 # Android notification icons are alpha-only silhouettes.
 render_mark 48x white "$TMP_DIR/notification.png"
 "$MAGICK_BIN" "$TMP_DIR/notification.png" -background none -gravity center -extent 56x56 \
   "PNG32:$MOBILE_ASSETS_DIR/notification-icon.png"
-render_mark 32x white "$TMP_DIR/favicon.png"
+render_logo "$LOGO_ON_DARK" 32x "$TMP_DIR/favicon.png"
 "$MAGICK_BIN" -size 48x48 xc:'#111111' "$TMP_DIR/favicon.png" -gravity center -composite \
   -alpha off "PNG24:$MOBILE_ASSETS_DIR/favicon.png"
 echo "  -> mobile/assets/{icon,adaptive-icon,splash-icon,notification-icon,favicon}.png"
