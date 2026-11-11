@@ -1,6 +1,9 @@
 export type StepNumber = 1 | 2 | 3 | 4 | 5
 export type StepId =
+  | 'account'
+  | 'profile'
   | 'agent_surface'
+  | 'agent_setup'
   | 'agent'
   | 'theme'
   | 'integrations'
@@ -9,13 +12,16 @@ export type StepId =
 
 export type AgentSurface = 'chat' | 'terminal'
 
-// Why: the Chat/Terminal page shares step 1 with the agent page so persisted progress and step telemetry keep their numbering.
+// Why: the account, name, Chat/Terminal and agent setup pages share step 1 with the agent page so persisted progress and step telemetry keep their numbering.
 export const STEPS: readonly {
   id: StepId
   stepNumber: StepNumber
   valueKind: 'agent' | 'theme' | 'integrations' | 'windows_terminal' | 'notifications'
 }[] = [
+  { id: 'account', stepNumber: 1, valueKind: 'agent' },
+  { id: 'profile', stepNumber: 1, valueKind: 'agent' },
   { id: 'agent_surface', stepNumber: 1, valueKind: 'agent' },
+  { id: 'agent_setup', stepNumber: 1, valueKind: 'agent' },
   { id: 'agent', stepNumber: 1, valueKind: 'agent' },
   { id: 'theme', stepNumber: 2, valueKind: 'theme' },
   { id: 'integrations', stepNumber: 3, valueKind: 'integrations' },

@@ -15,14 +15,12 @@ import { persistStep, useCloseWith, usePersistCurrentStep } from './use-onboardi
 import { resolveOnboardingSettingsHydration } from './onboarding-settings-hydration'
 import { translate } from '@/i18n/i18n'
 import { useOnboardingYoloPermissions } from './use-onboarding-yolo-permissions'
-import { isWindowsUserAgent } from '@/components/terminal-pane/pane-helpers'
 import {
   isSkippedStepIndex,
   remapOpenOnboardingLastCompletedStep,
-  resolveStepIndex,
-  shouldSkipIntegrationsStep,
-  shouldSkipWindowsTerminalStep
+  resolveStepIndex
 } from './onboarding-flow-state'
+import { useOnboardingPreferredName, useOnboardingSkipOptions } from './use-onboarding-page-state'
 
 import { useOnboardingFlowActions } from './use-onboarding-flow-actions'
 import { useOnboardingFlowTelemetry } from './use-onboarding-flow-telemetry'
@@ -49,12 +47,8 @@ export function useOnboardingFlow(
   // Why: renderToStaticMarkup uses Zustand's initial snapshot; the sync read keeps tests and the first client render aligned.
   const effectivePreflightStatus = preflightStatus ?? useAppStore.getState().preflightStatus
 
-  const skipIntegrations = shouldSkipIntegrationsStep(effectivePreflightStatus)
-  const skipWindowsTerminal = shouldSkipWindowsTerminalStep(isWindowsUserAgent())
-  const skipOptions = useMemo(
-    () => ({ skipIntegrations, skipWindowsTerminal }),
-    [skipIntegrations, skipWindowsTerminal]
-  )
+  const { skipOptions, skipIntegrations } = useOnboardingSkipOptions(effectivePreflightStatus)
+  const { preferredName, setPreferredName } = useOnboardingPreferredName(settings)
   const remappedLastCompletedStep = remapOpenOnboardingLastCompletedStep(onboarding)
   const initialStep = resolveStepIndex(
     stepIndexAfterCompletedStep(remappedLastCompletedStep),
@@ -261,6 +255,7 @@ export function useOnboardingFlow(
 
   const persistCurrentStep = usePersistCurrentStep({
     currentStepId: currentStep.id,
+    preferredName,
     agentSurface,
     selectedAgent,
     agentInteractedRef,
@@ -304,6 +299,9 @@ export function useOnboardingFlow(
     progressSteps,
     progressStepIndex,
     currentStep,
+    preferredName,
+    setPreferredName,
+    refreshDetectedAgents,
     agentSurface,
     setAgentSurface,
     chatAgents,

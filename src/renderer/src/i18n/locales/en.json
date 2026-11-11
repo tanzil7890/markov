@@ -19502,12 +19502,16 @@
           "windowsTerminal": "Windows Terminal",
           "notifications": "Notifications",
           "integrations": "Integrations",
-          "agentSurface": "Chat or Terminal"
+          "agentSurface": "Chat or Terminal",
+          "account": "Account",
+          "profile": "About you",
+          "agentSetup": "Agent setup"
         },
         "actions": {
           "addFirstProject": "Add your first project",
           "continue": "Continue",
-          "openingAddProject": "Opening Add Project..."
+          "openingAddProject": "Opening Add Project...",
+          "continueWithoutAccount": "Continue without an account"
         },
         "agentSurface": {
           "title": "How do you want to work with agents?",
@@ -19518,6 +19522,18 @@
         },
         "agentTerminal": {
           "subtitle": "Markov works with every CLI agent. Choose the one you'll reach for most."
+        },
+        "account": {
+          "title": "Sign in, or jump straight in",
+          "subtitle": "An account puts your name on what you share and connects Markov Mobile. Everything else works without one."
+        },
+        "profile": {
+          "title": "What should we call you?",
+          "subtitle": "Markov uses this name to greet you. Change it any time in Settings."
+        },
+        "agentSetup": {
+          "title": "Set up your agents",
+          "subtitle": "Install an agent, then sign in with the Claude or ChatGPT plan you already have. No API key needed."
         }
       },
       "skipConfirmation": {
@@ -19613,6 +19629,42 @@
         "userMessage": "Fix the flaky upload test",
         "agentMessage": "Found it. The retry timer wasn't mocked.",
         "cliReady": "{{agent}} CLI ready."
+      },
+      "profile": {
+        "greeting": "Welcome, {{name}}",
+        "greetingNoName": "Welcome",
+        "preview": "How Markov will greet you",
+        "emailLabel": "Email",
+        "emailHelp": "This comes from your sign-in, so it can't be changed here.",
+        "nameLabel": "What should we call you?",
+        "nameHelpSignedIn": "Leave it empty to use the name on your account.",
+        "nameHelpLocal": "Saved on this computer."
+      },
+      "account": {
+        "signedInAs": "Signed in as {{email}}",
+        "signInWithBrowser": "Sign in with browser"
+      },
+      "agentSetup": {
+        "claude": {
+          "label": "Claude Code",
+          "signIn": "Sign in with Claude",
+          "signInHint": "Installed. If you already use Claude Code on this computer, you can skip signing in."
+        },
+        "codex": {
+          "label": "Codex",
+          "signIn": "Sign in with ChatGPT",
+          "signInHint": "Installed. Sign in with your ChatGPT plan."
+        },
+        "signInFailed": "Could not sign in to {{agent}}",
+        "notInstalled": "Not installed on this computer",
+        "signedInAs": "Signed in as {{email}}",
+        "signedIn": "Signed in",
+        "install": "Install",
+        "waitingForBrowser": "Waiting for your browser…",
+        "installTitle": "Install {{agent}}",
+        "installAriaLabel": "{{agent}} install command",
+        "installDescription": "Press Enter to run the official installer. Markov checks again when it finishes.",
+        "footnote": "Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. Other agents are on the next page."
       }
     },
     "jiraIssueAssigneeField": {
@@ -21146,6 +21198,9 @@
         "openedPullRequestsCopy": "A card under the turn that opened a pull request, with its title and changed lines.",
         "openedPullRequestsSearchPr": "PR",
         "openedPullRequestsSearchCard": "pull request card"
+      },
+      "markovAccount": {
+        "preferredNameHelp": "Markov greets you by this name. Leave it empty to use the name on your account."
       }
     },
     "agentChildRow": {

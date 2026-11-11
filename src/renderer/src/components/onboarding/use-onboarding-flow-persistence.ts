@@ -139,6 +139,7 @@ export function useCloseWith({ onOnboardingChange, startTimeRef, setError }: Clo
 
 type PersistCurrentStepDeps = {
   currentStepId: StepId
+  preferredName: string
   agentSurface: AgentSurface
   selectedAgent: TuiAgent | null
   agentInteractedRef: { current: boolean }
@@ -159,6 +160,7 @@ export type PersistCurrentStepResult = {
 
 export function usePersistCurrentStep({
   currentStepId,
+  preferredName,
   agentSurface,
   selectedAgent,
   agentInteractedRef,
@@ -176,8 +178,19 @@ export function usePersistCurrentStep({
       return { ok: false }
     }
     try {
-      if (currentStepId === 'agent_surface') {
-        // Why: the Chat UI choice saves with the default agent, so leaving mid-step changes nothing.
+      if (
+        currentStepId === 'account' ||
+        currentStepId === 'agent_surface' ||
+        currentStepId === 'agent_setup'
+      ) {
+        // Why: sign-ins persist themselves and the Chat UI choice saves with the default agent.
+        return { ok: true }
+      }
+      if (currentStepId === 'profile') {
+        const name = preferredName.trim()
+        if (name !== (settings.preferredName ?? '')) {
+          await updateSettings({ preferredName: name })
+        }
         return { ok: true }
       }
       if (currentStepId === 'agent') {
@@ -244,6 +257,7 @@ export function usePersistCurrentStep({
     agentInteractedRef,
     agentSurface,
     currentStepId,
+    preferredName,
     onboardingChecklist,
     onOnboardingChange,
     selectedAgent,

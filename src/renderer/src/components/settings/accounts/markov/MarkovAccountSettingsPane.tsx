@@ -8,6 +8,7 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store/index'
 import { MarkovProfileSignOutConfirmDialog } from '../../../markov-profiles/MarkovProfileSignOutConfirmDialog'
 import { MarkovSignInButton, MarkovSignInWaitNotice } from '../../../MarkovSignInProgress'
+import { PreferredNameSetting } from './PreferredNameSetting'
 
 function accountStatusCopy(
   state: 'local' | 'unconfigured' | 'connected' | 'reconnect-required' | undefined,
@@ -124,6 +125,8 @@ export function MarkovAccountSettingsPane(): React.JSX.Element {
           )}
           {connected ? null : <MarkovSignInWaitNotice className="basis-full" />}
         </div>
+
+        <PreferredNameSetting />
 
         <div className="space-y-4 border-t border-border/60 pt-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">

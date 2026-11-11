@@ -18,6 +18,7 @@ import { hasGitHubBackedProject, type PreflightIssue } from './landing-preflight
 import { useLandingPreflightRuntime } from './landing-preflight-runtime'
 import { useLandingMarkovStarState, type LandingStarState } from './landing-github-star-state'
 import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+import { resolveUserDisplayName } from '@/lib/user-preferred-name'
 
 type ShortcutItem = {
   id: string
@@ -216,6 +217,9 @@ function PreflightBanner({
 export default function Landing(): React.JSX.Element {
   const repos = useAppStore((s) => s.repos)
   const openModal = useAppStore((s) => s.openModal)
+  const preferredName = useAppStore((s) => s.settings?.preferredName)
+  const markovAuthStatus = useAppStore((s) => s.markovProfileAuthStatus)
+  const greetingName = resolveUserDisplayName(preferredName, markovAuthStatus)
 
   const createActionLabel =
     repos.length > 0 && repos.every((repo) => isGitRepoKind(repo))
@@ -269,6 +273,13 @@ export default function Landing(): React.JSX.Element {
           <h1 className="text-4xl font-bold text-foreground tracking-tight">
             {translate('auto.components.Landing.6ca6ff404e', 'MARKOV')}
           </h1>
+          {greetingName ? (
+            <p className="text-base font-medium text-foreground">
+              {translate('components.onboarding.profile.greeting', 'Welcome, {{name}}', {
+                name: greetingName
+              })}
+            </p>
+          ) : null}
 
           {preflightIssues.length > 0 && <PreflightBanner issues={preflightIssues} repos={repos} />}
 

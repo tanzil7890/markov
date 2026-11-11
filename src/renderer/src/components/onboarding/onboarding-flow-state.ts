@@ -25,16 +25,23 @@ export function shouldSkipWindowsTerminalStep(isWindows: boolean): boolean {
   return !isWindows
 }
 
+/** Only a build without Markov sign-in hides the account page; an unknown status still shows it. */
+export function shouldSkipAccountStep(status: AppState['markovProfileAuthStatus']): boolean {
+  return status?.configured === false
+}
+
 export type OnboardingStepSkipOptions = {
   skipIntegrations: boolean
   skipWindowsTerminal: boolean
+  skipAccount?: boolean
 }
 
 export function isSkippedStepIndex(index: number, options: OnboardingStepSkipOptions): boolean {
   const step = STEPS[index]
   return (
     (options.skipIntegrations && step?.id === 'integrations') ||
-    (options.skipWindowsTerminal && step?.id === 'windows_terminal')
+    (options.skipWindowsTerminal && step?.id === 'windows_terminal') ||
+    (options.skipAccount === true && step?.id === 'account')
   )
 }
 

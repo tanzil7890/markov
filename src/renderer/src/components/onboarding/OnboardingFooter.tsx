@@ -10,6 +10,8 @@ type OnboardingFooterProps = {
   showPrimary: boolean
   primaryBusy: boolean
   primaryLabel: string
+  /** Quiet when the page offers its own main action, so the footer never competes with it. */
+  primaryEmphasis?: 'primary' | 'quiet'
   shortcutModifierLabel: string
   onPrimary: () => void
 }
@@ -23,9 +25,11 @@ export function OnboardingFooter({
   showPrimary,
   primaryBusy,
   primaryLabel,
+  primaryEmphasis = 'primary',
   shortcutModifierLabel,
   onPrimary
 }: OnboardingFooterProps): React.JSX.Element {
+  const quiet = primaryEmphasis === 'quiet'
   return (
     <footer className="mt-6 flex flex-none items-center justify-between border-t border-border pt-5">
       {shouldShowSkipToProjectSetup ? (
@@ -55,14 +59,22 @@ export function OnboardingFooter({
         )}
         {showPrimary && (
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className={
+              quiet
+                ? 'inline-flex items-center justify-center gap-2 rounded-md border border-border bg-muted/60 px-4 py-2 text-sm text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60'
+                : 'inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60'
+            }
             aria-busy={primaryBusy}
             disabled={Boolean(busyLabel)}
             onClick={onPrimary}
           >
             {primaryBusy ? <Loader2 className="size-4 animate-spin" /> : null}
             {primaryLabel}
-            <span className="ml-1 inline-flex items-center gap-0.5 rounded border border-primary-foreground/20 px-1.5 py-0.5 text-[10px] font-medium leading-none text-current/80">
+            <span
+              className={`ml-1 inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] font-medium leading-none text-current/80 ${
+                quiet ? 'border-border' : 'border-primary-foreground/20'
+              }`}
+            >
               <span>{shortcutModifierLabel}</span>
               <CornerDownLeft className="size-3" />
             </span>

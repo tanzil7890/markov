@@ -2,7 +2,10 @@
 
 import { test, expect } from './helpers/markov-app'
 import { waitForSessionReady } from './helpers/store'
-import { chooseOnboardingAgentSurface } from './helpers/onboarding-navigation'
+import {
+  chooseOnboardingAgentSurface,
+  continueToOnboardingAgentSurface
+} from './helpers/onboarding-navigation'
 import type { Page } from '@playwright/test'
 import type { GlobalSettings } from '../../src/shared/global-settings-types'
 import type { TuiAgent } from '../../src/shared/agent-launch/catalog/tui-agent'
@@ -108,7 +111,7 @@ async function continueFromPostNotificationsToRepo(page: Page): Promise<void> {
   }
   await continueThroughOptionalTaskSourcesAndWindowsTerminal(page)
   await expect(page.getByRole('heading', { name: /Set up notifications/i })).toBeVisible()
-  await expectOnboardingProgress(page, /^[456] of [456]$/)
+  await expectOnboardingProgress(page, /^[6-9] of [6-9]$/)
   await expect(onboardingFooterButton(page, /^Add your first project\b/)).toBeVisible()
   await continueOnboarding(page)
   await expectAddProjectDialog(page)
@@ -121,7 +124,7 @@ async function continueThroughOptionalTaskSourcesAndWindowsTerminal(page: Page):
     .then(() => true)
     .catch(() => false)
   if (taskSourcesVisible) {
-    await expectOnboardingProgress(page, /^4 of [56]$/)
+    await expectOnboardingProgress(page, /^[67] of [7-9]$/)
     await continueOnboarding(page)
   }
   const windowsTerminalVisible = await page
@@ -130,7 +133,7 @@ async function continueThroughOptionalTaskSourcesAndWindowsTerminal(page: Page):
     .then(() => true)
     .catch(() => false)
   if (windowsTerminalVisible) {
-    await expectOnboardingProgress(page, /^[45] of [56]$/)
+    await expectOnboardingProgress(page, /^[6-8] of [7-9]$/)
     await continueOnboarding(page)
   }
   await expect(page.getByRole('heading', { name: /Set up notifications/i })).toBeVisible()
@@ -155,6 +158,8 @@ test.describe('Onboarding flow', () => {
     await continueOnboarding(markovPage)
     await expect(markovPage.getByRole('heading', { name: /Make it feel like home/i })).toBeVisible()
     await expect.poll(async () => (await getSettings(markovPage)).agentDefaultSurface).toBe('chat')
+    // Theme → agent → agent setup → Chat/Terminal.
+    await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await expect(markovPage.getByRole('radio', { name: /^Chat UI/ })).toHaveAttribute(
@@ -166,14 +171,13 @@ test.describe('Onboarding flow', () => {
   test('Continue advances steps, persists progress, and applies user-visible settings', async ({
     markovPage
   }) => {
-    await expect(
-      markovPage.getByRole('heading', { name: /How do you want to work with agents/i })
-    ).toBeVisible()
-    await expectOnboardingProgress(markovPage, /^1 of [456]$/)
-    await expect(markovPage.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0)
+    // The account page shows only where this build has Markov sign-in; the name page always does.
+    await continueToOnboardingAgentSurface(markovPage)
+    await expectOnboardingProgress(markovPage, /^[23] of [6-9]$/)
+    await expect(markovPage.getByRole('button', { name: 'Back', exact: true })).toHaveCount(1)
     await chooseOnboardingAgentSurface(markovPage)
 
-    await expectOnboardingProgress(markovPage, /^2 of [456]$/)
+    await expectOnboardingProgress(markovPage, /^[45] of [6-9]$/)
     await expect(onboardingFooterButton(markovPage, /^Continue\b/)).toBeVisible()
     await expect(onboardingFooterButton(markovPage, SKIP_TO_PROJECT_SETUP_BUTTON)).toBeVisible()
     await expect(markovPage.getByRole('button', { name: 'Back', exact: true })).toHaveCount(1)
@@ -202,7 +206,7 @@ test.describe('Onboarding flow', () => {
 
     await continueOnboarding(markovPage)
     await expect(markovPage.getByRole('heading', { name: /Make it feel like home/i })).toBeVisible()
-    await expectOnboardingProgress(markovPage, /^3 of [456]$/)
+    await expectOnboardingProgress(markovPage, /^[56] of [6-9]$/)
     await expect
       .poll(async () => (await getOnboardingState(markovPage)).lastCompletedStep, {
         timeout: 5_000,
@@ -239,7 +243,7 @@ test.describe('Onboarding flow', () => {
       .poll(async () => (await getSettings(markovPage)).theme, { timeout: 5_000 })
       .toBe(oppositeTheme)
     await continueThroughOptionalTaskSourcesAndWindowsTerminal(markovPage)
-    await expectOnboardingProgress(markovPage, /^[456] of [456]$/)
+    await expectOnboardingProgress(markovPage, /^[6-9] of [6-9]$/)
     await expect
       .poll(async () => [3, 4].includes((await getOnboardingState(markovPage)).lastCompletedStep), {
         timeout: 5_000,
@@ -534,7 +538,7 @@ test.describe('Onboarding flow', () => {
     await expect(
       markovPage.getByRole('heading', { name: /Pick your default agent/i })
     ).toBeVisible()
-    await expectOnboardingProgress(markovPage, /^2 of [456]$/)
+    await expectOnboardingProgress(markovPage, /^[45] of [6-9]$/)
 
     // Back changes only the visible step; poll async IPC persistence to require lastCompletedStep stays 1.
     await expect

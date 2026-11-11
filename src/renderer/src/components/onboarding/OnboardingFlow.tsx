@@ -19,7 +19,11 @@ import { translate } from '@/i18n/i18n'
 import { addAppKeyListener, removeAppKeyListener } from '@/lib/app-keyboard-router'
 import { useScrollEdgeFades } from '@/lib/use-scroll-edge-fades'
 import { AgentSurfaceStep } from './AgentSurfaceStep'
+import { AccountStep } from './AccountStep'
+import { ProfileStep } from './ProfileStep'
+import { AgentSetupStep } from './AgentSetupStep'
 import { stepCopy, stepTooltipLabels } from './onboarding-step-copy'
+import { useAppStore } from '@/store'
 
 type OnboardingFlowProps = {
   onboarding: OnboardingState
@@ -40,15 +44,33 @@ export default function OnboardingFlow({
       : stepCopy[currentStep.id]
   const shouldShowSkipToProjectSetup = currentStep.id !== 'notifications'
   const shouldShowFooterBusy = Boolean(busyLabel)
+  const markovSignedIn = useAppStore((s) => s.markovProfileAuthStatus?.state === 'connected')
+  // Unsigned, the account page's own sign-in button is the main action; Continue becomes the quiet way past it.
+  const continuesWithoutAccount = currentStep.id === 'account' && !markovSignedIn
   const footerPrimaryLabel =
     busyLabel ??
     (currentStep.id === 'notifications'
       ? translate('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
-      : translate('components.onboarding.flow.actions.continue', 'Continue'))
+      : continuesWithoutAccount
+        ? translate(
+            'components.onboarding.flow.actions.continueWithoutAccount',
+            'Continue without an account'
+          )
+        : translate('components.onboarding.flow.actions.continue', 'Continue'))
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const skipConfirmAdvancedViaRef = useRef<'button' | 'keyboard'>('button')
   const { next: flowNext, dismissOnboarding: flowDismissOnboarding } = flow
+  const continueAfterSignIn = useCallback(() => {
+    void flowNext()
+  }, [flowNext])
+  const submitProfile = useCallback(() => {
+    void flowNext('keyboard')
+  }, [flowNext])
+  const { refreshDetectedAgents } = flow
+  const recheckAgents = useCallback(() => {
+    void refreshDetectedAgents()
+  }, [refreshDetectedAgents])
 
   const requestSkipConfirmation = useCallback(
     (advancedVia: 'button' | 'keyboard') => {
@@ -194,7 +216,7 @@ export default function OnboardingFlow({
             </div>
 
             <div className="mt-8 shrink-0">
-              {stepIndex === 0 && (
+              {flow.progressStepIndex === 0 && (
                 <div className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   {translate(
                     'auto.components.onboarding.OnboardingFlow.1b5e182e9f',
@@ -222,6 +244,21 @@ export default function OnboardingFlow({
                   : cn('scrollbar-sleek overflow-y-auto pr-1', 'mt-10', stepFades.className)
               )}
             >
+              {currentStep.id === 'account' && <AccountStep onAutoContinue={continueAfterSignIn} />}
+              {currentStep.id === 'profile' && (
+                <ProfileStep
+                  name={flow.preferredName}
+                  onNameChange={flow.setPreferredName}
+                  onSubmit={submitProfile}
+                />
+              )}
+              {currentStep.id === 'agent_setup' && (
+                <AgentSetupStep
+                  detectedSet={flow.detectedSet}
+                  isDetecting={flow.isDetectingAgents}
+                  onRecheck={recheckAgents}
+                />
+              )}
               {currentStep.id === 'agent_surface' && (
                 <AgentSurfaceStep
                   agentSurface={flow.agentSurface}
@@ -274,11 +311,13 @@ export default function OnboardingFlow({
               shouldShowSkipToProjectSetup={shouldShowSkipToProjectSetup}
               busyLabel={busyLabel}
               onSkipToRepo={() => void flow.skipToRepo()}
-              stepIndex={stepIndex}
+              // Visible position, so Back hides when every earlier page is skipped.
+              stepIndex={flow.progressStepIndex}
               onBack={flow.back}
               showPrimary
               primaryBusy={shouldShowFooterBusy}
               primaryLabel={footerPrimaryLabel}
+              primaryEmphasis={continuesWithoutAccount ? 'quiet' : 'primary'}
               shortcutModifierLabel={continueShortcutModifierLabel}
               onPrimary={() => void flow.next()}
             />

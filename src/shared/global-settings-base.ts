@@ -19,6 +19,7 @@ import type { TerminalColorOverrideGlobalSettings } from './terminal-themes/term
 import type { WindowMaterialSettings } from './window-material'
 import type { EditorSaveSettings } from './editor-save-settings'
 import type { NestedWorkerDepthSettings } from './nested-worker-depth'
+import type { UserProfileSettings } from './user-profile-settings'
 
 /** Settings groups owned by their feature modules and composed into GlobalSettings. */
 export type GlobalSettingsBase = EmulatorOpeningSettings &
@@ -41,4 +42,5 @@ export type GlobalSettingsBase = EmulatorOpeningSettings &
   WindowMaterialSettings &
   EditorSaveSettings &
   BrowserPasswordsGlobalSettings &
-  NestedWorkerDepthSettings
+  NestedWorkerDepthSettings &
+  UserProfileSettings

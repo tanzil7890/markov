@@ -1,6 +1,39 @@
 import { translate } from '@/i18n/i18n'
 
 export const stepCopy = {
+  account: {
+    get title() {
+      return translate('components.onboarding.flow.account.title', 'Sign in, or jump straight in')
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.account.subtitle',
+        'An account puts your name on what you share and connects Markov Mobile. Everything else works without one.'
+      )
+    }
+  },
+  profile: {
+    get title() {
+      return translate('components.onboarding.flow.profile.title', 'What should we call you?')
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.profile.subtitle',
+        'Markov uses this name to greet you. Change it any time in Settings.'
+      )
+    }
+  },
+  agent_setup: {
+    get title() {
+      return translate('components.onboarding.flow.agentSetup.title', 'Set up your agents')
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.agentSetup.subtitle',
+        'Install an agent, then sign in with the Claude or ChatGPT plan you already have. No API key needed.'
+      )
+    }
+  },
   agent_surface: {
     get title() {
       return translate(
@@ -102,6 +135,21 @@ export const stepCopy = {
 } as const
 
 export const stepTooltipLabels = {
+  account: {
+    get value() {
+      return translate('components.onboarding.flow.stepTooltip.account', 'Account')
+    }
+  },
+  profile: {
+    get value() {
+      return translate('components.onboarding.flow.stepTooltip.profile', 'About you')
+    }
+  },
+  agent_setup: {
+    get value() {
+      return translate('components.onboarding.flow.stepTooltip.agentSetup', 'Agent setup')
+    }
+  },
   agent_surface: {
     get value() {
       return translate('components.onboarding.flow.stepTooltip.agentSurface', 'Chat or Terminal')
