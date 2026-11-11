@@ -20,8 +20,9 @@ export const STEPS: readonly {
 }[] = [
   { id: 'account', stepNumber: 1, valueKind: 'agent' },
   { id: 'profile', stepNumber: 1, valueKind: 'agent' },
-  { id: 'agent_surface', stepNumber: 1, valueKind: 'agent' },
+  // Installing comes before Chat or Terminal, which can only offer Chat for an installed agent.
   { id: 'agent_setup', stepNumber: 1, valueKind: 'agent' },
+  { id: 'agent_surface', stepNumber: 1, valueKind: 'agent' },
   { id: 'agent', stepNumber: 1, valueKind: 'agent' },
   { id: 'theme', stepNumber: 2, valueKind: 'theme' },
   { id: 'integrations', stepNumber: 3, valueKind: 'integrations' },

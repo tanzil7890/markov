@@ -81,16 +81,34 @@ export function AgentSurfaceModeRow({
   )
 }
 
+/** Sends onboarding back to the page that installs and signs in to Claude Code and Codex. */
+export function OpenAgentSetupButton({
+  label,
+  onClick
+}: {
+  label: string
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <Button type="button" variant="outline" size="xs" className="shrink-0" onClick={onClick}>
+      {label}
+    </Button>
+  )
+}
+
 export function AgentStepNotice({
   tone = 'neutral',
   children,
   actionLabel,
-  onAction
+  onAction,
+  onOpenAgentSetup
 }: {
   tone?: 'neutral' | 'warning'
   children: React.ReactNode
   actionLabel?: string
   onAction?: () => void
+  /** Onboarding only: offers to go back and install a Chat UI agent. */
+  onOpenAgentSetup?: () => void
 }) {
   return (
     <div
@@ -100,6 +118,15 @@ export function AgentStepNotice({
       )}
     >
       <span className="min-w-0 flex-1">{children}</span>
+      {onOpenAgentSetup ? (
+        <OpenAgentSetupButton
+          label={translate(
+            'components.onboarding.agentStep.setUpChatAgents',
+            'Set up Claude Code or Codex'
+          )}
+          onClick={onOpenAgentSetup}
+        />
+      ) : null}
       {actionLabel && onAction ? (
         <Button type="button" variant="outline" size="xs" className="shrink-0" onClick={onAction}>
           {actionLabel}
@@ -112,15 +139,17 @@ export function AgentStepNotice({
 export function NoChatAgentsNotice({
   anyDetected,
   chatAgentLabels,
-  onUseTerminal
+  onUseTerminal,
+  onOpenAgentSetup
 }: {
   anyDetected: boolean
   chatAgentLabels: readonly string[]
   onUseTerminal: () => void
+  onOpenAgentSetup?: () => void
 }) {
   if (!anyDetected) {
     return (
-      <AgentStepNotice>
+      <AgentStepNotice onOpenAgentSetup={onOpenAgentSetup}>
         <Trans
           i18n={i18n}
           defaults={translate(
@@ -138,7 +167,12 @@ export function NoChatAgentsNotice({
     )
   }
   return (
-    <AgentStepNotice tone="warning" actionLabel={terminalInsteadLabel()} onAction={onUseTerminal}>
+    <AgentStepNotice
+      tone="warning"
+      actionLabel={terminalInsteadLabel()}
+      onAction={onUseTerminal}
+      onOpenAgentSetup={onOpenAgentSetup}
+    >
       <Trans
         i18n={i18n}
         defaults={translate(

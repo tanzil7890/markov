@@ -19605,7 +19605,9 @@
         "terminalTipWeb": "Switch back any time in <em>Settings → Onboarding checklist</em>. You can also start any agent in a terminal from the <em>+</em> menu.",
         "terminalTipCaption": "Click <em>+</em> in the tab bar, then pick an agent marked <em>(CLI)</em>. If a chat agent's CLI is installed, hover its row and click the terminal icon to use the CLI.",
         "chatTip": "Want chat too? Turn it on any time in <em>Settings → Chat UI</em>.",
-        "turnOnChat": "Turn on now"
+        "turnOnChat": "Turn on now",
+        "installAgent": "Install {{agent}}",
+        "setUpChatAgents": "Set up Claude Code or Codex"
       },
       "agentSurface": {
         "chat": {
@@ -19664,7 +19666,7 @@
         "installTitle": "Install {{agent}}",
         "installAriaLabel": "{{agent}} install command",
         "installDescription": "Press Enter to run the official installer. Markov checks again when it finishes.",
-        "footnote": "Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. Other agents are on the next page."
+        "footnote": "Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. You pick your default agent, including others, in a moment."
       }
     },
     "jiraIssueAssigneeField": {

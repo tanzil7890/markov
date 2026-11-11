@@ -304,7 +304,7 @@ export function AgentSetupStep({
       <p className="px-1 text-xs leading-relaxed text-muted-foreground">
         {translate(
           'components.onboarding.agentSetup.footnote',
-          'Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. Other agents are on the next page.'
+          'Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. You pick your default agent, including others, in a moment.'
         )}
       </p>
     </div>

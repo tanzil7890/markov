@@ -10,7 +10,7 @@ import { ThemeStep } from './ThemeStep'
 import { NotificationStep } from './NotificationStep'
 import { IntegrationsStep } from './IntegrationsStep'
 import { WindowsTerminalStep } from './WindowsTerminalStep'
-import { useOnboardingFlow } from './use-onboarding-flow'
+import { STEPS, useOnboardingFlow } from './use-onboarding-flow'
 import { OnboardingSkipConfirmationDialog } from './OnboardingSkipConfirmationDialog'
 import { OnboardingFooter } from './OnboardingFooter'
 import { shouldRequestOnboardingSkipConfirmation } from './onboarding-dismiss-target'
@@ -67,10 +67,13 @@ export default function OnboardingFlow({
   const submitProfile = useCallback(() => {
     void flowNext('keyboard')
   }, [flowNext])
-  const { refreshDetectedAgents } = flow
+  const { refreshDetectedAgents, jumpToStep } = flow
   const recheckAgents = useCallback(() => {
     void refreshDetectedAgents()
   }, [refreshDetectedAgents])
+  const openAgentSetup = useCallback(() => {
+    jumpToStep(STEPS.findIndex((step) => step.id === 'agent_setup'))
+  }, [jumpToStep])
 
   const requestSkipConfirmation = useCallback(
     (advancedVia: 'button' | 'keyboard') => {
@@ -283,6 +286,7 @@ export default function OnboardingFlow({
                   isDetecting={flow.isDetectingAgents}
                   yoloPermissions={flow.yoloPermissions}
                   onYoloPermissionsChange={flow.setYoloPermissions}
+                  onOpenAgentSetup={openAgentSetup}
                 />
               )}
               {currentStep.id === 'theme' && (

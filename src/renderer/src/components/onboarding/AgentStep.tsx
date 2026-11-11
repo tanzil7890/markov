@@ -18,10 +18,12 @@ import {
   AgentSurfaceModeRow,
   ChatModeTerminalTip,
   NoChatAgentsNotice,
+  OpenAgentSetupButton,
   TerminalFitNotice,
   TerminalModeChatTip,
   chatAvailableDetail
 } from './AgentStepSurfaceSections'
+import { isOnboardingSetupAgent } from './agent-cli-install-commands'
 
 const NO_CHAT_AGENTS: readonly TuiAgent[] = []
 
@@ -41,6 +43,8 @@ type AgentStepProps = {
   nativeChatProviders?: GlobalSettings['nativeChatProviders']
   yoloPermissions?: boolean
   onYoloPermissionsChange?: (enabled: boolean) => void
+  /** Onboarding only: returns to the page that installs Claude Code and Codex. */
+  onOpenAgentSetup?: () => void
 }
 
 export function AgentStep({
@@ -55,7 +59,8 @@ export function AgentStep({
   chatDetected = null,
   nativeChatProviders,
   yoloPermissions = true,
-  onYoloPermissionsChange
+  onYoloPermissionsChange,
+  onOpenAgentSetup
 }: AgentStepProps) {
   const agentCatalog = getAgentCatalog()
   const gridFades = useScrollEdgeFades<HTMLElement>()
@@ -157,6 +162,7 @@ export function AgentStep({
             .filter((agent) => chatAgents.includes(agent.id))
             .map((agent) => agent.label)}
           onUseTerminal={useTerminal}
+          onOpenAgentSetup={onOpenAgentSetup}
         />
       )}
       {selectedTerminalOnly && (
@@ -175,16 +181,30 @@ export function AgentStep({
               components={{ agent: <span className="font-medium text-foreground" /> }}
             />
           </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="xs"
-            className="shrink-0"
-            onClick={(event) => openAppHttpLink(selectedEntry.homepageUrl, { event })}
-          >
-            {translate('auto.components.onboarding.AgentStep.9c163bb0e0', 'Install instructions')}
-            <ExternalLink className="size-3" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            {onOpenAgentSetup && isOnboardingSetupAgent(selectedEntry.id) ? (
+              <OpenAgentSetupButton
+                label={translate(
+                  'components.onboarding.agentStep.installAgent',
+                  'Install {{agent}}',
+                  {
+                    agent: selectedEntry.label
+                  }
+                )}
+                onClick={onOpenAgentSetup}
+              />
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="shrink-0"
+              onClick={(event) => openAppHttpLink(selectedEntry.homepageUrl, { event })}
+            >
+              {translate('auto.components.onboarding.AgentStep.9c163bb0e0', 'Install instructions')}
+              <ExternalLink className="size-3" />
+            </Button>
+          </div>
         </div>
       )}
       <section

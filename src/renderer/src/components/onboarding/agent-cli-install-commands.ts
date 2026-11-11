@@ -1,5 +1,9 @@
 export type OnboardingSetupAgent = 'claude' | 'codex'
 
+export function isOnboardingSetupAgent(agent: string): agent is OnboardingSetupAgent {
+  return agent === 'claude' || agent === 'codex'
+}
+
 export type AgentCliInstallPlan = {
   command: string
   /** Shell the command is written for; omitted when the user's default shell runs it. */

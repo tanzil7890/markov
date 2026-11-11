@@ -158,8 +158,6 @@ test.describe('Onboarding flow', () => {
     await continueOnboarding(markovPage)
     await expect(markovPage.getByRole('heading', { name: /Make it feel like home/i })).toBeVisible()
     await expect.poll(async () => (await getSettings(markovPage)).agentDefaultSurface).toBe('chat')
-    // Theme → agent → agent setup → Chat/Terminal.
-    await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await markovPage.getByRole('button', { name: 'Back', exact: true }).click()
     await expect(markovPage.getByRole('radio', { name: /^Chat UI/ })).toHaveAttribute(
@@ -171,9 +169,9 @@ test.describe('Onboarding flow', () => {
   test('Continue advances steps, persists progress, and applies user-visible settings', async ({
     markovPage
   }) => {
-    // The account page shows only where this build has Markov sign-in; the name page always does.
+    // The account page shows only where this build has Markov sign-in; name and agent setup always do.
     await continueToOnboardingAgentSurface(markovPage)
-    await expectOnboardingProgress(markovPage, /^[23] of [6-9]$/)
+    await expectOnboardingProgress(markovPage, /^[34] of [6-9]$/)
     await expect(markovPage.getByRole('button', { name: 'Back', exact: true })).toHaveCount(1)
     await chooseOnboardingAgentSurface(markovPage)
 
