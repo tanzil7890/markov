@@ -1,0 +1,12 @@
+{
+  "name": "markov-agent-plugins",
+  "owner": { "name": "Markov" },
+  "description": "Repository-local plugins for coding agents working in Markov",
+  "plugins": [
+    {
+      "name": "markov-typescript",
+      "source": "./markov-typescript",
+      "description": "TypeScript 7 diagnostics and code navigation from the repo's own compiler"
+    }
+  ]
+}

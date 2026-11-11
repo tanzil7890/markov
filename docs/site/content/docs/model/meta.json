@@ -1,0 +1,12 @@
+{
+  "title": "The Markov Model",
+  "defaultOpen": true,
+  "pages": [
+    "worktrees",
+    "markov-yaml",
+    "tabs-panes-splits",
+    "agents-sessions",
+    "session-restore",
+    "quick-open"
+  ]
+}

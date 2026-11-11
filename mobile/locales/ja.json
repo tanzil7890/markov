@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "QR コードをスキャンするため、Markov にカメラの使用を許可してください。",
+    "NSLocalNetworkUsageDescription": "Markov は LAN 上のデスクトップアプリに接続します。",
+    "NSMicrophoneUsageDescription": "音声ディクテーションのため、Markov にマイクの使用を許可してください。音声はペアリング済みのデスクトップに送信され、文字起こしされます。",
+    "NSPhotoLibraryAddUsageDescription": "セッションの画像を写真に保存するため、Markov に写真への追加を許可してください。",
+    "NSPhotoLibraryUsageDescription": "ペアリング済みのデスクトップのターミナルセッションに写真を添付するため、Markov に写真ライブラリへのアクセスを許可してください。"
+  }
+}

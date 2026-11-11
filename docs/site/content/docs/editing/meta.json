@@ -1,0 +1,5 @@
+{
+  "title": "Editing in Markov",
+  "defaultOpen": true,
+  "pages": ["monaco", "markdown", "viewers", "file-explorer"]
+}

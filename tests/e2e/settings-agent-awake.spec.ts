@@ -1,0 +1,203 @@
+import { randomUUID } from 'node:crypto'
+import { runProcess } from '@markov/process-host'
+import type { ElectronApplication, Page } from '@playwright/test'
+import { test, expect } from './helpers/markov-app'
+import { waitForSessionReady } from './helpers/store'
+import type { GlobalSettings } from '../../src/shared/global-settings-types'
+import { readHookEndpoint } from './helpers/agent-hook-endpoint'
+
+type AwakeProbeSnapshot = {
+  starts: { type: string; id: number }[]
+  stops: { id: number }[]
+  activeIds: number[]
+}
+
+async function setKeepAwake(page: Page, enabled: boolean): Promise<void> {
+  await page.evaluate(async (enabled) => {
+    const nextSettings = await window.api.settings.set({
+      keepComputerAwakeWhileAgentsRun: enabled
+    })
+    window.__store?.setState({ settings: nextSettings as GlobalSettings })
+  }, enabled)
+}
+
+async function installPowerSaveBlockerProbe(electronApp: ElectronApplication): Promise<void> {
+  await electronApp.evaluate(({ powerSaveBlocker }) => {
+    const root = globalThis as typeof globalThis & {
+      __markovAwakePowerProbe?: {
+        starts: { type: string; id: number }[]
+        stops: { id: number }[]
+        originalStart: typeof powerSaveBlocker.start
+        originalStop: typeof powerSaveBlocker.stop
+      }
+    }
+    if (root.__markovAwakePowerProbe) {
+      root.__markovAwakePowerProbe.starts = []
+      root.__markovAwakePowerProbe.stops = []
+      return
+    }
+
+    const originalStart = powerSaveBlocker.start.bind(powerSaveBlocker)
+    const originalStop = powerSaveBlocker.stop.bind(powerSaveBlocker)
+    root.__markovAwakePowerProbe = {
+      starts: [],
+      stops: [],
+      originalStart,
+      originalStop
+    }
+
+    powerSaveBlocker.start = ((type) => {
+      const id = originalStart(type)
+      root.__markovAwakePowerProbe?.starts.push({ type, id })
+      return id
+    }) as typeof powerSaveBlocker.start
+
+    powerSaveBlocker.stop = ((id) => {
+      root.__markovAwakePowerProbe?.stops.push({ id })
+      originalStop(id)
+    }) as typeof powerSaveBlocker.stop
+  })
+}
+
+async function readPowerSaveBlockerProbe(
+  electronApp: ElectronApplication
+): Promise<AwakeProbeSnapshot> {
+  return electronApp.evaluate(({ powerSaveBlocker }) => {
+    const probe = (
+      globalThis as typeof globalThis & {
+        __markovAwakePowerProbe?: {
+          starts: { type: string; id: number }[]
+          stops: { id: number }[]
+        }
+      }
+    ).__markovAwakePowerProbe
+    const starts = probe?.starts ?? []
+    return {
+      starts: starts.map((start) => ({ ...start })),
+      stops: (probe?.stops ?? []).map((stop) => ({ ...stop })),
+      activeIds: starts.map((start) => start.id).filter((id) => powerSaveBlocker.isStarted(id))
+    }
+  })
+}
+
+async function readMacosSleepAssertionPids(electronApp: ElectronApplication): Promise<number[]> {
+  const result = await runProcess({
+    program: '/usr/bin/pgrep',
+    args: ['-P', String(electronApp.process().pid), '-f', '^/usr/bin/caffeinate -i -s$'],
+    maxOutputBytes: 4_096
+  })
+  if (result.code === 1) {
+    return []
+  }
+  expect(result.code, result.stderr).toBe(0)
+  return result.stdout.trim().split(/\s+/).filter(Boolean).map(Number)
+}
+
+async function postCodexHookEvent(
+  electronApp: ElectronApplication,
+  options: {
+    paneKey: string
+    tabId: string
+    eventName: 'UserPromptSubmit' | 'Stop'
+  }
+): Promise<void> {
+  const endpoint = await readHookEndpoint(electronApp)
+  const response = await fetch(`http://127.0.0.1:${endpoint.port}/hook/codex`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Markov-Agent-Hook-Token': endpoint.token
+    },
+    body: JSON.stringify({
+      paneKey: options.paneKey,
+      tabId: options.tabId,
+      worktreeId: 'e2e-awake-worktree',
+      env: endpoint.env,
+      version: endpoint.version,
+      payload: {
+        hook_event_name: options.eventName,
+        prompt: 'e2e keep-awake prompt'
+      }
+    })
+  })
+  expect(response.status).toBe(204)
+}
+
+test.describe('Agent awake setting', () => {
+  test.beforeEach(async ({ markovPage }) => {
+    await waitForSessionReady(markovPage)
+  })
+
+  test('keeps the OS awake only while a hook-reported agent is working', async ({
+    electronApp,
+    markovPage
+  }) => {
+    if (process.platform !== 'darwin') {
+      await installPowerSaveBlockerProbe(electronApp)
+    }
+    await setKeepAwake(markovPage, true)
+
+    const tabId = 'e2e-awake-tab'
+    const paneKey = `${tabId}:${randomUUID()}`
+    await postCodexHookEvent(electronApp, {
+      paneKey,
+      tabId,
+      eventName: 'UserPromptSubmit'
+    })
+
+    await expect(
+      markovPage.getByRole('button', { name: 'Keep computer awake, Agent · Active' })
+    ).toBeVisible()
+    let startedIds: number[] = []
+    if (process.platform === 'darwin') {
+      // macOS uses an app-owned caffeinate assertion instead of Electron's display blocker.
+      await expect
+        .poll(() => readMacosSleepAssertionPids(electronApp), { timeout: 5_000 })
+        .not.toEqual([])
+    } else {
+      await expect
+        .poll(async () => await readPowerSaveBlockerProbe(electronApp), {
+          timeout: 5_000,
+          message: 'powerSaveBlocker did not start for the working agent'
+        })
+        .toEqual(
+          expect.objectContaining({
+            activeIds: expect.arrayContaining([expect.any(Number)]),
+            starts: expect.arrayContaining([
+              expect.objectContaining({ type: 'prevent-display-sleep' })
+            ])
+          })
+        )
+
+      startedIds = (await readPowerSaveBlockerProbe(electronApp)).starts.map((start) => start.id)
+      expect(startedIds.length).toBeGreaterThan(0)
+    }
+
+    await postCodexHookEvent(electronApp, {
+      paneKey,
+      tabId,
+      eventName: 'Stop'
+    })
+
+    await expect(
+      markovPage.getByRole('button', { name: 'Keep computer awake, Agent · Inactive' })
+    ).toBeVisible()
+    if (process.platform === 'darwin') {
+      await expect
+        .poll(() => readMacosSleepAssertionPids(electronApp), { timeout: 5_000 })
+        .toEqual([])
+      return
+    }
+    await expect
+      .poll(async () => await readPowerSaveBlockerProbe(electronApp), {
+        timeout: 5_000,
+        message: 'powerSaveBlocker stayed active after the agent stopped'
+      })
+      .toEqual(
+        expect.objectContaining({
+          activeIds: [],
+          stops: expect.arrayContaining(startedIds.map((id) => expect.objectContaining({ id })))
+        })
+      )
+  })
+})

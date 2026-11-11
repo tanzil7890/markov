@@ -1,0 +1,72 @@
+import type { ITerminalOptions } from '@xterm/xterm'
+import { DESKTOP_TERMINAL_SCROLLBACK_ROWS_DEFAULT } from '../../../../shared/terminal/replay/terminal-scrollback-policy'
+import { LIGHT_BG_MIN_CONTRAST } from '../../../../shared/terminal-themes/terminal-contrast-correction'
+
+type TerminalCursorStyle = NonNullable<ITerminalOptions['cursorStyle']>
+type TerminalCursorInactiveStyle = NonNullable<ITerminalOptions['cursorInactiveStyle']>
+
+export const DEFAULT_TERMINAL_SCROLL_SENSITIVITY = 1.15
+export const DEFAULT_TERMINAL_FAST_SCROLL_SENSITIVITY = 5
+
+export function normalizeTerminalScrollSensitivity(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(10, Math.max(0.1, value))
+    : DEFAULT_TERMINAL_SCROLL_SENSITIVITY
+}
+
+export function normalizeTerminalFastScrollSensitivity(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(20, Math.max(1, value))
+    : DEFAULT_TERMINAL_FAST_SCROLL_SENSITIVITY
+}
+
+export function resolveTerminalScrollOnUserInput(value: boolean | undefined): boolean {
+  return value !== false
+}
+
+export function resolveTerminalCursorInactiveStyle(
+  cursorStyle: TerminalCursorStyle | undefined
+): TerminalCursorInactiveStyle {
+  // Inactive outline adds unwanted strokes to bar/underline cursors; reserve it for block cursors.
+  return (cursorStyle ?? 'block') === 'block' ? 'outline' : (cursorStyle ?? 'block')
+}
+
+// Panes own mode 2031 and ?996n because gated hidden output never reaches xterm; xterm's built-in reports would duplicate each flip.
+export const PANE_TERMINAL_VT_EXTENSIONS = { colorSchemeQuery: false } as const
+
+export function buildDefaultTerminalOptions(): ITerminalOptions {
+  const cursorStyle: TerminalCursorStyle = 'block'
+
+  return {
+    allowProposedApi: true,
+    cursorBlink: true,
+    cursorStyle,
+    cursorInactiveStyle: resolveTerminalCursorInactiveStyle(cursorStyle),
+    fontSize: 14,
+    // Cross-platform fallback chain; keep in sync with FALLBACK_FONTS in layout-serialization.ts.
+    fontFamily:
+      '"SF Mono", "Menlo", "Monaco", "Cascadia Mono", "Consolas", "DejaVu Sans Mono", "Liberation Mono", "Symbols Nerd Font Mono", "MesloLGS Nerd Font", "JetBrainsMono Nerd Font", "Hack Nerd Font", monospace',
+    fontWeight: '300',
+    fontWeightBold: '500',
+    scrollback: DESKTOP_TERMINAL_SCROLLBACK_ROWS_DEFAULT,
+    // A small wheel multiplier offsets Markov’s taller default terminal cells.
+    scrollSensitivity: DEFAULT_TERMINAL_SCROLL_SENSITIVITY,
+    fastScrollSensitivity: DEFAULT_TERMINAL_FAST_SCROLL_SENSITIVITY,
+    scrollOnUserInput: true,
+    allowTransparency: false,
+    // Initial value only; applyTerminalAppearance re-gates by background luminance (#7934) before any content paints.
+    minimumContrastRatio: LIGHT_BG_MIN_CONTRAST,
+    // Why: on macOS, non-US layouts rely on Option to compose characters like @ and €.
+    macOptionIsMeta: false,
+    macOptionClickForcesSelection: true,
+    drawBoldTextInBrightColors: true,
+    scrollbar: {
+      // Accept the slim scrollbar’s ~one-column gutter cost and enable overview ruler. The old v1.4.51 table corruption was the ZWJ width bug, now fixed by terminal-unicode-provider; composeActiveTerminalTheme hides the ruler border.
+      width: 7
+    },
+    // Advertise KKP so handshake-gated CLIs accept Markov’s enhanced CSI-u chords (including Shift+Enter off Windows), matching VS Code.
+    vtExtensions: {
+      kittyKeyboard: true
+    }
+  }
+}

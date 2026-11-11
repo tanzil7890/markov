@@ -1,0 +1,118 @@
+name: Self-hosted Cloud E2E
+
+# Boots the self-hosted accounts, relay, sharing and connector servers, then drives
+# them with the real desktop clients: sign-in, relay pairing with a simulated phone,
+# artifact and skill sharing, and the chat connector. Any drift between the desktop
+# and the servers fails here.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - cloud/apps/accounts/**
+      - cloud/apps/relay/**
+      - cloud/apps/sharing/**
+      - cloud/apps/connector/**
+      - cloud/packages/**
+      - cloud/dev/self-hosted-stack.mjs
+      - cloud/pnpm-lock.yaml
+      - src/main/markov-profiles/**
+      - src/main/runtime/mobile-cloud-relay/**
+      - src/main/runtime/rpc/**
+      - src/main/artifacts/**
+      - src/main/skills/**
+      - src/main/connector-cloud/**
+      - src/shared/remote-runtime/**
+      - src/shared/cloud-service-url.ts
+      - src/shared/artifacts.ts
+      - src/shared/skill-*.ts
+      - src/shared/connector-cloud-contract.ts
+      - tests/self-hosted-cloud/**
+      - .github/workflows/self-hosted-cloud-e2e.yml
+  push:
+    branches: [main]
+    paths:
+      - cloud/apps/accounts/**
+      - cloud/apps/relay/**
+      - cloud/apps/sharing/**
+      - cloud/apps/connector/**
+      - cloud/packages/**
+      - cloud/dev/self-hosted-stack.mjs
+      - cloud/pnpm-lock.yaml
+      - src/main/markov-profiles/**
+      - src/main/runtime/mobile-cloud-relay/**
+      - src/main/runtime/rpc/**
+      - src/main/artifacts/**
+      - src/main/skills/**
+      - src/main/connector-cloud/**
+      - src/shared/remote-runtime/**
+      - src/shared/cloud-service-url.ts
+      - src/shared/artifacts.ts
+      - src/shared/skill-*.ts
+      - src/shared/connector-cloud-contract.ts
+      - tests/self-hosted-cloud/**
+      - .github/workflows/self-hosted-cloud-e2e.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: self-hosted-cloud-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
+    name: Desktop client against self-hosted servers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Production runs on PostgreSQL (Neon), so the stack is tested on it as well as SQLite.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: markov_self_hosted
+          POSTGRES_PASSWORD: self_hosted_test
+          POSTGRES_USER: self_hosted_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U self_hosted_test -d markov_self_hosted"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/install-node-dependencies
+        id: root_dependencies
+        with:
+          native-runtime: none
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            cloud/pnpm-lock.yaml
+
+      - name: Install self-hosted server dependencies
+        working-directory: cloud
+        run: |
+          pnpm --filter '@markov-cloud/relay...' --filter '@markov-cloud/accounts...' --filter '@markov-cloud/sharing...' --filter '@markov-cloud/connector...' install --frozen-lockfile --ignore-scripts
+
+      - name: Server tests
+        working-directory: cloud
+        run: pnpm --filter @markov-cloud/accounts --filter @markov-cloud/sharing test
+
+      - name: End-to-end test (SQLite)
+        env:
+          MARKOV_BACKGROUND_LAUNCH: '1'
+        run: pnpm test:self-hosted-cloud
+
+      - name: End-to-end test (PostgreSQL)
+        env:
+          MARKOV_BACKGROUND_LAUNCH: '1'
+          MARKOV_SELF_HOSTED_E2E_ACCOUNTS_DATABASE_URL: postgres://self_hosted_test:self_hosted_test@127.0.0.1:5432/markov_self_hosted
+          MARKOV_SELF_HOSTED_E2E_RELAY_DATABASE_URL: postgres://self_hosted_test:self_hosted_test@127.0.0.1:5432/markov_self_hosted
+          MARKOV_SELF_HOSTED_E2E_SHARING_DATABASE_URL: postgres://self_hosted_test:self_hosted_test@127.0.0.1:5432/markov_self_hosted
+          MARKOV_SELF_HOSTED_E2E_CONNECTOR_DATABASE_URL: postgres://self_hosted_test:self_hosted_test@127.0.0.1:5432/markov_self_hosted
+        run: pnpm test:self-hosted-cloud

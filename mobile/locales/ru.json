@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Разрешите Markov использовать камеру для сканирования QR-кодов.",
+    "NSLocalNetworkUsageDescription": "Markov подключается к настольному приложению в вашей локальной сети.",
+    "NSMicrophoneUsageDescription": "Разрешите Markov использовать микрофон для диктовки. Запись отправляется на связанный компьютер для расшифровки.",
+    "NSPhotoLibraryAddUsageDescription": "Разрешите Markov сохранять изображения из ваших сессий в Фото.",
+    "NSPhotoLibraryUsageDescription": "Разрешите Markov прикреплять фотографии из медиатеки к сессии терминала на связанном компьютере."
+  }
+}

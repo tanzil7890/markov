@@ -1,0 +1,118 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createHash } from 'node:crypto'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import type { MarkovdMigrationBlobDescriptor } from '../../../shared/markovd-migration/markovd-migration-blob-transfer'
+import { getMarkovdMigrationReceivedBlobPath } from './markovd-migration-blob-staging'
+import { manifest } from './persistence-markovd-migration-catalog-fixture'
+import { createStore, testState } from '../persistence-test-harness'
+
+vi.mock('electron', () => ({
+  app: { getPath: () => testState.dir },
+  safeStorage: {
+    isEncryptionAvailable: () => true,
+    encryptString: (plaintext: string) => Buffer.from(`encrypted:${plaintext}`, 'utf-8'),
+    decryptString: (ciphertext: Buffer) => ciphertext.toString('utf-8').slice('encrypted:'.length)
+  }
+}))
+
+vi.mock('../../telemetry/client', () => ({ track: vi.fn() }))
+
+// Use a blob kind without an installer to isolate channel behavior.
+const bytes = Buffer.from('session record one\nsession record two\n')
+const blob: MarkovdMigrationBlobDescriptor = {
+  blobKind: 'agent-session-records',
+  key: 'session-kept',
+  sha256: createHash('sha256').update(bytes).digest('hex'),
+  byteLength: bytes.length
+}
+
+function chunk(input: ReturnType<typeof manifest>, offset: number, end: number) {
+  return {
+    migrationId: input.migrationId,
+    manifestSha256: input.manifestSha256,
+    blob,
+    offset,
+    bytesBase64: bytes.subarray(offset, end).toString('base64')
+  }
+}
+
+function blobRoot(): string {
+  return join(testState.dir, 'markovd-migration-blobs')
+}
+
+describe('markovd migration blobs through the store', () => {
+  beforeEach(() => {
+    testState.dir = mkdtempSync(join(tmpdir(), 'markov-migration-blobs-'))
+  })
+
+  afterEach(() => {
+    rmSync(testState.dir, { recursive: true, force: true })
+  })
+
+  it('reloads staged progress from disk and refuses commit until complete', async () => {
+    const input = manifest()
+    const store = createStore()
+    store.stageMarkovdMigrationCatalog(input)
+    await store.flushPendingOrThrowAsync()
+    expect(store.getMarkovdMigrationCatalogState(input)).not.toHaveProperty('blobUploads')
+    store.stageMarkovdMigrationBlobChunk(chunk(input, 0, 8))
+
+    const restarted = createStore()
+    expect(restarted.getMarkovdMigrationCatalogState(input)).toMatchObject({
+      state: 'staged',
+      blobUploads: [{ ...blob, receivedBytes: 8 }]
+    })
+    expect(() => restarted.commitStagedMarkovdMigrationCatalog(input)).toThrow(
+      `markovd_migration_blob_incomplete:agent-session-records:${blob.key}`
+    )
+    expect(restarted.getMarkovdMigrationCatalogState(input).state).toBe('staged')
+
+    restarted.stageMarkovdMigrationBlobChunk(chunk(input, 8, bytes.length))
+    expect(restarted.commitStagedMarkovdMigrationCatalog(input).state).toBe('committed')
+    expect(readFileSync(getMarkovdMigrationReceivedBlobPath(blobRoot(), input, blob))).toEqual(
+      bytes
+    )
+  })
+
+  it('commits only the blob set the sender names, and checks nothing when it names none', () => {
+    const input = manifest()
+    const store = createStore()
+    store.stageMarkovdMigrationCatalog(input)
+    store.stageMarkovdMigrationBlobChunk(chunk(input, 0, bytes.length))
+    const missing: MarkovdMigrationBlobDescriptor = {
+      blobKind: 'agent-session-records',
+      key: 'session-lost',
+      sha256: 'e'.repeat(64),
+      byteLength: 4
+    }
+
+    expect(() =>
+      store.commitStagedMarkovdMigrationCatalog(input, {
+        expectedBlobs: [blob, missing]
+      })
+    ).toThrow('markovd_migration_blob_set_mismatch:agent-session-records:session-lost')
+    expect(() => store.commitStagedMarkovdMigrationCatalog(input, { expectedBlobs: [] })).toThrow(
+      `markovd_migration_blob_set_mismatch:agent-session-records:${blob.key}`
+    )
+    expect(store.getMarkovdMigrationCatalogState(input).state).toBe('staged')
+    expect(store.commitStagedMarkovdMigrationCatalog(input, { expectedBlobs: [blob] }).state).toBe(
+      'committed'
+    )
+  })
+
+  it('removes staged blobs when the catalog is aborted', () => {
+    const input = manifest()
+    const store = createStore()
+    store.stageMarkovdMigrationCatalog(input)
+    store.stageMarkovdMigrationBlobChunk(chunk(input, 0, 8))
+
+    expect(store.abortStagedMarkovdMigrationCatalog(input)).toMatchObject({ aborted: true })
+    expect(() => store.stageMarkovdMigrationBlobChunk(chunk(input, 8, bytes.length))).toThrow(
+      'markovd_migration_blob_catalog_not_staged'
+    )
+    store.stageMarkovdMigrationCatalog(input)
+    expect(store.getMarkovdMigrationCatalogState(input)).not.toHaveProperty('blobUploads')
+  })
+})

@@ -1,0 +1,7 @@
+{
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["MarkovNotificationDismissalModule"],
+    "appDelegateSubscribers": ["MarkovNotificationDismissalSubscriber"]
+  }
+}

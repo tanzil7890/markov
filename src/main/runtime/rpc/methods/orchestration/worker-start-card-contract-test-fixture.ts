@@ -1,0 +1,30 @@
+import { afterEach, vi } from 'vitest'
+import { createOrchestrationRpcHarness } from './rpc-test-harness'
+import { setStructuredAgentSessionHost } from '../../../../native-chat/agent-session-wire/host/structured-agent-session-registry'
+import type { QueuedMessageTestRig } from '../../../../native-chat/agent-session-wire/host/testing/structured-agent-session-queued-message-rig.test-fixture'
+import { testMarkovSessionId } from '../../../../../shared/markov-session-address-test-fixture'
+
+export const h = createOrchestrationRpcHarness()
+
+export const COORD = testMarkovSessionId('start-card-caller')
+
+export const WORKER = testMarkovSessionId('start-card-worker')
+
+let rig: QueuedMessageTestRig | undefined
+
+afterEach(async () => {
+  setStructuredAgentSessionHost(null)
+  await rig?.dispose()
+  rig = undefined
+  h.cleanup()
+  vi.restoreAllMocks()
+})
+
+export const fixture = {
+  get rig() {
+    return rig
+  },
+  set rig(value: typeof rig) {
+    rig = value
+  }
+}

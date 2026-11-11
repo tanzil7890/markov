@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "plugins": [
+    {
+      "pluginKey": "tanzil7890.markov-github-vscode-theme",
+      "path": "tanzil7890.markov-github-vscode-theme",
+      "contentHash": "4953b4ad5cb471c8087057406045ca333ae541ac7abcba4b95cb20de8e4bfa8f"
+    },
+    {
+      "pluginKey": "tanzil7890.markov-vscode-default-themes",
+      "path": "tanzil7890.markov-vscode-default-themes",
+      "contentHash": "48f271b8cda91c8007cd5d0592b6ac9857022c1bcf655c6f4c6da1e7701faf00"
+    }
+  ]
+}

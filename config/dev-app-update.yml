@@ -1,0 +1,4 @@
+provider: github
+owner: tanzil7890
+repo: markov
+updaterCacheDirName: markov-updater

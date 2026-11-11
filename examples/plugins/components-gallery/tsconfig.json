@@ -1,0 +1,4 @@
+{
+  "extends": "./.markov/types/tsconfig.json",
+  "include": ["src"]
+}

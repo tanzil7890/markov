@@ -1,0 +1,11 @@
+{
+  "extraKnownMarketplaces": {
+    "markov-agent-plugins": {
+      "source": { "source": "directory", "path": "./config/agent-plugins" }
+    }
+  },
+  "enabledPlugins": {
+    "markov-typescript@markov-agent-plugins": true,
+    "typescript-lsp@claude-plugins-official": false
+  }
+}

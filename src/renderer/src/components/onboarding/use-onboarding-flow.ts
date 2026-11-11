@@ -1,0 +1,329 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { getAgentCatalog } from '@/lib/agent-catalog'
+import { useAppStore } from '@/store'
+import { applyDocumentTheme } from '@/lib/document-theme'
+import { resolvePaintedTheme } from '@/lib/terminal-app-theme'
+import { track } from '@/lib/telemetry'
+import { buildAgentPickedPayload } from './agent-picked-payload'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
+import type { OnboardingState } from '../../../../shared/onboarding-state-types'
+import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
+import { STEPS, stepIndexAfterCompletedStep } from './use-onboarding-flow-types'
+import { useOnboardingAgentSurface } from './use-onboarding-agent-surface'
+import { persistStep, useCloseWith, usePersistCurrentStep } from './use-onboarding-flow-persistence'
+import { resolveOnboardingSettingsHydration } from './onboarding-settings-hydration'
+import { translate } from '@/i18n/i18n'
+import { useOnboardingYoloPermissions } from './use-onboarding-yolo-permissions'
+import { isWindowsUserAgent } from '@/components/terminal-pane/pane-helpers'
+import {
+  isSkippedStepIndex,
+  remapOpenOnboardingLastCompletedStep,
+  resolveStepIndex,
+  shouldSkipIntegrationsStep,
+  shouldSkipWindowsTerminalStep
+} from './onboarding-flow-state'
+
+import { useOnboardingFlowActions } from './use-onboarding-flow-actions'
+import { useOnboardingFlowTelemetry } from './use-onboarding-flow-telemetry'
+export { STEPS } from './use-onboarding-flow-types'
+export type { AgentSurface, StepId, StepNumber } from './use-onboarding-flow-types'
+
+export function useOnboardingFlow(
+  onboarding: OnboardingState,
+  onOnboardingChange: (state: OnboardingState) => void
+) {
+  const settings = useAppStore((s) => s.settings)
+  const updateSettings = useAppStore((s) => s.updateSettings)
+  const detectedAgentIds = useAppStore((s) => s.detectedAgentIds)
+  const isDetectingAgents = useAppStore((s) => s.isDetectingAgents || s.isRefreshingAgents)
+  const pathSource = useAppStore((s) => s.pathSource)
+  const pathFailureReason = useAppStore((s) => s.pathFailureReason)
+  const openModal = useAppStore((s) => s.openModal)
+  const preflightStatus = useAppStore((s) => s.preflightStatus)
+  const preflightStatusChecked = useAppStore((s) => s.preflightStatusChecked)
+  const preflightStatusLoading = useAppStore((s) => s.preflightStatusLoading)
+  const refreshPreflightStatus = useAppStore((s) => s.refreshPreflightStatus)
+  const linearStatus = useAppStore((s) => s.linearStatus)
+  const linearStatusChecked = useAppStore((s) => s.linearStatusChecked)
+  // Why: renderToStaticMarkup uses Zustand's initial snapshot; the sync read keeps tests and the first client render aligned.
+  const effectivePreflightStatus = preflightStatus ?? useAppStore.getState().preflightStatus
+
+  const skipIntegrations = shouldSkipIntegrationsStep(effectivePreflightStatus)
+  const skipWindowsTerminal = shouldSkipWindowsTerminalStep(isWindowsUserAgent())
+  const skipOptions = useMemo(
+    () => ({ skipIntegrations, skipWindowsTerminal }),
+    [skipIntegrations, skipWindowsTerminal]
+  )
+  const remappedLastCompletedStep = remapOpenOnboardingLastCompletedStep(onboarding)
+  const initialStep = resolveStepIndex(
+    stepIndexAfterCompletedStep(remappedLastCompletedStep),
+    skipOptions,
+    'forward'
+  )
+  const [stepIndex, setStepIndex] = useState(initialStep)
+  const [selectedAgent, setSelectedAgent] = useState<TuiAgent | null>(
+    settings?.defaultTuiAgent && settings.defaultTuiAgent !== 'blank'
+      ? settings.defaultTuiAgent
+      : null
+  )
+  const { yoloPermissions, yoloPermissionsChosen, setYoloPermissionsInteractive } =
+    useOnboardingYoloPermissions(settings)
+  const [theme, setTheme] = useState<GlobalSettings['theme']>(settings?.theme ?? 'dark')
+  const [busyLabel, setBusyLabel] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
+
+  // Settings arrive after lazy initialization; sync before commit unless the user already edited.
+  const themeInteractedRef = useRef(false)
+  const agentInteractedRef = useRef(false)
+  const [settingsHydrated, setSettingsHydrated] = useState(settings != null)
+  const settingsHydration = resolveOnboardingSettingsHydration({
+    settings,
+    settingsHydrated,
+    themeInteracted: themeInteractedRef.current,
+    agentInteracted: agentInteractedRef.current,
+    currentTheme: theme,
+    currentAgent: selectedAgent
+  })
+  if (settingsHydration) {
+    setSettingsHydrated(settingsHydration.settingsHydrated)
+    if (settingsHydration.theme !== undefined) {
+      setTheme(settingsHydration.theme)
+    }
+    if (settingsHydration.selectedAgent !== undefined) {
+      setSelectedAgent(settingsHydration.selectedAgent)
+    }
+  }
+
+  const setThemeInteractive = useCallback((value: GlobalSettings['theme']) => {
+    themeInteractedRef.current = true
+    setTheme(value)
+  }, [])
+  const detectedAgentIdsRef = useRef<readonly TuiAgent[]>(detectedAgentIds ?? [])
+  const isDetectingRef = useRef<boolean>(isDetectingAgents)
+  const selectedAgentRef = useRef(selectedAgent)
+  // Stable selection handlers need current hydration evidence at click time.
+  const pathSourceRef = useRef(pathSource)
+  const pathFailureReasonRef = useRef(pathFailureReason)
+  selectedAgentRef.current = selectedAgent
+  detectedAgentIdsRef.current = detectedAgentIds ?? []
+  isDetectingRef.current = isDetectingAgents
+  pathSourceRef.current = pathSource
+  pathFailureReasonRef.current = pathFailureReason
+  const setSelectedAgentInteractive = useCallback(
+    (value: TuiAgent | null, fromCollapsedSection = false) => {
+      agentInteractedRef.current = true
+      // Count changed picks, excluding repeated clicks on the current agent.
+      const prev = selectedAgentRef.current
+      setSelectedAgent(value)
+      if (value === null || value === prev) {
+        return
+      }
+      // Track picks at click time so telemetry captures changes before step completion.
+      track(
+        'onboarding_agent_picked',
+        buildAgentPickedPayload({
+          agent: value,
+          detectedAgentIds: detectedAgentIdsRef.current,
+          isDetecting: isDetectingRef.current,
+          fromCollapsedSection,
+          pathSource: pathSourceRef.current,
+          pathFailureReason: pathFailureReasonRef.current
+        })
+      )
+    },
+    []
+  )
+
+  const { agentSurface, setAgentSurface, chatAgents, chatDetected, refreshDetectedAgents } =
+    useOnboardingAgentSurface({
+      settings,
+      selectedAgent,
+      agentInteractedRef,
+      setSelectedAgent
+    })
+
+  const detectedSet = useMemo(() => new Set(detectedAgentIds ?? []), [detectedAgentIds])
+  const currentStep = STEPS[stepIndex]
+  // Omit skipped steps so the stepper shows only reachable pages.
+  const progressSteps = useMemo(
+    () =>
+      STEPS.map((step, index) => ({ step, index })).filter(
+        ({ index }) => !isSkippedStepIndex(index, skipOptions)
+      ),
+    [skipOptions]
+  )
+  // Resolve skipped resume targets forward before calculating visible progress.
+  const displayedStepIndex = resolveStepIndex(stepIndex, skipOptions, 'forward')
+  const progressStepIndex = Math.max(
+    0,
+    progressSteps.findIndex(({ index }) => index === displayedStepIndex)
+  )
+  const [initialStartTime] = useState(() => Date.now())
+  const startTimeRef = useRef<number>(initialStartTime)
+
+  // Unmount-only restoration needs the latest painted theme without rerunning on settings changes;
+  // painted, because Match Terminal can paint the mode the setting doesn't ask for.
+  const paintedTheme = resolvePaintedTheme(settings, settings?.theme ?? 'dark')
+  const paintedThemeRef = useRef<GlobalSettings['theme']>(paintedTheme)
+  useEffect(() => {
+    paintedThemeRef.current = paintedTheme
+  }, [paintedTheme])
+  // Why per entry: "Skip to project setup" keeps the look the user arrived with, and each pick
+  // replaces only its own mode's slot from here.
+  const [themeLookBaseline, setThemeLookBaseline] = useState<GlobalSettings | null>(null)
+  if (currentStep.id !== 'theme' && themeLookBaseline) {
+    setThemeLookBaseline(null)
+  } else if (currentStep.id === 'theme' && settings && !themeLookBaseline) {
+    setThemeLookBaseline(settings)
+  }
+
+  const previewTheme = resolvePaintedTheme(settings, theme)
+  useEffect(() => {
+    applyDocumentTheme(previewTheme)
+  }, [previewTheme])
+
+  useEffect(() => {
+    void refreshPreflightStatus()
+  }, [refreshPreflightStatus])
+
+  const getNextStepIndex = useCallback(
+    (idx: number): number => resolveStepIndex(idx + 1, skipOptions, 'forward'),
+    [skipOptions]
+  )
+
+  useEffect(() => {
+    if (currentStep.id !== 'integrations' || !preflightStatusChecked || !skipIntegrations) {
+      return
+    }
+    const nextIndex = getNextStepIndex(stepIndex)
+    setStepIndex(nextIndex)
+    // Why: persistence must resume at the next visible step, not bounce back through skipped optional pages.
+    const skippedThroughStepNumber = Math.max(
+      currentStep.stepNumber,
+      STEPS[nextIndex].stepNumber - 1
+    )
+    void persistStep(skippedThroughStepNumber).then(onOnboardingChange, (err) => {
+      toast.error(
+        translate(
+          'auto.components.onboarding.use.onboarding.flow.52acfbef51',
+          'Could not save progress'
+        ),
+        {
+          description: err instanceof Error ? err.message : String(err)
+        }
+      )
+    })
+  }, [
+    currentStep.id,
+    currentStep.stepNumber,
+    getNextStepIndex,
+    onOnboardingChange,
+    preflightStatusChecked,
+    skipIntegrations,
+    stepIndex
+  ])
+
+  const { consumeStepDurationMs, setLifecycleRootRef, trackTaskSourcesSnapshot } =
+    useOnboardingFlowTelemetry({
+      remappedLastCompletedStep,
+      currentStep,
+      paintedThemeRef,
+      preflightStatus,
+      preflightStatusLoading,
+      linearStatus,
+      linearStatusChecked
+    })
+
+  // Why: auto-pick only on first mount; otherwise re-running would clobber/race the user's own agent selection.
+  const didAutoSelectRef = useRef(false)
+  useEffect(() => {
+    if (didAutoSelectRef.current) {
+      return
+    }
+    didAutoSelectRef.current = true
+    // Refresh PATH on mount; pre-hydration session-cache entries can falsely report no agents.
+    // First-run setup is a user act: it may start the default WSL distro to find its agents.
+    void refreshDetectedAgents(undefined, { wakeWslDistro: true }).then((ids) => {
+      if (selectedAgentRef.current !== null) {
+        return
+      }
+      const preferred = getAgentCatalog().find((agent) => ids.includes(agent.id))?.id ?? null
+      setSelectedAgent(preferred)
+    })
+  }, [refreshDetectedAgents])
+
+  const closeWith = useCloseWith({
+    onOnboardingChange,
+    startTimeRef,
+    setError
+  })
+
+  const persistCurrentStep = usePersistCurrentStep({
+    currentStepId: currentStep.id,
+    agentSurface,
+    selectedAgent,
+    agentInteractedRef,
+    yoloPermissions,
+    yoloPermissionsChosen,
+    theme,
+    settings,
+    updateSettings,
+    onboardingChecklist: onboarding.checklist,
+    onOnboardingChange,
+    setError
+  })
+
+  const { next, skipToRepo, dismissOnboarding, back, jumpToStep } = useOnboardingFlowActions({
+    busyLabel,
+    setBusyLabel,
+    setError,
+    currentStep,
+    consumeStepDurationMs,
+    trackTaskSourcesSnapshot,
+    settings,
+    persistCurrentStep,
+    closeWith,
+    openModal,
+    getNextStepIndex,
+    onOnboardingChange,
+    stepIndex,
+    setStepIndex,
+    selectedAgent,
+    agentSurface,
+    themeLookBaseline,
+    setTheme,
+    updateSettings,
+    skipOptions
+  })
+
+  return {
+    settings,
+    updateSettings,
+    stepIndex,
+    progressSteps,
+    progressStepIndex,
+    currentStep,
+    agentSurface,
+    setAgentSurface,
+    chatAgents,
+    chatDetected,
+    selectedAgent,
+    setSelectedAgent: setSelectedAgentInteractive,
+    yoloPermissions,
+    setYoloPermissions: setYoloPermissionsInteractive,
+    theme,
+    setTheme: setThemeInteractive,
+    themeLookBaseline,
+    setThemeLookBaseline,
+    busyLabel,
+    detectedSet,
+    isDetectingAgents,
+    next,
+    skipToRepo,
+    dismissOnboarding,
+    back,
+    jumpToStep,
+    setLifecycleRootRef
+  }
+}

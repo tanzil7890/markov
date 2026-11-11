@@ -1,0 +1,127 @@
+import type { Page } from '@playwright/test'
+import type { JiraIssue } from '../../src/shared/jira/jira-types'
+import { expect, test } from './helpers/markov-app'
+import { waitForSessionReady } from './helpers/store'
+
+const ISSUE_TITLE = 'Keep planning notes visible while switching between project tasks'
+const ISSUE: JiraIssue = {
+  id: 'layout-fixture',
+  key: 'DEMO-101',
+  siteId: 'layout-site',
+  title: ISSUE_TITLE,
+  url: 'https://example.atlassian.net/browse/DEMO-101',
+  project: { id: 'layout-project', key: 'DEMO', name: 'Demo' },
+  issueType: { id: 'task', name: 'Task' },
+  status: { id: 'open', name: 'To Do', categoryKey: 'new', categoryName: 'To Do' },
+  labels: [],
+  parent: { key: 'DEMO-10', title: 'Epic planning' },
+  sprint: 'Sprint 12',
+  storyPoints: 5,
+  originalEstimateSeconds: 7200,
+  remainingEstimateSeconds: 1800,
+  priority: { id: 'high', name: 'High' },
+  assignee: { accountId: 'layout-user', displayName: 'Demo User' },
+  createdAt: '2026-10-01T00:00:00Z',
+  updatedAt: '2026-10-13T00:00:00Z'
+}
+
+async function openFixtureJiraList(page: Page): Promise<void> {
+  await waitForSessionReady(page)
+  await page.setViewportSize({ width: 1500, height: 900 })
+  await page.evaluate((issue) => {
+    const store = window.__store
+    if (!store) {
+      throw new Error('Store unavailable')
+    }
+    const state = store.getState()
+    if (!state.settings) {
+      throw new Error('Settings unavailable')
+    }
+    const status = {
+      connected: true,
+      viewer: null,
+      selectedSiteId: 'layout-site',
+      sites: [
+        {
+          id: 'layout-site',
+          siteUrl: 'https://example.atlassian.net',
+          email: '',
+          displayName: 'Demo Jira',
+          accountId: 'layout-user'
+        }
+      ]
+    }
+    store.setState({
+      settings: { ...state.settings, defaultTaskSource: 'jira', visibleTaskProviders: ['jira'] },
+      jiraStatus: status,
+      jiraStatusChecked: true,
+      jiraStatusContextKey: 'local#0',
+      checkJiraConnection: async () => {},
+      readJiraStatus: async () => status,
+      listJiraIssues: async () => [issue],
+      searchJiraIssues: async () => [issue]
+    })
+    store.getState().openTaskPage({ taskSource: 'jira' })
+  }, ISSUE)
+}
+
+test('Jira planning columns persist and hiding a sorted field selects a visible fallback', async ({
+  markovPage
+}) => {
+  await openFixtureJiraList(markovPage)
+  const title = markovPage.getByRole('heading', { name: ISSUE_TITLE })
+  await expect(title).toBeVisible()
+  await title.evaluate((element) => {
+    const host =
+      element.closest('[role="button"]')?.parentElement?.parentElement?.parentElement?.parentElement
+        ?.parentElement
+    if (!(host instanceof HTMLElement)) {
+      throw new Error('Jira list host unavailable')
+    }
+    host.style.width = '780px'
+  })
+  await markovPage.getByRole('button', { name: 'Columns', exact: true }).click()
+  for (const name of ['Parent', 'Sprint', 'Points', 'Estimate', 'Remaining']) {
+    await markovPage.getByRole('menuitemcheckbox', { name, exact: true }).click()
+  }
+  await markovPage.keyboard.press('Escape')
+  await expect(markovPage.getByText('Epic planning', { exact: true })).toBeVisible()
+  await expect(markovPage.getByText('Sprint 12', { exact: true })).toBeVisible()
+  await expect(markovPage.getByText('2h', { exact: true })).toBeVisible()
+  await expect(markovPage.getByText('30m', { exact: true })).toBeVisible()
+  const layout = await title.evaluate((element) => {
+    const row = element.closest('[role="button"]')
+    const scroll = row?.parentElement?.parentElement?.parentElement?.parentElement
+    if (!(scroll instanceof HTMLElement)) {
+      throw new Error('Scroll container unavailable')
+    }
+    return {
+      title: element.getBoundingClientRect().width,
+      content: scroll.scrollWidth,
+      viewport: scroll.clientWidth
+    }
+  })
+  expect(layout.title).toBeGreaterThanOrEqual(180)
+  expect(layout.content).toBeGreaterThan(layout.viewport)
+  await markovPage.getByRole('button', { name: 'Points', exact: true }).click()
+  await expect(markovPage.getByRole('button', { name: 'Points, ascending' })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  )
+  await markovPage.getByRole('button', { name: 'Columns', exact: true }).click()
+  await markovPage.getByRole('menuitemcheckbox', { name: 'Points', exact: true }).click()
+  await markovPage.keyboard.press('Escape')
+  await expect(markovPage.getByRole('button', { name: 'Updated, descending' })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  )
+  await markovPage.reload()
+  await openFixtureJiraList(markovPage)
+  await markovPage.getByRole('button', { name: 'Columns', exact: true }).click()
+  await expect(
+    markovPage.getByRole('menuitemcheckbox', { name: 'Sprint', exact: true })
+  ).toHaveAttribute('aria-checked', 'true')
+  await expect(
+    markovPage.getByRole('menuitemcheckbox', { name: 'Points', exact: true })
+  ).toHaveAttribute('aria-checked', 'false')
+})

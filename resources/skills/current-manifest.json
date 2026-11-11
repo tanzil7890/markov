@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 3,
+  "skills": [
+    {
+      "name": "jira-tickets",
+      "sourcePath": "skills/jira-tickets",
+      "packageDigest": "e75b49043c9c9636488d584a5b490fc5f96bbef496afe2aa24154e1a0e768e61",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2034,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "e4f712cc4a95401a84916d404ebefb79e355d932f9a443f2480702f163b811da",
+          "textNormalizedSha256": "e4f712cc4a95401a84916d404ebefb79e355d932f9a443f2480702f163b811da",
+          "identitySha256": "e4f712cc4a95401a84916d404ebefb79e355d932f9a443f2480702f163b811da"
+        }
+      ]
+    },
+    {
+      "name": "linear-tickets",
+      "sourcePath": "skills/linear-tickets",
+      "packageDigest": "778587026dd5e3516e58a2f5f600867ae8d9a3af1927716b221ec282ac2ed36b",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2140,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "109154595bc6284d3e661a0debc9ff0b0d0c895c9d56311000d84b71a29fef09",
+          "textNormalizedSha256": "109154595bc6284d3e661a0debc9ff0b0d0c895c9d56311000d84b71a29fef09",
+          "identitySha256": "109154595bc6284d3e661a0debc9ff0b0d0c895c9d56311000d84b71a29fef09"
+        }
+      ]
+    },
+    {
+      "name": "markov-cli",
+      "sourcePath": "skills/markov-cli",
+      "packageDigest": "0b96bb2fb56d95e54314248d326f267020e826cc16d0e4e8f560e5286cdbdf22",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2237,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "2c8fd06759b1cab3849bb7c87ca579396d6ba3a708abba20038b55854d1e7c23",
+          "textNormalizedSha256": "2c8fd06759b1cab3849bb7c87ca579396d6ba3a708abba20038b55854d1e7c23",
+          "identitySha256": "2c8fd06759b1cab3849bb7c87ca579396d6ba3a708abba20038b55854d1e7c23"
+        }
+      ]
+    },
+    {
+      "name": "markov-computer-use",
+      "sourcePath": "skills/markov-computer-use",
+      "packageDigest": "6228ef8264280140e181b36b25dc55a10fc485a26f6fd7a5d03a14504365b695",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2134,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "d77e58752f0655df9b4c8b2c5d4463e3a851aea0e8b980939df8ef625cfabe3a",
+          "textNormalizedSha256": "d77e58752f0655df9b4c8b2c5d4463e3a851aea0e8b980939df8ef625cfabe3a",
+          "identitySha256": "d77e58752f0655df9b4c8b2c5d4463e3a851aea0e8b980939df8ef625cfabe3a"
+        }
+      ]
+    },
+    {
+      "name": "markov-emulator",
+      "sourcePath": "skills/markov-emulator",
+      "packageDigest": "1272928855425733b56ecfd0d75c81c92144aeccaef4c092cf2b7451c0c220ac",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2254,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "bb92805306ae00834f22982ac6f76f96c25f8a85480b924162d15d164dc0601c",
+          "textNormalizedSha256": "bb92805306ae00834f22982ac6f76f96c25f8a85480b924162d15d164dc0601c",
+          "identitySha256": "bb92805306ae00834f22982ac6f76f96c25f8a85480b924162d15d164dc0601c"
+        }
+      ]
+    },
+    {
+      "name": "markov-emulator-android",
+      "sourcePath": "skills/markov-emulator-android",
+      "packageDigest": "244dc259d64858ed2a668a7cdc6f99e58eadf97bdfac2a839f74733a6cacf558",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2147,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "9c87d0ebdb10d8cf28407aa88a00de3f954578fbd8416b8737c78673a5fb3e59",
+          "textNormalizedSha256": "9c87d0ebdb10d8cf28407aa88a00de3f954578fbd8416b8737c78673a5fb3e59",
+          "identitySha256": "9c87d0ebdb10d8cf28407aa88a00de3f954578fbd8416b8737c78673a5fb3e59"
+        }
+      ]
+    },
+    {
+      "name": "markov-jira",
+      "sourcePath": "skills/markov-jira",
+      "packageDigest": "3cc770d1bb2800c39e667a72f7325e6511359648bcd955b135bb2eac5c997c88",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 1991,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "8df1658a56b17347995c34be205ee930f81c20e2d17b14b377390571f45b1ea1",
+          "textNormalizedSha256": "8df1658a56b17347995c34be205ee930f81c20e2d17b14b377390571f45b1ea1",
+          "identitySha256": "8df1658a56b17347995c34be205ee930f81c20e2d17b14b377390571f45b1ea1"
+        }
+      ]
+    },
+    {
+      "name": "markov-linear",
+      "sourcePath": "skills/markov-linear",
+      "packageDigest": "3fdba92a8e45cc599b480881e637bf74147c21b7b53b8ee24d127b79202cbf6b",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 1999,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "b287556dbb34fc6273d70318ad757eb49bc1b5c82a00b6465b724df263004f36",
+          "textNormalizedSha256": "b287556dbb34fc6273d70318ad757eb49bc1b5c82a00b6465b724df263004f36",
+          "identitySha256": "b287556dbb34fc6273d70318ad757eb49bc1b5c82a00b6465b724df263004f36"
+        }
+      ]
+    },
+    {
+      "name": "markov-per-workspace-env",
+      "sourcePath": "skills/markov-per-workspace-env",
+      "packageDigest": "b83d9499129628c923770ea731eb6bf51a89d356930cf20145173f9f38eeef9f",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2173,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "c52dcbc39ea73550e24d3ef9ad2d759f1306193b06b806c2e7e713aa0bfddb9b",
+          "textNormalizedSha256": "c52dcbc39ea73550e24d3ef9ad2d759f1306193b06b806c2e7e713aa0bfddb9b",
+          "identitySha256": "c52dcbc39ea73550e24d3ef9ad2d759f1306193b06b806c2e7e713aa0bfddb9b"
+        }
+      ]
+    },
+    {
+      "name": "markov-plugin-authoring",
+      "sourcePath": "skills/markov-plugin-authoring",
+      "packageDigest": "4e9dc885f0d17ef3d572edead6e92748922bb89939bb6008c3ab3fcb56f30384",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2237,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "dba3c2ba3b35ffcfac2e7e4007489a67372b7300cea017ea7048c0131cff6aa3",
+          "textNormalizedSha256": "dba3c2ba3b35ffcfac2e7e4007489a67372b7300cea017ea7048c0131cff6aa3",
+          "identitySha256": "dba3c2ba3b35ffcfac2e7e4007489a67372b7300cea017ea7048c0131cff6aa3"
+        }
+      ]
+    },
+    {
+      "name": "orchestration",
+      "sourcePath": "skills/orchestration",
+      "packageDigest": "56920386a52f7bed52dd891dfbe8112085152d5e3910ab313ebdace0a2ef775e",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 3195,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "ab5d149e5c3b93183c036dc551d8794f16b8f89dbc3b98b46c328b0a6341a85d",
+          "textNormalizedSha256": "ab5d149e5c3b93183c036dc551d8794f16b8f89dbc3b98b46c328b0a6341a85d",
+          "identitySha256": "ab5d149e5c3b93183c036dc551d8794f16b8f89dbc3b98b46c328b0a6341a85d"
+        }
+      ]
+    }
+  ]
+}

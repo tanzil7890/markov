@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["MarkovMobileWebShellModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.markovmobilewebshell.MarkovMobileWebShellModule"]
+  }
+}

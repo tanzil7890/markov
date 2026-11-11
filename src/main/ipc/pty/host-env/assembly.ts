@@ -1,0 +1,328 @@
+import { applyClaudeAgentViewEnv } from './claude-agent-view'
+import { resolveTerminalInlineImagesEnabled } from '../../../../shared/terminal/images/terminal-inline-images-settings'
+import { resolveSetupAgentSequenceLaunchCommand } from '../../../../shared/setup-agent-sequencing'
+import {
+  detectExplicitPiAgentKindFromCommand,
+  isPiCompatibleAgentType
+} from '../../../../shared/pi-agent-kind'
+import { applyTerminalGitCredentialPromptGuard } from '../../../../shared/shell/launch/terminal-git-credential-guard'
+import { ensureOpenCodeStartupPromptForLaunch } from '../../../opencode/opencode-startup-prompt-installer'
+import { mimoCodeHookService } from '../../../mimo/hook-service'
+import { agentHookServer } from '../../../agent-hooks/server'
+import { wslHookRelayManager } from '../../../agent-hooks/wsl-hook-relay-manager'
+import { wslInteropHealthMonitor } from '../../../wsl/execution/wsl-interop-health'
+import { piTitlebarExtensionService } from '../../../pi/titlebar-extension-service'
+import { prependMarkovCliDirToChildPath } from '../../../cli/markov-cli-child-path'
+import { getManagedWslCliDir, getWslCliCommandName } from '../../../cli/wsl-managed-cli'
+import { stripLegacyTerminalShimEnv } from '../../../pty/shell-startup/legacy-terminal-shim-dir'
+import { mergePersistedWindowsPath } from '../../../pty/environment/windows-environment-path'
+import { resolveCodexShellLaunchPreflightCommand } from '../../../pty/shell-startup/codex-shell-launch-preflight'
+import { scheduleCodexHookReconcile } from '../../../codex/hooks/reconciliation/codex-hook-reconcile'
+import { buildConfiguredProxyEnv } from '../../../../shared/network-proxy'
+import { isTuiAgentEnabled } from '../../../../shared/agent-launch/catalog/tui-agent-selection'
+import type { BuildPtyHostEnvOptions } from './types'
+import { stripInheritedMarkovCodexHomeOverride } from './codex-home'
+import {
+  clearPiAgentShadowEnv,
+  exposePiManagedExtensionEnv,
+  isMimoLaunchCommand,
+  resolveMimocodeSourceConfigDir,
+  resolvePiAgentSourceDir,
+  resolveScopedPiAgentSourceDir
+} from './pi-agent'
+import { restoreOrStripOverlayEnv } from '../../../../shared/agent-launch/startup/agent-overlay-env'
+import { AGENT_HOOK_RUNTIME_ENV_KEYS } from './spawn-env-keys'
+import { applyManagedDataAccountEnvironment } from '../../../managed-data-accounts/launch-environment'
+import { applyOpenCodeStatusPluginEnv, captureOpenCodeSourceConfig } from './opencode-config'
+import { applyRemoteViewerClipboardEnv } from './remote-viewer-clipboard-env'
+
+/** Mutate host-local PTY environment only for local execution; SSH cannot use these loopback endpoints or filesystem paths. */
+export function buildPtyHostEnv(
+  id: string,
+  baseEnv: Record<string, string>,
+  opts: BuildPtyHostEnvOptions
+): Record<string, string> {
+  mergePersistedWindowsPath(baseEnv)
+  Object.assign(baseEnv, buildConfiguredProxyEnv(opts.networkProxySettings))
+
+  // Claude currently recognizes image support only in a short terminal allowlist.
+  if (
+    opts.launchAgent === 'claude' &&
+    resolveTerminalInlineImagesEnabled(opts.terminalInlineImages) &&
+    baseEnv.CLAUDE_CODE_FORCE_TERMINAL_IMAGES === undefined &&
+    process.env.CLAUDE_CODE_FORCE_TERMINAL_IMAGES === undefined
+  ) {
+    baseEnv.CLAUDE_CODE_FORCE_TERMINAL_IMAGES = '1'
+  }
+
+  const openCodeConfig = captureOpenCodeSourceConfig(baseEnv, opts.userDataPath)
+  const launchCommandHint = resolveSetupAgentSequenceLaunchCommand(baseEnv, opts.launchCommand)
+  applyManagedDataAccountEnvironment(baseEnv, { ...opts, launchCommand: launchCommandHint })
+  applyClaudeAgentViewEnv(baseEnv, opts)
+  const explicitPiAgentKind = isPiCompatibleAgentType(opts.launchAgent)
+    ? opts.launchAgent
+    : opts.launchAgent === undefined
+      ? detectExplicitPiAgentKindFromCommand(launchCommandHint)
+      : null
+  const piAgentKind = explicitPiAgentKind ?? 'pi'
+  const hasLaunchCommand =
+    typeof launchCommandHint === 'string' && launchCommandHint.trim().length > 0
+
+  // Unattended agents must fail instead of waiting on OS credential prompts.
+  applyTerminalGitCredentialPromptGuard(baseEnv, {
+    launchCommand: launchCommandHint,
+    isUnattended: opts.launchAgent !== undefined,
+    deferGitConfigGuardToHost: opts.deferGitConfigGuardToDaemon
+  })
+
+  const shouldPrepareOmpShadow = piAgentKind === 'omp' || !hasLaunchCommand
+  const shouldInstallPiExtensions =
+    opts.agentStatusHooksEnabled && isTuiAgentEnabled('pi', opts.disabledTuiAgents)
+  const shouldInstallOmpExtensions =
+    opts.agentStatusHooksEnabled && isTuiAgentEnabled('omp', opts.disabledTuiAgents)
+  const shouldInstallPrimeAgentExtensions =
+    opts.agentStatusHooksEnabled && isTuiAgentEnabled('prime-agent', opts.disabledTuiAgents)
+  // Pi/OMP source shadows are agent-scoped to avoid cross-agent extension state.
+  const preexistingPiAgentDir = resolvePiAgentSourceDir(baseEnv, 'pi')
+  const preexistingOmpAgentDir =
+    piAgentKind === 'omp'
+      ? resolvePiAgentSourceDir(baseEnv, 'omp')
+      : resolveScopedPiAgentSourceDir(baseEnv, 'omp')
+  const preexistingPrimeAgentDir =
+    piAgentKind === 'prime-agent'
+      ? resolvePiAgentSourceDir(baseEnv, 'prime-agent')
+      : resolveScopedPiAgentSourceDir(baseEnv, 'prime-agent')
+
+  const openCodeAgent = applyOpenCodeStatusPluginEnv(
+    id,
+    baseEnv,
+    openCodeConfig,
+    opts,
+    launchCommandHint
+  )
+  // Older builds redirected MIMOCODE_HOME; a nested pane must not inherit that overlay.
+  restoreOrStripOverlayEnv(baseEnv, {
+    primary: 'MIMOCODE_HOME',
+    overlay: 'MARKOV_MIMOCODE_HOME',
+    source: 'MARKOV_MIMOCODE_SOURCE_HOME'
+  })
+  restoreOrStripOverlayEnv(baseEnv, {
+    primary: 'MIMOCODE_CONFIG_DIR',
+    overlay: 'MARKOV_MIMOCODE_CONFIG_DIR',
+    source: 'MARKOV_MIMOCODE_SOURCE_CONFIG_DIR',
+    preserveExplicitPrimary: true
+  })
+  const mimoSourceConfigDir = resolveMimocodeSourceConfigDir(baseEnv)
+  if (opts.agentStatusHooksEnabled && isMimoLaunchCommand(launchCommandHint)) {
+    mimoCodeHookService.carryOverLegacyAuth({ ...process.env, ...baseEnv })
+    const overlay = mimoCodeHookService.buildPtyEnv(id, mimoSourceConfigDir).MIMOCODE_CONFIG_DIR
+    if (overlay && overlay !== mimoSourceConfigDir) {
+      baseEnv.MIMOCODE_CONFIG_DIR = overlay
+      baseEnv.MARKOV_MIMOCODE_CONFIG_DIR = overlay
+      if (mimoSourceConfigDir) {
+        baseEnv.MARKOV_MIMOCODE_SOURCE_CONFIG_DIR = mimoSourceConfigDir
+      }
+    }
+  }
+
+  // Remove inherited hook coordinates before injecting the owning pane's receiver.
+  for (const key of AGENT_HOOK_RUNTIME_ENV_KEYS) {
+    delete baseEnv[key]
+  }
+  if (opts.agentStatusHooksEnabled) {
+    Object.assign(baseEnv, agentHookServer.buildPtyEnv())
+    if (opts.isWsl === true) {
+      // Windows loopback is outside WSL's NAT namespace; use the guest relay endpoint.
+      const distro = opts.wslDistro ?? null
+      const wslLaunchKind =
+        explicitPiAgentKind === 'pi' || explicitPiAgentKind === 'omp'
+          ? explicitPiAgentKind
+          : undefined
+      wslHookRelayManager.ensureForDistro(distro, opts.selectedCodexHomePath, wslLaunchKind)
+      const guestEndpoint = wslHookRelayManager.getGuestEndpointFilePath(distro)
+      if (guestEndpoint) {
+        baseEnv.MARKOV_AGENT_HOOK_ENDPOINT = guestEndpoint
+      }
+      const claude =
+        opts.claudeSubagentNavigationEnabled !== false &&
+        isTuiAgentEnabled('claude', opts.disabledTuiAgents)
+          ? wslHookRelayManager.getClaudeAgentView(distro)
+          : null
+      if (claude) {
+        baseEnv.MARKOV_CLAUDE_AGENT_VIEW_PLUGIN_DIR = claude.pluginDir
+        baseEnv.MARKOV_CLAUDE_CONFIG_DIR = claude.configDir
+      }
+      // OpenCode must load status hooks from its guest-resident overlay.
+      const opencodeOverlayDir = openCodeAgent
+        ? wslHookRelayManager.getOpenCodeOverlayDir(distro, openCodeAgent)
+        : null
+      if (opencodeOverlayDir) {
+        baseEnv.OPENCODE_CONFIG_DIR = opencodeOverlayDir
+        baseEnv.MARKOV_OPENCODE_CONFIG_DIR = opencodeOverlayDir
+        delete baseEnv.MARKOV_OPENCODE_SOURCE_CONFIG_DIR
+      } else {
+        // Only guest overlays belong in WSL; otherwise let OpenCode use its guest config.
+        delete baseEnv.OPENCODE_CONFIG_DIR
+        delete baseEnv.MARKOV_OPENCODE_CONFIG_DIR
+        delete baseEnv.MARKOV_OPENCODE_SOURCE_CONFIG_DIR
+      }
+    }
+  }
+
+  // Preserve the user's Pi config/session root; install only Markov-owned extension files.
+  if (opts.agentStatusHooksEnabled) {
+    clearPiAgentShadowEnv(baseEnv, 'pi')
+    clearPiAgentShadowEnv(baseEnv, 'omp')
+    clearPiAgentShadowEnv(baseEnv, 'prime-agent')
+    // Bare shells must not create agent homes; use existing Pi/OMP directories or userData for OMP status (#10196).
+    if (shouldInstallPiExtensions && piAgentKind === 'pi') {
+      const piEnv = piTitlebarExtensionService.buildPtyEnv(id, preexistingPiAgentDir, 'pi', {
+        materializeDefaultHome: explicitPiAgentKind === 'pi'
+      })
+      Object.assign(baseEnv, piEnv)
+      exposePiManagedExtensionEnv(baseEnv, 'pi', piEnv)
+    }
+
+    if (shouldInstallOmpExtensions && shouldPrepareOmpShadow) {
+      const ompEnv = piTitlebarExtensionService.buildPtyEnv(id, preexistingOmpAgentDir, 'omp', {
+        materializeDefaultHome: explicitPiAgentKind === 'omp',
+        // WSL loads the host-rooted managed extension through drvfs; guest storage stays separate.
+        ...(opts.isWsl
+          ? { configDirName: '.omp' }
+          : baseEnv.PI_CONFIG_DIR !== undefined
+            ? { configDirName: baseEnv.PI_CONFIG_DIR }
+            : {})
+      })
+      Object.assign(baseEnv, ompEnv)
+      exposePiManagedExtensionEnv(baseEnv, 'omp', ompEnv)
+    } else if (shouldPrepareOmpShadow) {
+      // Keep guarded OMP launches supplied with a fresh config even when its
+      // managed status extension is disabled.
+      Object.assign(baseEnv, piTitlebarExtensionService.buildFreshOmpEnv())
+    }
+
+    if (shouldInstallPrimeAgentExtensions && piAgentKind === 'prime-agent' && !opts.isWsl) {
+      const primeEnv = piTitlebarExtensionService.buildPtyEnv(
+        id,
+        preexistingPrimeAgentDir,
+        'prime-agent',
+        { materializeDefaultHome: explicitPiAgentKind === 'prime-agent' }
+      )
+      Object.assign(baseEnv, primeEnv)
+      exposePiManagedExtensionEnv(baseEnv, 'prime-agent', primeEnv)
+    }
+  } else {
+    // Nested PTYs must not inherit another agent's source/overlay state.
+    restoreOrStripOverlayEnv(baseEnv, {
+      primary: 'PI_CODING_AGENT_DIR',
+      overlay: 'MARKOV_PI_CODING_AGENT_DIR',
+      source: 'MARKOV_PI_SOURCE_AGENT_DIR'
+    })
+    restoreOrStripOverlayEnv(baseEnv, {
+      primary: 'PI_CODING_AGENT_DIR',
+      overlay: 'MARKOV_OMP_CODING_AGENT_DIR',
+      source: 'MARKOV_OMP_SOURCE_AGENT_DIR'
+    })
+    if (shouldPrepareOmpShadow) {
+      Object.assign(baseEnv, piTitlebarExtensionService.buildFreshOmpEnv())
+    }
+    delete baseEnv.MARKOV_OMP_STATUS_EXTENSION
+    delete baseEnv.MARKOV_PRIME_AGENT_SOURCE_AGENT_DIR
+    delete baseEnv.MARKOV_PRIME_AGENT_STATUS_EXTENSION
+  }
+
+  if (opts.isWsl && opts.agentStatusHooksEnabled) {
+    const distro = opts.wslDistro ?? null
+    if (explicitPiAgentKind === 'pi') {
+      const guestPiDir = wslHookRelayManager.getGuestAgentPath(distro, 'pi')
+      if (guestPiDir) {
+        baseEnv.MARKOV_PI_SOURCE_AGENT_DIR = guestPiDir
+      }
+    } else if (explicitPiAgentKind === 'omp') {
+      const guestOmpExtension = wslHookRelayManager.getGuestAgentPath(distro, 'omp')
+      if (guestOmpExtension) {
+        baseEnv.MARKOV_OMP_STATUS_EXTENSION = guestOmpExtension
+      }
+    }
+  }
+
+  // Keep managed Codex home selection PTY-scoped across dev/prod instances.
+  if (opts.skipCodexHomeEnv) {
+    delete baseEnv.CODEX_HOME
+    delete baseEnv.MARKOV_CODEX_HOME
+    delete baseEnv.MARKOV_CODEX_LAUNCH_PREFLIGHT
+  } else if (opts.selectedCodexHomePath) {
+    baseEnv.CODEX_HOME = opts.selectedCodexHomePath
+    // Startup files may re-export CODEX_HOME; wrappers restore this pane's selected runtime home.
+    baseEnv.MARKOV_CODEX_HOME = opts.selectedCodexHomePath
+    const preflightCommand = resolveCodexShellLaunchPreflightCommand({
+      hooksEnabled:
+        opts.agentStatusHooksEnabled && isTuiAgentEnabled('codex', opts.disabledTuiAgents),
+      isPackaged: opts.isPackaged,
+      isWsl: opts.isWsl,
+      managedHomePath: opts.selectedCodexHomePath,
+      resourcesPath: opts.resourcesPath
+    })
+    if (preflightCommand) {
+      baseEnv.MARKOV_CODEX_LAUNCH_PREFLIGHT = preflightCommand
+    } else {
+      delete baseEnv.MARKOV_CODEX_LAUNCH_PREFLIGHT
+    }
+  } else if (opts.stripInheritedMarkovCodexHome) {
+    stripInheritedMarkovCodexHomeOverride(baseEnv)
+    delete baseEnv.MARKOV_CODEX_LAUNCH_PREFLIGHT
+  } else {
+    delete baseEnv.MARKOV_CODEX_LAUNCH_PREFLIGHT
+  }
+
+  if (!opts.isWsl) {
+    // Native panes may run Codex later by typing it; recheck hooks against any updated Codex install.
+    scheduleCodexHookReconcile()
+  }
+
+  // An inherited WSL CLI path belongs to another launch.
+  delete baseEnv.MARKOV_WSL_CLI_DIR
+  // WSL wrapper state and development CLI routing require the owning instance's userData root.
+  if (opts.isWsl) {
+    wslInteropHealthMonitor.noteActivity(opts.wslDistro ?? null)
+    baseEnv.MARKOV_USER_DATA_PATH = opts.userDataPath
+    // Advertise the managed WSL CLI name for agent guidance.
+    baseEnv.MARKOV_CLI_COMMAND = getWslCliCommandName(opts.isPackaged)
+    const managedCliDir = getManagedWslCliDir(opts)
+    if (managedCliDir) {
+      baseEnv.MARKOV_WSL_CLI_DIR = managedCliDir
+    }
+  } else {
+    if (!opts.isPackaged) {
+      baseEnv.MARKOV_USER_DATA_PATH ??= opts.userDataPath
+    }
+    delete baseEnv.MARKOV_CLI_COMMAND
+  }
+  prependMarkovCliDirToChildPath(baseEnv, {
+    isPackaged: opts.isPackaged,
+    userDataPath: opts.userDataPath,
+    resourcesPath: opts.resourcesPath
+  })
+
+  if (
+    opts.routeBrowserOpensToClient === true &&
+    baseEnv.BROWSER === undefined &&
+    process.env.BROWSER === undefined
+  ) {
+    const cliCommand = opts.isWsl ? getWslCliCommandName(opts.isPackaged) : 'markov'
+    baseEnv.BROWSER = `${cliCommand} open-url --url %s`
+  }
+  // Browser-relayed and SSH-managed headless hosts both have viewers on another machine.
+  applyRemoteViewerClipboardEnv(baseEnv, {
+    launchAgent: opts.launchAgent,
+    viewerIsRemote: opts.routeBrowserOpensToClient === true
+  })
+
+  // Scrub after prepends: sparse daemon env may make them reread unsanitized ambient PATH.
+  stripLegacyTerminalShimEnv(baseEnv, process.platform)
+
+  if (!opts.isWsl) {
+    ensureOpenCodeStartupPromptForLaunch(baseEnv)
+  }
+  return baseEnv
+}

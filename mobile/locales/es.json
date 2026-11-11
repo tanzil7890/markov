@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Permite que Markov use la cámara para escanear códigos QR.",
+    "NSLocalNetworkUsageDescription": "Markov se conecta a la aplicación de escritorio en tu LAN.",
+    "NSMicrophoneUsageDescription": "Permite que Markov use tu micrófono para el dictado de voz y lo envíe a tu escritorio emparejado para transcribirlo.",
+    "NSPhotoLibraryAddUsageDescription": "Permite que Markov guarde imágenes de tus sesiones en Fotos.",
+    "NSPhotoLibraryUsageDescription": "Permite que Markov adjunte fotos de tu fototeca a una sesión de terminal en tu escritorio emparejado."
+  }
+}

@@ -1,0 +1,115 @@
+import { randomUUID } from 'node:crypto'
+import { rmSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
+import { test, expect } from './helpers/markov-app'
+import { ensureTerminalVisible, waitForActiveWorktree, waitForSessionReady } from './helpers/store'
+import {
+  focusActiveTerminalInput,
+  focusLastTerminalPane,
+  sendToTerminal,
+  splitActiveTerminalPane,
+  waitForActiveTerminalManager,
+  waitForPaneCount,
+  waitForPaneIdentitySnapshot,
+  waitForTerminalOutput
+} from './helpers/terminal'
+import {
+  clearTerminalPtyWriteLog,
+  installTerminalPtyWriteSpy,
+  readTerminalPtyWriteEntries
+} from './helpers/terminal-pty-write-spy'
+
+function keyboardPasteChord(): string {
+  return process.platform === 'darwin' ? 'Meta+V' : 'Control+V'
+}
+
+function pasteEchoScript(runId: string): string {
+  return `
+process.stdin.setEncoding('utf8')
+if (process.stdin.isTTY) process.stdin.setRawMode(true)
+process.stdin.resume()
+let seq = 0
+const interrupt = String.fromCharCode(3)
+process.stdout.write('SPLIT_PASTE_READY_${runId}\\n')
+process.stdin.on('data', (chunk) => {
+  if (chunk.includes(interrupt)) {
+    process.exit(0)
+  }
+  seq += 1
+  const encoded = Buffer.from(chunk, 'utf8').toString('base64')
+  process.stdout.write('SPLIT_PASTE_CHUNK_${runId}_' + seq + ':' + encoded + '\\n')
+})
+`
+}
+
+function countOccurrences(value: string, needle: string): number {
+  let count = 0
+  let index = value.indexOf(needle)
+  while (index !== -1) {
+    count += 1
+    index = value.indexOf(needle, index + needle.length)
+  }
+  return count
+}
+
+test.describe('split terminal pane paste ownership', () => {
+  test('keyboard paste writes only to the active split pane PTY', async ({
+    electronApp,
+    markovPage,
+    testRepoPath
+  }) => {
+    await waitForSessionReady(markovPage)
+    await waitForActiveWorktree(markovPage)
+    await ensureTerminalVisible(markovPage)
+    await waitForActiveTerminalManager(markovPage, 30_000)
+    await installTerminalPtyWriteSpy(electronApp)
+
+    await splitActiveTerminalPane(markovPage, 'vertical')
+    await waitForPaneCount(markovPage, 2)
+    await focusLastTerminalPane(markovPage)
+
+    const snapshot = await waitForPaneIdentitySnapshot(markovPage, 2)
+    const activePane = snapshot.panes.find((pane) => pane.leafId === snapshot.activeLeafId)
+    const inactivePane = snapshot.panes.find((pane) => pane.leafId !== snapshot.activeLeafId)
+    if (!activePane?.ptyId || !inactivePane?.ptyId) {
+      throw new Error('Split terminal panes did not expose active and inactive PTY ids')
+    }
+
+    const runId = randomUUID()
+    const scriptPath = path.join(testRepoPath, `.markov-split-paste-${runId}.mjs`)
+    writeFileSync(scriptPath, pasteEchoScript(runId))
+    let scriptStarted = false
+
+    try {
+      await sendToTerminal(markovPage, activePane.ptyId, `node ${JSON.stringify(scriptPath)}\r`)
+      scriptStarted = true
+      await waitForTerminalOutput(markovPage, `SPLIT_PASTE_READY_${runId}`, 10_000)
+
+      const payload = `MARKOV_E2E_SPLIT_PASTE_${runId}`
+      const encodedPayload = Buffer.from(payload, 'utf8').toString('base64')
+      await markovPage.evaluate((text) => window.api.ui.writeClipboardText(text), payload)
+      await clearTerminalPtyWriteLog(electronApp)
+      await focusActiveTerminalInput(markovPage)
+
+      await markovPage.keyboard.press(keyboardPasteChord())
+      await waitForTerminalOutput(markovPage, encodedPayload, 10_000, 12_000)
+
+      const writes = await readTerminalPtyWriteEntries(electronApp)
+      const activeWrites = writes
+        .filter((entry) => entry.id === activePane.ptyId)
+        .map((entry) => entry.data)
+        .join('')
+      const inactiveWrites = writes
+        .filter((entry) => entry.id === inactivePane.ptyId)
+        .map((entry) => entry.data)
+        .join('')
+      expect(countOccurrences(activeWrites, payload)).toBe(1)
+      expect(inactiveWrites).not.toContain(payload)
+    } finally {
+      if (scriptStarted) {
+        await sendToTerminal(markovPage, activePane.ptyId, '\x03').catch(() => undefined)
+      }
+      rmSync(scriptPath, { force: true })
+    }
+  })
+})

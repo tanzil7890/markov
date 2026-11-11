@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Autorisez Markov à utiliser l'appareil photo pour scanner des QR codes.",
+    "NSLocalNetworkUsageDescription": "Markov se connecte à l'application sur votre ordinateur via votre LAN.",
+    "NSMicrophoneUsageDescription": "Autorisez Markov à utiliser votre microphone pour la dictée vocale transmise à votre ordinateur appairé pour transcription.",
+    "NSPhotoLibraryAddUsageDescription": "Autorisez Markov à enregistrer des images de vos sessions dans Photos.",
+    "NSPhotoLibraryUsageDescription": "Autorisez Markov à joindre des photos de votre photothèque à une session de terminal sur votre ordinateur appairé."
+  }
+}

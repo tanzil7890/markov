@@ -1,0 +1,192 @@
+import type * as GitExecFileModule from '../git/command-runner/git-exec-file'
+import type * as GhExecFileModule from '../git/command-runner/gh-exec-file'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type * as GithubApiRepositoryModule from './github-api-repository'
+import type * as GitHubEnterpriseRepositoryModule from './github-enterprise-repository'
+
+const { clientMocks, moduleMocks } = await vi.hoisted(async () => {
+  const moduleMocks = await import('./client-test-mocks')
+  return { clientMocks: moduleMocks.createGitHubClientMocks(), moduleMocks }
+})
+
+vi.mock('./gh-utils', () => moduleMocks.ghUtilsModuleMock(clientMocks))
+vi.mock('../git/runner', () => moduleMocks.gitRunnerModuleMock(clientMocks))
+
+vi.mock('../git/command-runner/git-exec-file', async (importOriginal) => ({
+  ...(await importOriginal<typeof GitExecFileModule>()),
+  gitExecFileAsync: clientMocks.gitExecFileAsyncMock
+}))
+
+vi.mock('../git/command-runner/gh-exec-file', async (importOriginal) => ({
+  ...(await importOriginal<typeof GhExecFileModule>()),
+  ghExecFileAsync: clientMocks.ghExecFileAsyncMock
+}))
+vi.mock('./local-git-config-signature', () =>
+  moduleMocks.localGitConfigSignatureModuleMock(clientMocks)
+)
+vi.mock('./github-enterprise-repository', async (importOriginal) =>
+  moduleMocks.githubEnterpriseRepositoryModuleMock(
+    await importOriginal<typeof GitHubEnterpriseRepositoryModule>()
+  )
+)
+vi.mock('./rate-limit', () => moduleMocks.rateLimitModuleMock(clientMocks))
+vi.mock('./github-api-repository', async (importOriginal) =>
+  moduleMocks.githubApiRepositoryModuleMock(
+    clientMocks,
+    await importOriginal<typeof GithubApiRepositoryModule>()
+  )
+)
+
+import { getPRForBranch } from './client/lookup/get-pr-for-branch'
+import { resetPRForBranchMocks } from './client-test-harness'
+
+const {
+  ghExecFileAsyncMock,
+  getOwnerRepoForRemoteMock,
+  resolvePRRepositoryCandidatesMock,
+  gitExecFileAsyncMock
+} = clientMocks
+
+describe('getPRForBranch', () => {
+  beforeEach(() => {
+    resetPRForBranchMocks(clientMocks)
+  })
+
+  it('uses the tracked upstream remote owner for fork branch lookup', async () => {
+    resolvePRRepositoryCandidatesMock.mockResolvedValueOnce({
+      candidates: [
+        { owner: 'tanzil7890', repo: 'markov' },
+        { owner: 'origin-owner', repo: 'markov' }
+      ],
+      headRepo: { owner: 'origin-owner', repo: 'markov' }
+    })
+    getOwnerRepoForRemoteMock.mockResolvedValueOnce({ owner: 'fork-owner', repo: 'markov' })
+    ghExecFileAsyncMock
+      .mockResolvedValueOnce({ stdout: JSON.stringify([]) })
+      .mockResolvedValueOnce({ stdout: JSON.stringify([]) })
+      .mockResolvedValueOnce({
+        stdout: JSON.stringify([
+          {
+            number: 78,
+            title: 'Fork upstream branch PR',
+            state: 'open',
+            html_url: 'https://github.com/tanzil7890/markov/pull/78',
+            updated_at: '2026-03-28T00:00:00Z',
+            draft: false,
+            mergeable: true,
+            base: { ref: 'main', sha: 'base-oid' },
+            head: { ref: 'contributor/original', sha: 'upstream-head-oid' }
+          }
+        ])
+      })
+      .mockResolvedValueOnce({
+        stdout: JSON.stringify({
+          number: 78,
+          title: 'Hydrated fork upstream branch PR',
+          state: 'OPEN',
+          url: 'https://github.com/tanzil7890/markov/pull/78',
+          statusCheckRollup: [],
+          updatedAt: '2026-03-28T00:00:00Z',
+          isDraft: false,
+          mergeable: 'MERGEABLE',
+          baseRefName: 'main',
+          headRefName: 'contributor/original',
+          baseRefOid: 'base-oid',
+          headRefOid: 'upstream-head-oid'
+        })
+      })
+    gitExecFileAsyncMock.mockResolvedValueOnce({
+      stdout: 'local-created-from-pr\0fork/contributor/original\n',
+      stderr: ''
+    })
+
+    const pr = await getPRForBranch('/repo-root', 'local-created-from-pr')
+
+    expect(getOwnerRepoForRemoteMock).toHaveBeenCalledWith('/repo-root', 'fork', undefined)
+    expect(ghExecFileAsyncMock).toHaveBeenNthCalledWith(
+      3,
+      [
+        'api',
+        'repos/tanzil7890/markov/pulls?head=fork-owner%3Acontributor%2Foriginal&state=all&per_page=10',
+        '--include'
+      ],
+      { cwd: '/repo-root' }
+    )
+    expect(pr).toMatchObject({
+      number: 78,
+      title: 'Hydrated fork upstream branch PR',
+      prRepo: { owner: 'tanzil7890', repo: 'markov' },
+      headRepo: { owner: 'fork-owner', repo: 'markov' }
+    })
+  })
+
+  it('uses the tracked upstream remote owner when the fork branch name matches locally', async () => {
+    resolvePRRepositoryCandidatesMock.mockResolvedValueOnce({
+      candidates: [
+        { owner: 'tanzil7890', repo: 'markov' },
+        { owner: 'origin-owner', repo: 'markov' }
+      ],
+      headRepo: { owner: 'origin-owner', repo: 'markov' }
+    })
+    getOwnerRepoForRemoteMock.mockResolvedValueOnce({ owner: 'contributor1', repo: 'markov' })
+    ghExecFileAsyncMock
+      .mockResolvedValueOnce({ stdout: JSON.stringify([]) })
+      .mockResolvedValueOnce({ stdout: JSON.stringify([]) })
+      .mockResolvedValueOnce({
+        stdout: JSON.stringify([
+          {
+            number: 6433,
+            title: 'Recover Windows worktree deletes from long paths',
+            state: 'open',
+            html_url: 'https://github.com/tanzil7890/markov/pull/6433',
+            updated_at: '2026-06-26T00:00:00Z',
+            draft: false,
+            mergeable: true,
+            base: { ref: 'main', sha: 'base-oid' },
+            head: {
+              ref: 'contributor1/worktree-remove-fix',
+              sha: 'same-name-fork-head-oid'
+            }
+          }
+        ])
+      })
+      .mockResolvedValueOnce({
+        stdout: JSON.stringify({
+          number: 6433,
+          title: 'Recover Windows worktree deletes from long paths',
+          state: 'OPEN',
+          url: 'https://github.com/tanzil7890/markov/pull/6433',
+          statusCheckRollup: [],
+          updatedAt: '2026-06-26T00:00:00Z',
+          isDraft: false,
+          mergeable: 'MERGEABLE',
+          baseRefName: 'main',
+          headRefName: 'contributor1/worktree-remove-fix',
+          baseRefOid: 'base-oid',
+          headRefOid: 'same-name-fork-head-oid'
+        })
+      })
+    gitExecFileAsyncMock.mockResolvedValueOnce({
+      stdout: 'contributor1/worktree-remove-fix\0charlie/contributor1/worktree-remove-fix\n',
+      stderr: ''
+    })
+
+    const pr = await getPRForBranch('/repo-root', 'contributor1/worktree-remove-fix')
+
+    expect(getOwnerRepoForRemoteMock).toHaveBeenCalledWith('/repo-root', 'charlie', undefined)
+    expect(ghExecFileAsyncMock).toHaveBeenNthCalledWith(
+      3,
+      [
+        'api',
+        'repos/tanzil7890/markov/pulls?head=contributor1%3Acontributor1%2Fworktree-remove-fix&state=all&per_page=10',
+        '--include'
+      ],
+      { cwd: '/repo-root' }
+    )
+    expect(pr).toMatchObject({
+      number: 6433,
+      prRepo: { owner: 'tanzil7890', repo: 'markov' },
+      headRepo: { owner: 'contributor1', repo: 'markov' }
+    })
+  })
+})

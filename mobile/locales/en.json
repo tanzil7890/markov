@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Allow Markov to use the camera for QR code scanning.",
+    "NSLocalNetworkUsageDescription": "Markov connects to the desktop app on your LAN.",
+    "NSMicrophoneUsageDescription": "Allow Markov to use your microphone for voice dictation sent to your paired desktop for transcription.",
+    "NSPhotoLibraryAddUsageDescription": "Allow Markov to save images from your sessions to Photos.",
+    "NSPhotoLibraryUsageDescription": "Allow Markov to attach photos from your library to a terminal session on your paired desktop."
+  }
+}

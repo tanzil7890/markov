@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSCameraUsageDescription": "Markov'nın QR kodlarını taramak için kamerayı kullanmasına izin verin.",
+    "NSLocalNetworkUsageDescription": "Markov, yerel ağınızdaki masaüstü uygulamasına bağlanır.",
+    "NSMicrophoneUsageDescription": "Markov'nın sesli dikte için mikrofonunuzu kullanmasına izin verin. Ses kaydı, yazıya dönüştürülmek üzere eşleştirdiğiniz masaüstü bilgisayara gönderilir.",
+    "NSPhotoLibraryAddUsageDescription": "Markov'nın oturumlarınızdaki görselleri Fotoğraflar'a kaydetmesine izin verin.",
+    "NSPhotoLibraryUsageDescription": "Markov'nın arşivinizdeki fotoğrafları eşleştirdiğiniz masaüstü bilgisayardaki bir terminal oturumuna eklemesine izin verin."
+  }
+}

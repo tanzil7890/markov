@@ -1,0 +1,203 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
+import { expect, test } from './helpers/markov-app'
+import type { AiVaultSearchResponse } from '../../src/shared/ai-vault/search/ai-vault-search-types'
+
+test('search excerpts keep matches visible after long leading context', async ({
+  electronApp,
+  markovPage,
+  seededRepoPath
+}, testInfo) => {
+  const excerpts = [
+    '…/Users/example/Documents/projects/application/apps/server/src/server.ts:534).\n\n**Codex, [[inspected with REA]]:** Version `26.1013.40934` contains three relevant…',
+    `https://example.com/${'W'.repeat(80)}[[inspected with REA]] after a long URL`,
+    `${'😀'.repeat(40)}x[[inspected with REA]] after Unicode context`,
+    `Earlier analysis. ${'W'.repeat(15)} [[inspected with REA]] after a wide word`
+  ]
+  const response: AiVaultSearchResponse = {
+    kind: 'results',
+    hits: excerpts.map((snippet, index) => ({
+      agent: 'codex',
+      sessionId: `excerpt-layout-${index}`,
+      title: `Search excerpt ${index + 1}`,
+      cwd: seededRepoPath,
+      branch: null,
+      updatedAt: null,
+      messageCount: 67,
+      score: 1,
+      source: { presence: 'present', filePath: '/synthetic/transcript.jsonl' },
+      evidence: {
+        role: 'assistant',
+        timestamp: null,
+        snippet
+      }
+    })),
+    page: { cursor: null, hasMore: false },
+    generation: 1,
+    truncated: { candidates: false, snippets: 0, query: false, freshness: false },
+    durationMs: 1
+  }
+  await electronApp.evaluate(({ ipcMain }, result) => {
+    ipcMain.removeHandler('aiVault:searchSessions')
+    ipcMain.handle('aiVault:searchSessions', () => result)
+  }, response)
+  await markovPage.evaluate(async () => {
+    const state = window.__store?.getState()
+    await state?.updateSettingsOrThrow({ aiVaultSearch: { enabled: true, historyDays: null } })
+    state?.setRightSidebarOpen(true)
+    state?.setRightSidebarTab('vault')
+    state?.setRightSidebarWidth(400)
+  })
+  await markovPage
+    .getByRole('textbox', { name: 'Search sessions', exact: true })
+    .fill('inspected with REA')
+  const match = markovPage.locator('mark').filter({ hasText: 'inspected with REA' })
+  await expect(match).toHaveCount(excerpts.length)
+  const cdp = await markovPage.context().newCDPSession(markovPage)
+  for (const appearance of [
+    { theme: 'light', width: 400 },
+    { theme: 'dark', width: 220 }
+  ] as const) {
+    await markovPage.evaluate(async ({ theme, width }) => {
+      await window.__store?.getState().updateSettingsOrThrow({ theme })
+      window.__store?.getState().setRightSidebarWidth(width)
+    }, appearance)
+    for (const details of ['collapsed', 'expanded']) {
+      await expect
+        .poll(() =>
+          match.evaluateAll((elements) =>
+            elements.map((element) => {
+              const rect = element.getBoundingClientRect()
+              const container = element.closest('.line-clamp-2')?.getBoundingClientRect()
+              return (
+                container !== undefined &&
+                rect.top >= container.top &&
+                rect.bottom <= container.bottom &&
+                rect.left >= container.left &&
+                rect.right <= container.right
+              )
+            })
+          )
+        )
+        .toEqual(excerpts.map(() => true))
+      const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' })
+      writeFileSync(
+        testInfo.outputPath(`excerpt-${appearance.theme}-${details}.png`),
+        Buffer.from(data, 'base64')
+      )
+      for (let index = 0; index < excerpts.length; index++) {
+        await markovPage.getByText(`Search excerpt ${index + 1}`, { exact: true }).click()
+      }
+    }
+  }
+  await cdp.detach()
+})
+
+test('panel consent enables real local transcript search; clearing restores history', async ({
+  electronApp,
+  markovPage,
+  seededRepoPath
+}, testInfo) => {
+  const home = await electronApp.evaluate(({ app }) => app.getPath('home'))
+  const directory = path.join(home, '.claude', 'projects', '-synthetic-pr7')
+  mkdirSync(directory, { recursive: true })
+  const sessionId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+  writeFileSync(
+    path.join(directory, `${sessionId}.jsonl`),
+    `${[
+      {
+        type: 'user',
+        sessionId,
+        cwd: seededRepoPath,
+        timestamp: new Date().toISOString(),
+        message: { role: 'user', content: 'Synthetic panel transcript' }
+      },
+      {
+        type: 'assistant',
+        sessionId,
+        timestamp: new Date().toISOString(),
+        message: {
+          role: 'assistant',
+          content: 'The nebulariver implementation handles <script>literal text</script> safely.'
+        }
+      }
+    ]
+      .map((record) => JSON.stringify(record))
+      .join('\n')}\n`
+  )
+  await markovPage.evaluate(() => {
+    const state = window.__store?.getState()
+    state?.setRightSidebarOpen(true)
+    state?.setRightSidebarTab('vault')
+    state?.setRightSidebarWidth(400)
+  })
+  await markovPage.getByRole('button', { name: 'Agents', exact: true }).click()
+  await markovPage.getByRole('radio', { name: 'All', exact: true }).click()
+  const input = markovPage.getByRole('textbox', { name: 'Search sessions', exact: true })
+  await input.fill('nebulariver')
+  await expect(markovPage.getByText('Enable full-text search?', { exact: false })).toBeVisible()
+  const cdp = await markovPage.context().newCDPSession(markovPage)
+  async function screenshot(name: string) {
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' })
+    const screenshotPath = testInfo.outputPath(name)
+    writeFileSync(screenshotPath, Buffer.from(data, 'base64'))
+    await testInfo.attach(name, { path: screenshotPath, contentType: 'image/png' })
+  }
+  await screenshot('consent.png')
+  await markovPage.getByRole('button', { name: 'Enable', exact: true }).click()
+  // Indexed searches are snapshots; enabling starts indexing independently of the panel.
+  await expect
+    .poll(
+      () =>
+        markovPage.evaluate(
+          async () => (await window.api.aiVault.searchStatus('local')).filesIndexed
+        ),
+      { timeout: 30_000 }
+    )
+    .toBeGreaterThan(0)
+  await markovPage.getByRole('button', { name: 'Refresh Session History', exact: true }).click()
+  await expect(markovPage.locator('mark').filter({ hasText: 'nebulariver' })).toBeVisible()
+  await expect(markovPage.getByText('Synthetic panel transcript', { exact: true })).toBeVisible()
+  await screenshot('results.png')
+  await markovPage.getByTitle('Drag to resume in a new tab', { exact: true }).click()
+  await expect(markovPage.locator('mark').filter({ hasText: 'nebulariver' })).toBeVisible()
+  await markovPage.getByTitle('Drag to resume in a new tab', { exact: true }).click()
+  const title = markovPage.getByText('Synthetic panel transcript', { exact: true })
+  await expect(title).toHaveAttribute('draggable', 'true')
+  const drag = await title.evaluate((element) => {
+    const dataTransfer = new DataTransfer()
+    element.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer }))
+    const payload = dataTransfer.getData('application/x-markov-ai-vault-session')
+    element.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer }))
+    return payload
+  })
+  expect(JSON.parse(drag)).toMatchObject({ sessionId, sessionExecutionHostId: 'local' })
+  await title.click({ button: 'right' })
+  await expect(
+    markovPage.getByRole('menuitem', { name: 'Copy Session ID', exact: true })
+  ).toBeVisible()
+  await markovPage.keyboard.press('Escape')
+  await expect(markovPage.locator('[role="menu"]')).toHaveCount(0)
+  await markovPage.evaluate(async () => {
+    await window.__store?.getState().updateSettingsOrThrow({ theme: 'dark' })
+    window.__store?.getState().setRightSidebarWidth(280)
+  })
+  await expect(markovPage.locator('html')).toHaveClass(/dark/)
+  await screenshot('results-dark-narrow.png')
+  await title.click({ button: 'right' })
+  await markovPage.getByRole('menuitem', { name: 'Delete', exact: true }).click()
+  await markovPage.getByRole('button', { name: 'Delete', exact: true }).click()
+  await expect(title).toHaveCount(0)
+  await expect(markovPage.locator('mark')).toHaveCount(0)
+  await input.fill('nothingmatchesprseven')
+  await expect(
+    markovPage.getByText('No matching sessions in the indexed history.', { exact: false })
+  ).toBeVisible()
+  await screenshot('empty.png')
+  await input.press('Escape')
+  await expect(input).toHaveValue('')
+  await expect(
+    markovPage.getByText('Indexed history · best matches', { exact: false })
+  ).toHaveCount(0)
+  await cdp.detach()
+})

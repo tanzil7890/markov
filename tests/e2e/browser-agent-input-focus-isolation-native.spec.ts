@@ -1,0 +1,62 @@
+// Prove browser-agent input preserves the user’s OS keyboard focus with a real keystroke (#20595).
+// Run only on an isolated visible-window display; guest focus APIs alone cannot establish keyboard routing.
+
+import { execFileSync } from 'node:child_process'
+import type { ElectronApplication, Page } from '@playwright/test'
+import { test, expect } from './helpers/markov-app'
+import {
+  evalInPage,
+  readHost,
+  runAgentClicksScenario,
+  runAgentCrossSiteFrameScenario,
+  runAgentKeysScenario,
+  runAgentShortcutsScenario,
+  type AfterAgentInput
+} from './helpers/browser-agent-focus-scenarios'
+
+function hasXdotool(): boolean {
+  try {
+    execFileSync('xdotool', ['version'], { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function realKeystrokeReachesTerminal(
+  markovPage: Page,
+  electronApp: ElectronApplication
+): AfterAgentInput {
+  return async (pageId) => {
+    expect(
+      await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getFocusedWindow() !== null)
+    ).toBe(true)
+    const pageKeysBefore = await evalInPage(markovPage, pageId, 'JSON.stringify(window.__keys)')
+    execFileSync('xdotool', ['key', 'y'])
+    await expect.poll(async () => (await readHost(markovPage)).log.includes('key:y')).toBe(true)
+    expect(await evalInPage(markovPage, pageId, 'JSON.stringify(window.__keys)')).toBe(
+      pageKeysBefore
+    )
+    expect((await readHost(markovPage)).terminalFocused).toBe(true)
+  }
+}
+
+const scenarios = [
+  ['agent keys and text', runAgentKeysScenario],
+  ['agent clicks and presses', runAgentClicksScenario],
+  ['agent shortcut keys', runAgentShortcutsScenario],
+  ['agent keys in a cross-site frame', runAgentCrossSiteFrameScenario]
+] as const
+
+for (const [name, run] of scenarios) {
+  test(`${name} leave the user’s real keystrokes in the terminal @headful`, async ({
+    markovPage,
+    electronApp
+  }) => {
+    test.skip(process.platform !== 'linux', 'real keystrokes come from xdotool on the Xvfb lane')
+    expect(hasXdotool(), 'install xdotool on the Xvfb lane').toBe(true)
+    test.setTimeout(120_000)
+    await markovPage.bringToFront()
+    await run(markovPage, realKeystrokeReachesTerminal(markovPage, electronApp))
+  })
+}

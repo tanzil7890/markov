@@ -1,0 +1,12 @@
+import type { MarkovSessionId } from './markov-session-address'
+
+/** PTY parties use terminal handle/pane, structured parties use Markov session identity (markov_session_id:<id>).
+ * Structured workers also have handles/panes; ordinary chats do not. Build identity at lookup boundaries and pass it whole. */
+export type OrchestrationPartyIdentity = Readonly<{
+  /** Mailbox address the party sends from and reads: its terminal handle, else its session address. */
+  address: string
+  terminalHandle: string | null
+  paneKey: string | null
+  /** The bare Markov session id the party is addressed by; mail spells it `markov_session_id:<id>`. */
+  markovSessionId: MarkovSessionId | null
+}>

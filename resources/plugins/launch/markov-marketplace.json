@@ -1,0 +1,16 @@
+{
+  "name": "Markov Official Plugins",
+  "owner": "tanzil7890",
+  "plugins": [
+    {
+      "id": "tanzil7890.markov-multipass-recipes",
+      "source": {
+        "kind": "git",
+        "url": "https://github.com/tanzil7890/markov-multipass-recipes.git",
+        "ref": "v1.0.0"
+      },
+      "description": "A reviewed starter lifecycle for disposable Multipass workspaces.",
+      "categories": ["vm-recipes", "official"]
+    }
+  ]
+}
