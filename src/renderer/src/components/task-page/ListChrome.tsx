@@ -11,9 +11,9 @@ export function TaskPageListChrome({
 }): React.JSX.Element | null {
   const { taskSourceAvailabilityNotice, taskPageListChromeHidden } = model
   return (
-    <div className={cn('flex-none flex flex-col gap-2', taskPageListChromeHidden && 'hidden')}>
-      <section className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2">
+    <div className={cn('flex-none flex flex-col gap-3', taskPageListChromeHidden && 'hidden')}>
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <TaskPageSourceBar model={model} />
 
           {taskSourceAvailabilityNotice ? (

@@ -162,7 +162,8 @@ export type WorkspaceViewOptionContext = {
 const SHOWN: Record<WorkspaceViewOptionKey, (context: WorkspaceViewOptionContext) => boolean> = {
   hosts: (context) => context.hasRemoteHosts,
   projects: (context) => context.projectCount > 1,
-  groupBy: () => true,
+  // Why: workspaces always group by project; the control stays only so another grouping can be undone.
+  groupBy: (context) => context.groupBy !== 'repo',
   sortBy: () => true,
   projectOrderBy: (context) => context.groupBy === 'repo',
   cardLayout: (context) => !context.newCardStyle,

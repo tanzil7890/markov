@@ -617,7 +617,6 @@
     "filter": {
       "emptyTitle": "Ningún resultado coincide con el filtro activo",
       "emptySubtitle": "Borra el filtro de arriba o amplíalo a más hosts y proyectos.",
-      "tabKey": "Tab",
       "label": "Filtrar",
       "activeCount": "{{value0}} activos",
       "removeChip": "Quitar filtro {{value0}}",
@@ -2773,11 +2772,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Mover",
-        "75499e01d9": "Cerrar",
-        "66b5a67bee": "Esc",
-        "45def60329": "Abrir",
-        "f65d992a11": "Enter",
         "c5081f2814": "Worktree actual",
         "52404f8096": "Pestaña actual",
         "739bda980c": "primario",
@@ -2798,7 +2792,6 @@
         "088d66d980": "Acciones y ajustes",
         "34c8fbb46e": "SSH remoto",
         "63c2be1914": "SSH desconectado",
-        "95be6587d3": "Crear worktree \"{{value0}}\"",
         "worktreesHeader": "Espacios de trabajo",
         "recentWorktreesHeader": "Espacios de trabajo recientes",
         "settingsBadge": "Ajustes",
@@ -2809,7 +2802,6 @@
         "projectBadge": "Proyecto",
         "repoGroupBadge": "Grupo de repositorios",
         "pluginCommandFailed": "No se pudo ejecutar el comando del plugin.",
-        "27f10cca63": "Busca chats, terminales, espacios de trabajo, tareas, ajustes y acciones...",
         "2770f02910": "Busca chats, terminales, espacios de trabajo, tareas, ajustes y acciones",
         "recentChatsTerminalsHeader": "Chats y terminales recientes",
         "lastActiveTime": "Última actividad hace {{value0}}",
@@ -5822,7 +5814,6 @@
           "keepDefaultBranchAria": "Mantener visible la rama predeterminada al ocultar los espacios de trabajo en reposo"
         },
         "SidebarHeader": {
-          "92154beb7e": "Nuevo espacio de trabajo",
           "addProject": "Agregar proyecto"
         },
         "SidebarNav": {
@@ -5870,8 +5861,6 @@
           "b7e4d2a19c": "Onboarding"
         },
         "SidebarToolbar": {
-          "87d0064026": "El tablero de espacios de trabajo se movió a la barra inferior",
-          "a30e34eb5c": "Cerrar tablero de espacios de trabajo",
           "49f62c5665": "Tablero de espacios de trabajo"
         },
         "SidebarWorkspaceFilterSection": {

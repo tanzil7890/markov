@@ -4,6 +4,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { useAppStore } from '../../store'
 import TabBar from '../tab-bar/TabBar'
 
+import { useFloatingWorkspaceTopBarToggle } from '../../app-shell/FloatingWorkspaceTopBarToggle'
 import { TabBarQuickCommandsButton } from '../tab-bar/TabBarQuickCommandsButton'
 import { TabGroupPaneActionsMenu } from './TabGroupPaneActionsMenu'
 import { useTabGroupWorkspaceModel } from './useTabGroupWorkspaceModel'
@@ -72,6 +73,7 @@ export default function TabGroupPanel({
   hoveredTabInsertion?: HoveredTabInsertion | null
 }): React.JSX.Element {
   const rightSidebarOpen = useAppStore((state) => state.rightSidebarOpen)
+  const topBarFloatingToggle = useFloatingWorkspaceTopBarToggle()
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const model = useTabGroupWorkspaceModel({ groupId, worktreeId })
   const {
@@ -280,11 +282,16 @@ export default function TabGroupPanel({
       {/* Omit external strips entirely because hidden duplicates would still register competing drag sortables. */}
       {tabStrip !== 'attached' ? null : (
         <div
-          className="@container/tab-strip h-[32px] shrink-0 border-b border-border bg-tab-bar"
+          className="@container/tab-strip relative h-[32px] shrink-0 bg-tab-inactive"
           data-tab-group-strip-id={groupId}
           data-terminal-focus-release-surface="true"
           data-worktree-id={worktreeId}
         >
+          {/* Why a child, not a border: the active tab paints over this line to join its pane. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-border"
+          />
           <div className="flex h-full items-stretch pr-1.5">
             {/* Why: Electron drag hit-test respects no-drag only on DOM descendants, not z-index siblings, so this no-drag spacer keeps the collapsed left-sidebar's floating toggle clickable. */}
             {reserveCollapsedSidebarHeaderSpace && !sidebarOpen ? (
@@ -313,15 +320,14 @@ export default function TabGroupPanel({
               ) : null}
             </div>
             {/* Why: Electron drag hit-test respects no-drag only on DOM descendants, not z-index siblings, so this no-drag spacer keeps the floating right-sidebar toggle + window controls clickable. */}
-            {reserveClosedExplorerToggleSpace && !rightSidebarOpen ? (
+            {reserveClosedExplorerToggleSpace && (topBarFloatingToggle || !rightSidebarOpen) ? (
               <div
-                className="shrink-0"
-                style={
-                  {
-                    width: 'calc(40px + var(--window-controls-width, 0px))',
-                    WebkitAppRegion: 'no-drag'
-                  } as React.CSSProperties
-                }
+                className="shrink-0 [-webkit-app-region:no-drag]"
+                style={{
+                  width: rightSidebarOpen
+                    ? '36px'
+                    : `calc(${topBarFloatingToggle ? 72 : 40}px + var(--window-controls-width, 0px))`
+                }}
               />
             ) : null}
           </div>

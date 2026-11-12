@@ -3,7 +3,6 @@ import { FolderTree } from 'lucide-react'
 import { CommandItem } from '@/components/ui/command'
 import { RepoBadgeMark } from '@/components/repo/RepoBadgeLabel'
 import { getPaletteHostBadge } from '@/components/cmd-j/palette-host-badge'
-import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type {
   ProjectTargetPaletteItem,
@@ -12,6 +11,7 @@ import type {
 } from './worktree-jump-palette-model'
 import type { WorktreeJumpPaletteController } from './use-worktree-jump-palette-controller'
 import { PaletteHostBadgeChip } from './worktree-jump-palette-primitives'
+import { PaletteRowBody } from './worktree-jump-palette-row-layout'
 import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 import { BROWSER_NAVIGATION_ACTION_ID } from '../cmd-j/browser-navigation-action'
 
@@ -41,37 +41,24 @@ export function WorktreeJumpPaletteProjectRow({
     <CommandItem
       value={renderKey}
       onSelect={() => controller.handleSelectItem(entry)}
-      className={cn(
-        'group mx-0.5 flex cursor-pointer items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left outline-none transition-[background-color,border-color,box-shadow]',
-        'data-[selected=true]:border-border data-[selected=true]:bg-accent data-[selected=true]:text-foreground'
-      )}
+      density="palette"
     >
-      <div className="flex h-5 w-4 shrink-0 items-center justify-center self-start text-muted-foreground/85">
+      <div className="flex h-5 w-4 shrink-0 items-center justify-center text-muted-foreground">
         <FolderTree className="size-3.5" aria-hidden="true" />
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2.5">
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate text-[14px] font-semibold text-foreground">
-                {result.title}
-              </span>
-              <span className="shrink-0 rounded-[6px] border border-border/60 bg-background/45 px-1.5 py-px text-[9px] font-medium leading-normal text-muted-foreground/88">
-                {badgeLabel}
-              </span>
-            </div>
-          </div>
-          {isProject ? (
-            <div className="flex shrink-0 items-center gap-1.5">
-              <PaletteHostBadgeChip badge={hostBadge} />
-              <span className="inline-flex max-w-[180px] items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 text-[11px] font-semibold leading-none text-foreground">
-                <RepoBadgeMark color={result.repo.badgeColor} />
-                <span className="truncate">{result.repo.displayName}</span>
-              </span>
-            </div>
-          ) : null}
-        </div>
-      </div>
+      <PaletteRowBody
+        primary={<span className="truncate text-[13px] text-foreground">{result.title}</span>}
+        context={
+          isProject && result.repo.displayName !== result.title ? (
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-[12px] text-muted-foreground">
+              <RepoBadgeMark color={result.repo.badgeColor} />
+              <span className="truncate">{result.repo.displayName}</span>
+            </span>
+          ) : null
+        }
+        badges={<PaletteHostBadgeChip badge={hostBadge} />}
+        trailing={<span className="shrink-0 text-[12px] text-muted-foreground">{badgeLabel}</span>}
+      />
     </CommandItem>
   )
 }
@@ -98,27 +85,18 @@ export function WorktreeJumpPaletteActionRow({
     <CommandItem
       value={renderKey}
       onSelect={() => controller.handleSelectItem(entry)}
-      className={cn(
-        'group mx-0.5 flex cursor-pointer items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left outline-none transition-[background-color,border-color,box-shadow]',
-        'data-[selected=true]:border-border data-[selected=true]:bg-accent data-[selected=true]:text-foreground'
-      )}
+      density="palette"
     >
-      <div className="flex h-5 w-4 shrink-0 items-center justify-center self-start text-muted-foreground/85">
+      <div className="flex h-5 w-4 shrink-0 items-center justify-center text-muted-foreground">
         <Icon className="size-3.5" aria-hidden="true" />
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-[14px] font-semibold tracking-[-0.01em] text-foreground">
-            {result.title}
-          </span>
-          <span className="shrink-0 rounded-[6px] border border-border/60 bg-background/45 px-1.5 py-px text-[9px] font-medium leading-normal text-muted-foreground/88">
-            {kindLabel}
-          </span>
-        </div>
-        <div className="mt-1 truncate text-[12px] leading-5 text-muted-foreground/88">
-          {result.description}
-        </div>
-      </div>
+      <PaletteRowBody
+        primary={<span className="truncate text-[13px] text-foreground">{result.title}</span>}
+        context={
+          <span className="truncate text-[12px] text-muted-foreground">{result.description}</span>
+        }
+        trailing={<span className="shrink-0 text-[12px] text-muted-foreground">{kindLabel}</span>}
+      />
     </CommandItem>
   )
 }

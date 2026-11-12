@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { isEditableTarget } from '@/lib/editable-target'
 import { useAppStore } from '@/store'
+import { closeFullPageViews, isFullPageView } from '@/lib/full-page-view-exit'
 import { isXtermHelperTextarea } from '../../../terminal-pane/regular-terminal-focus-ownership'
 
 const WORKSPACE_BOARD_SHEET_SELECTOR = '[data-workspace-board-sheet]'
@@ -58,6 +59,8 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       }
       return
     }
+    // Why: the board replaces the page it opens over, so Tasks and its title-bar controls leave first.
+    closeFullPageViews()
     workspaceBoardOpenRef.current = true
     workspaceBoardDragPreviewOpenRef.current = false
     // Record the opening action here rather than in a post-render drawer effect.
@@ -109,6 +112,7 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       }
       return
     }
+    closeFullPageViews()
     workspaceBoardOpenRef.current = true
     workspaceBoardDragPreviewOpenRef.current = false
     useAppStore.getState().recordFeatureInteraction('workspace-board')
@@ -155,6 +159,21 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
     document.addEventListener('keydown', handleKeyDown, true)
     return () => document.removeEventListener('keydown', handleKeyDown, true)
   }, [closeWorkspaceBoard, workspaceBoardMenuOpen, workspaceBoardOpen])
+
+  // Opening Tasks, Settings or any other page replaces the board, as the board replaces them.
+  useEffect(
+    () =>
+      useAppStore.subscribe((state, previous) => {
+        if (
+          state.activeView !== previous.activeView &&
+          isFullPageView(state.activeView) &&
+          (workspaceBoardOpenRef.current || workspaceBoardDragPreviewOpenRef.current)
+        ) {
+          closeWorkspaceBoard()
+        }
+      }),
+    [closeWorkspaceBoard]
+  )
 
   useEffect(() => {
     window.addEventListener(TOGGLE_WORKSPACE_BOARD_EVENT, toggleWorkspaceBoard)

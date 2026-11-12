@@ -1,5 +1,4 @@
 import React from 'react'
-import { CircleX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
@@ -19,22 +18,24 @@ export function SidebarWorktreeListEmptyState({
       className="relative min-h-0 flex-1"
     >
       <div className="worktree-sidebar-scrollbar flex h-full flex-col overflow-y-auto overflow-x-hidden pl-1 scrollbar-sleek pt-px">
-        <div className="flex flex-col items-center gap-2 px-4 py-6 text-center text-[11px] text-muted-foreground">
+        <div className="flex flex-col items-center gap-1 px-6 pt-9 text-center">
           {discoveryCompleted && (
-            <span>
+            <span className="text-[13px] font-medium text-worktree-sidebar-foreground">
               {translate('auto.components.sidebar.WorktreeList.b7acbf038b', 'No workspaces found')}
             </span>
           )}
           {hasFilters && (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={onClearFilters}
-              className="gap-1.5 border border-border/80 text-[11px]"
-            >
-              <CircleX className="size-3.5" />
-              {translate('auto.components.sidebar.WorktreeList.370c6a55dd', 'Clear Filters')}
-            </Button>
+            <>
+              <span className="text-xs text-muted-foreground">
+                {translate(
+                  'auto.components.sidebar.WorktreeList.hiddenByFilters',
+                  'Filters are hiding workspaces.'
+                )}
+              </span>
+              <Button variant="outline" size="xs" onClick={onClearFilters} className="mt-2">
+                {translate('auto.components.sidebar.WorktreeList.370c6a55dd', 'Show all')}
+              </Button>
+            </>
           )}
         </div>
       </div>

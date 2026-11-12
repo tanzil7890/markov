@@ -5,6 +5,8 @@ export type RepoBackedTaskEmptyStateProvider = 'github' | 'gitlab'
 export type RepoBackedTaskEmptyState = {
   title: string
   description: string
+  /** Nothing is selected, so adding a project is a way forward. */
+  offerAddProject?: boolean
 }
 
 export function getRepoBackedTaskEmptyState(args: {
@@ -21,7 +23,8 @@ export function getRepoBackedTaskEmptyState(args: {
       description: translate(
         'auto.components.taskPageEmptyState.noProjectSourcesDescription',
         'Select at least one project source so Markov knows which host/account to fetch tasks from.'
-      )
+      ),
+      offerAddProject: true
     }
   }
   if (args.provider === 'github') {

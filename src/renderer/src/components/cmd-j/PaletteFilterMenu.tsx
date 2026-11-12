@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { ChevronRight, ListFilter, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, X } from 'lucide-react'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -161,19 +161,23 @@ export default function PaletteFilterMenu({
       <PopoverTrigger asChild>
         <Button
           type="button"
-          variant={active ? 'secondary' : 'outline'}
+          variant={active ? 'secondary' : 'ghost'}
           size="xs"
           aria-label={translate('worktreeJumpPalette.filter.trigger', 'Filter results')}
           data-active={active ? 'true' : undefined}
-          className="ml-2"
         >
-          <ListFilter className="size-3.5" aria-hidden="true" />
-          <span>{translate('worktreeJumpPalette.filter.label', 'Filter')}</span>
+          <span>
+            {/* Why: with only projects to filter, the trigger names the current choice. */}
+            {!active && groups.length === 1 && groups[0].field === 'repository'
+              ? translate('worktreeJumpPalette.filter.allProjects', 'All projects')
+              : translate('worktreeJumpPalette.filter.label', 'Filter')}
+          </span>
           {active ? (
             <span className="rounded-full bg-primary/85 px-1.5 text-[10px] font-semibold tabular-nums text-primary-foreground">
               {selectionCount}
             </span>
           ) : null}
+          <ChevronDown aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent

@@ -117,58 +117,51 @@ export function TaskPageLinearFilters({
           className="flex shrink-0 items-center gap-2"
           data-contextual-tour-target="tasks-actions"
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  if (linearMode === 'projects' && !selectedLinearProject) {
-                    // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
-                    const draft = useAppStore.getState().newLinearProjectDraft
-                    setNewLinearProjectName(draft?.name ?? '')
-                    setNewLinearProjectDescription(draft?.description ?? '')
-                    setNewLinearProjectContent(draft?.content ?? '')
-                    setNewLinearProjectTeamId(availableTeams[0]?.id ?? null)
-                    setNewLinearProjectLeadId(null)
-                    setNewLinearProjectMemberIds([])
-                    setNewLinearProjectLabelIds([])
-                    setNewLinearProjectPriority(0)
-                    setNewLinearProjectStartDate('')
-                    setNewLinearProjectTargetDate('')
-                    setNewLinearProjectOpen(true)
-                    return
-                  }
-                  // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
-                  const issueDraft = useAppStore.getState().newLinearIssueDraft
-                  setNewLinearIssueTitle(issueDraft?.title ?? '')
-                  setNewLinearIssueBody(issueDraft?.body ?? '')
-                  const projectTeamId =
-                    selectedLinearProject?.teams?.[0]?.id ??
-                    availableTeams.find(
-                      (team) => team.workspaceId === selectedLinearProject?.workspaceId
-                    )?.id
-                  setNewLinearIssueTeamId(projectTeamId ?? availableTeams[0]?.id ?? null)
-                  setNewLinearIssueProjectId(selectedLinearProject?.id ?? null)
-                  setNewLinearIssueOpen(true)
-                }}
-                disabled={availableTeams.length === 0}
-                aria-label={
-                  linearMode === 'projects' && !selectedLinearProject
-                    ? translate('auto.components.TaskPage.1361275ec3', 'New Linear project')
-                    : translate('auto.components.TaskPage.3feb524d42', 'New Linear issue')
-                }
-                className="size-8 border-border/50 bg-transparent hover:bg-muted/50 backdrop-blur-md supports-[backdrop-filter]:bg-transparent"
-              >
-                <Plus className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              {linearMode === 'projects' && !selectedLinearProject
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (linearMode === 'projects' && !selectedLinearProject) {
+                // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
+                const draft = useAppStore.getState().newLinearProjectDraft
+                setNewLinearProjectName(draft?.name ?? '')
+                setNewLinearProjectDescription(draft?.description ?? '')
+                setNewLinearProjectContent(draft?.content ?? '')
+                setNewLinearProjectTeamId(availableTeams[0]?.id ?? null)
+                setNewLinearProjectLeadId(null)
+                setNewLinearProjectMemberIds([])
+                setNewLinearProjectLabelIds([])
+                setNewLinearProjectPriority(0)
+                setNewLinearProjectStartDate('')
+                setNewLinearProjectTargetDate('')
+                setNewLinearProjectOpen(true)
+                return
+              }
+              // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
+              const issueDraft = useAppStore.getState().newLinearIssueDraft
+              setNewLinearIssueTitle(issueDraft?.title ?? '')
+              setNewLinearIssueBody(issueDraft?.body ?? '')
+              const projectTeamId =
+                selectedLinearProject?.teams?.[0]?.id ??
+                availableTeams.find(
+                  (team) => team.workspaceId === selectedLinearProject?.workspaceId
+                )?.id
+              setNewLinearIssueTeamId(projectTeamId ?? availableTeams[0]?.id ?? null)
+              setNewLinearIssueProjectId(selectedLinearProject?.id ?? null)
+              setNewLinearIssueOpen(true)
+            }}
+            disabled={availableTeams.length === 0}
+            aria-label={
+              linearMode === 'projects' && !selectedLinearProject
                 ? translate('auto.components.TaskPage.1361275ec3', 'New Linear project')
-                : translate('auto.components.TaskPage.3feb524d42', 'New Linear issue')}
-            </TooltipContent>
-          </Tooltip>
+                : translate('auto.components.TaskPage.3feb524d42', 'New Linear issue')
+            }
+          >
+            <Plus className="size-3.5" />
+            {linearMode === 'projects' && !selectedLinearProject
+              ? translate('auto.components.TaskPage.newProject', 'New project')
+              : translate('auto.components.TaskPage.newIssue', 'New issue')}
+          </Button>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

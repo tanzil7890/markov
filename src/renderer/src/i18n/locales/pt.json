@@ -903,7 +903,6 @@
     "filter": {
       "emptyTitle": "Nenhum resultado corresponde ao filtro ativo",
       "emptySubtitle": "Limpe o filtro acima, ou amplie-o para mais hosts e projetos.",
-      "tabKey": "Tab",
       "label": "Filtro",
       "activeCount": "{{value0}} ativo(s)",
       "removeChip": "Remover filtro {{value0}}",
@@ -12188,7 +12187,6 @@
           }
         },
         "SidebarHeader": {
-          "92154beb7e": "Novo espaço de trabalho",
           "addProject": "Adicionar projeto"
         },
         "NewExternalWorktreesInboxLine": {
@@ -12345,8 +12343,6 @@
           "workspacesMatch_many": "Espaços de trabalho correspondentes: {{matchCount}} de {{count}}"
         },
         "SidebarToolbar": {
-          "87d0064026": "O quadro do espaço de trabalho foi movido para a barra inferior",
-          "a30e34eb5c": "Fechar o quadro do espaço de trabalho",
           "49f62c5665": "Quadro do espaço de trabalho"
         },
         "WorkspaceStatusAppearancePopover": {
@@ -18422,11 +18418,6 @@
         "someoneUpdatedIssue": "Alguém atualizou a issue · {{time}}"
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Mover",
-        "75499e01d9": "Fechar",
-        "66b5a67bee": "Esc",
-        "45def60329": "Abrir",
-        "f65d992a11": "Enter",
         "c5081f2814": "Worktree Atual",
         "52404f8096": "Aba Atual",
         "739bda980c": "primária",
@@ -18447,7 +18438,6 @@
         "088d66d980": "Ações e Configurações",
         "34c8fbb46e": "SSH remoto",
         "63c2be1914": "SSH desconectado",
-        "95be6587d3": "Criar worktree \"{{value0}}\"",
         "worktreesHeader": "Worktrees",
         "recentWorktreesHeader": "Worktrees Recentes",
         "settingsBadge": "Configurações",
@@ -18459,7 +18449,6 @@
         "repoGroupBadge": "Grupo de repositório",
         "pluginCommandFailed": "Não foi possível executar o comando do plugin.",
         "recentChatsTerminalsHeader": "Chats e Terminais Recentes",
-        "27f10cca63": "Buscar chats, terminais, worktrees, configurações e ações...",
         "2770f02910": "Buscar chats, terminais, worktrees, configurações e ações",
         "lastActiveTime": "Última atividade há {{value0}}",
         "resultsFound_one": "{{count}} resultado encontrado.",

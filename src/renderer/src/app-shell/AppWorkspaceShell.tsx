@@ -12,6 +12,10 @@ import { TerminalWorkbenchContainer } from '../components/TerminalWorkbenchConta
 import type { VirtualizedScrollAnchor } from '../hooks/useVirtualizedScrollAnchor'
 import { TitlebarLeftControls } from './TitlebarLeftControls'
 import { RightSidebarToggle, TitlebarMainStrip } from './TitlebarMainStrip'
+import {
+  FloatingWorkspaceTopBarToggle,
+  useFloatingWorkspaceTopBarToggle
+} from './FloatingWorkspaceTopBarToggle'
 import type { AppChromeLayout } from './use-app-chrome-layout'
 import type { FloatingWorkspacePanelState } from './use-floating-workspace-panel'
 
@@ -117,6 +121,15 @@ export function AppWorkspaceShell(props: {
   const { layout, floatingWorkspace } = props
   const titlebarLeftControls = <TitlebarLeftControls layout={layout} />
   const titlebarMainStrip = <TitlebarMainStrip layout={layout} />
+  const topBarFloatingToggle = useFloatingWorkspaceTopBarToggle()
+  const titlebarStripMounted =
+    !layout.leftTitlebarChromeLayout.shouldMount ||
+    (layout.stackedSidebarOpen &&
+      layout.activeView !== 'automations' &&
+      layout.activeView !== 'artifacts')
+  // Why: pages that draw their own header have no top bar to hold the toggle.
+  const floatingToggleFallback =
+    topBarFloatingToggle && !layout.workspaceChromeActive && !titlebarStripMounted
   // Keep scroll memory above sidebar view remounts to preserve list position.
   const scrollOffsetRef = useRef(0)
   const scrollAnchorRef = useRef<VirtualizedScrollAnchor>(null)
@@ -160,6 +173,7 @@ export function AppWorkspaceShell(props: {
                 >
                   <div
                     // The floating header covers the center border; restore the seam and size to its own controls.
+                    data-tracks-sidebar-width={layout.sidebarOpen ? '' : undefined}
                     className={`titlebar-left${
                       layout.leftTitlebarChromeLayout.isFloating
                         ? ' titlebar-left-floating absolute top-0 left-0 z-10 w-max border-r border-border'
@@ -192,20 +206,21 @@ export function AppWorkspaceShell(props: {
               ) : null}
               <div className="relative flex flex-1 min-w-0 min-h-0 overflow-hidden">
                 {/* Match the open sidebar header’s alignment to prevent toggle jitter. */}
-                {layout.workspaceChromeActive && !layout.rightSidebarOpen && (
-                  <div
-                    className="absolute top-0 z-10 flex items-center h-[36px]"
-                    style={
-                      {
-                        // Why: --window-controls-width keeps the toggle clear of the fixed window-controls overlay (138px on custom chrome, 0px otherwise); no internal spacer — one would cover the pane-actions Ellipsis button with an unclickable div.
-                        right: 'var(--window-controls-width)',
-                        WebkitAppRegion: 'no-drag'
-                      } as React.CSSProperties
-                    }
-                  >
-                    {layout.showRightSidebarControls ? <RightSidebarToggle /> : null}
-                  </div>
-                )}
+                {layout.workspaceChromeActive &&
+                  (topBarFloatingToggle || !layout.rightSidebarOpen) && (
+                    <div
+                      className="absolute top-0 z-10 flex items-center h-[36px] [-webkit-app-region:no-drag]"
+                      // Why: --window-controls-width keeps the toggle clear of the fixed window-controls overlay (138px on custom chrome, 0px otherwise); no internal spacer — one would cover the pane-actions Ellipsis button with an unclickable div. An open right sidebar holds those controls instead.
+                      style={{
+                        right: layout.rightSidebarOpen ? '4px' : 'var(--window-controls-width)'
+                      }}
+                    >
+                      <FloatingWorkspaceTopBarToggle />
+                      {layout.showRightSidebarControls && !layout.rightSidebarOpen ? (
+                        <RightSidebarToggle />
+                      ) : null}
+                    </div>
+                  )}
                 <div className="flex flex-1 min-w-0 min-h-0 flex-col">
                   {layout.shouldMountTerminalWorkbench ? (
                     <TerminalWorkbenchContainer isVisible={layout.terminalWorkbenchVisible}>
@@ -243,7 +258,8 @@ export function AppWorkspaceShell(props: {
                     </RecoverableRenderErrorBoundary>
                   </Suspense>
                 </div>
-                {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
+                {(floatingWorkspace.showToggleButton || floatingToggleFallback) &&
+                !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton
                     open={floatingWorkspace.open}
                     onToggle={toggleFloatingWorkspace}

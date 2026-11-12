@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import type { DashboardAgentRow as DashboardAgentRowData } from '@/components/dashboard/useDashboardData'
 import { useFocusedAgentPaneKey } from './focused-agent-row-highlight'
 import { CompactAgentExpansion, CompactAgentSummaryButton } from './worktree-card-compact-agents'
+import { MergedIntoProjectHeaderContext } from '../controller/merged-into-project-header-context'
 import { CompactAgentRow } from './worktree-card-compact-agent-row'
 import { buildAgentRowLineageTree } from '@/components/dashboard/agent-row-lineage-model'
 import { revealCompactAgentCard } from '../../worktree-list/navigation/worktree-sidebar-reveal'
@@ -42,35 +43,30 @@ type Props = {
   worktreeId: string
   agents?: DashboardAgentRowData[]
   className?: string
+  cardShowsStatus?: boolean
 }
 
-const WorktreeCardAgents = React.memo(function WorktreeCardAgents({
-  worktreeId,
-  agents: precomputedAgents,
-  className
-}: Props) {
+const WorktreeCardAgents = React.memo(function WorktreeCardAgents(props: Props) {
   useUiLanguageRevision()
-  const selectedAgents = useWorktreeAgentRows(worktreeId, precomputedAgents === undefined)
-  const agents = precomputedAgents ?? selectedAgents
+  const selectedAgents = useWorktreeAgentRows(props.worktreeId, props.agents === undefined)
+  const agents = props.agents ?? selectedAgents
   if (agents.length === 0) {
     return null
   }
   // Only non-empty bodies mount the 30s clock, avoiding timer cost for idle worktrees.
-  return <WorktreeCardAgentsBody worktreeId={worktreeId} agents={agents} className={className} />
+  return <WorktreeCardAgentsBody {...props} agents={agents} />
 })
 
-type BodyProps = {
-  worktreeId: string
-  agents: DashboardAgentRowData[]
-  className?: string
-}
+type BodyProps = Props & { agents: DashboardAgentRowData[] }
 
 const WorktreeCardAgentsBody = React.memo(function WorktreeCardAgentsBody({
   worktreeId,
   agents,
-  className
+  className,
+  cardShowsStatus = false
 }: BodyProps) {
   const languageRevision = useUiLanguageRevision()
+  const mergedIntoHeader = React.useContext(MergedIntoProjectHeaderContext)
   const { agentActivityDisplayMode, showAgentModels } = useWorktreeAgentDisplay()
   const dropAgentStatus = useAppStore((s) => s.dropAgentStatus)
   const dismissRetainedAgent = useAppStore((s) => s.dismissRetainedAgent)
@@ -324,6 +320,8 @@ const WorktreeCardAgentsBody = React.memo(function WorktreeCardAgentsBody({
         <CompactAgentRow
           agent={agent}
           showModel={showAgentModels}
+          hideStateDot={!mergedIntoHeader && cardShowsStatus && agents.length === 1}
+          hideIdentityIcon={mergedIntoHeader}
           now={now}
           parentConversationDescription={
             opensClaudeParentConversation(agent)
@@ -370,8 +368,10 @@ const WorktreeCardAgentsBody = React.memo(function WorktreeCardAgentsBody({
 
   if (agentActivityDisplayMode === 'compact') {
     const summaryAgents = hasLineage ? rootAgents : agents
-    // Collapse compact multi-agent lists except when their rows are the send-target picker.
-    const shouldUseSummaryRow = summaryAgents.length > 1 && !isAgentSendTargetModeActive
+    // Collapse compact multi-agent lists except when their rows are the send-target picker
+    // or stand in for the workspace under its project row.
+    const shouldUseSummaryRow =
+      !mergedIntoHeader && summaryAgents.length > 1 && !isAgentSendTargetModeActive
     const subjectLabel = translate('sidebar.agentSummary.agentCount', '{{count}} agents', {
       count: hasLineage ? rootAgents.length : agents.length,
       defaultValue_one: '{{count}} agent'

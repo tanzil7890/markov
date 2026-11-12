@@ -122,9 +122,8 @@ function WorkspaceKanbanStatusLane({
       }
       className={cn(
         'group/lane',
-        'relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-md border border-t-2 border-worktree-sidebar-border transition-colors',
-        meta.border,
-        meta.laneTint,
+        // Why: status color lives only in the header glyph; lanes share one neutral surface.
+        'relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-transparent bg-muted/50 transition-colors',
         isDragTarget && 'border-worktree-sidebar-ring bg-worktree-sidebar-accent/70',
         'data-[workspace-board-external-drag-target=true]:border-worktree-sidebar-ring data-[workspace-board-external-drag-target=true]:bg-worktree-sidebar-accent/70'
       )}
@@ -161,13 +160,13 @@ function WorkspaceKanbanStatusLane({
           )}
         />
       </div>
-      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border/70 py-0 pl-3 pr-2">
+      <div className="flex h-10 shrink-0 items-center gap-2 py-0 pl-3 pr-2">
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <meta.icon className={cn('size-3.5 shrink-0', meta.tone)} />
-          <div className="min-w-0 truncate text-[12px] font-semibold text-foreground">
+          <div className="min-w-0 truncate text-[13px] font-semibold text-foreground">
             {status.label}
           </div>
-          <div className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium leading-none text-muted-foreground">
+          <div className="shrink-0 text-[12px] tabular-nums text-muted-foreground">
             {isFiltered ? `${items.length} / ${laneTotalCount}` : items.length}
           </div>
         </div>
@@ -201,7 +200,7 @@ function WorkspaceKanbanStatusLane({
             />
           ) : null
         ) : (
-          <div className="flex h-20 items-center justify-center rounded-md border border-dashed border-border/70 text-[11px] text-muted-foreground">
+          <div className="px-2 py-1 text-[12px] text-muted-foreground">
             {isFiltered
               ? translate(
                   'auto.components.sidebar.WorkspaceKanbanStatusLane.2df01a03ff',

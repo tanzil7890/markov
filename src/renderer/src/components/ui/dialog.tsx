@@ -30,15 +30,21 @@ function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.C
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+/** Lets a full-search surface ask for a lighter backdrop so the page behind stays readable. */
+const DialogOverlaySurfaceContext = React.createContext<'default' | 'palette'>('default')
+const DialogOverlaySurface = DialogOverlaySurfaceContext.Provider
+
 function DialogOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+  const surface = React.useContext(DialogOverlaySurfaceContext)
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
+      data-surface={surface}
       className={cn(
-        'fixed inset-0 z-50 bg-black/55 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+        'fixed inset-0 z-50 bg-black/55 data-[surface=palette]:bg-black/25 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
         className
       )}
       {...props}
@@ -220,6 +226,7 @@ export {
   DialogFooter,
   DialogHeader,
   DialogOverlay,
+  DialogOverlaySurface,
   DialogPortal,
   DialogTitle,
   DialogTrigger

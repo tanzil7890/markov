@@ -10,6 +10,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SetupGuideSidebarEntry } from './SetupGuideSidebarEntry'
+import { SidebarBoardNavButton } from './SidebarBoardNavButton'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
 import { HideSidebarMenu } from './sidebar-nav-controls'
 import { translate } from '@/i18n/i18n'
@@ -48,7 +49,17 @@ export function shouldShowAgentDashboardButton(
 
 const AgentDashboardSidebarEntry = lazyWithRetry(() => import('./AgentDashboardSidebarEntry'))
 
-const SidebarNav = React.memo(function SidebarNav() {
+type SidebarNavProps = {
+  workspaceBoardOpen: boolean
+  workspaceBoardDragPreviewOpen: boolean
+  onWorkspaceBoardToggle: () => void
+}
+
+const SidebarNav = React.memo(function SidebarNav({
+  workspaceBoardOpen,
+  workspaceBoardDragPreviewOpen,
+  onWorkspaceBoardToggle
+}: SidebarNavProps) {
   // Subscribe across this memo boundary; translate still handles pseudo-localization.
   useTranslation()
   const worktreePaletteShortcutCombos = useShortcutKeyComboDetails('worktree.palette')
@@ -103,7 +114,7 @@ const SidebarNav = React.memo(function SidebarNav() {
         <span className="flex-1">
           {translate('auto.components.sidebar.SidebarNav.80611a8b10', 'Search')}
         </span>
-        <span className="pointer-events-none hidden shrink-0 items-center gap-1 group-hover:flex group-focus-within:flex">
+        <span className="pointer-events-none flex shrink-0 items-center gap-1">
           {worktreePaletteShortcutCombos.map((combo) => (
             <ShortcutKeyCombo
               key={combo.keys.join('-')}
@@ -118,6 +129,11 @@ const SidebarNav = React.memo(function SidebarNav() {
       </button>
       <SetupGuideSidebarEntry />
       <SidebarTaskNavButton />
+      <SidebarBoardNavButton
+        open={workspaceBoardOpen}
+        dragPreviewOpen={workspaceBoardDragPreviewOpen}
+        onToggle={onWorkspaceBoardToggle}
+      />
       {showArtifactsButton ? (
         <ContextMenu>
           <ContextMenuTrigger asChild>

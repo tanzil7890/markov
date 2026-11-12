@@ -9,6 +9,8 @@ type UseSidebarResizeOptions = {
   renderedExtraWidth?: number
   setWidth: (width: number) => void
   onDraftWidthChange?: (width: number) => void
+  /** Dragging this far past the minimum closes the panel instead of leaving it cramped. */
+  collapse?: { belowWidth: number; onCollapse: () => void }
 }
 
 type UseSidebarResizeResult<T extends HTMLElement> = {
@@ -56,7 +58,8 @@ export function useSidebarResize<T extends HTMLElement>({
   deltaSign,
   renderedExtraWidth = 0,
   setWidth,
-  onDraftWidthChange
+  onDraftWidthChange,
+  collapse
 }: UseSidebarResizeOptions): UseSidebarResizeResult<T> {
   const containerRef = useRef<T | null>(null)
   const isResizingRef = useRef(false)
@@ -133,6 +136,15 @@ export function useSidebarResize<T extends HTMLElement>({
         return
       }
 
+      const rawWidth = startWidthRef.current + (event.clientX - startXRef.current) * deltaSign
+      if (collapse && rawWidth < collapse.belowWidth) {
+        // Why: keep the pre-drag width so reopening restores a usable panel.
+        draftWidthRef.current = startWidthRef.current
+        stopResize()
+        collapse.onCollapse()
+        return
+      }
+
       const nextWidth = getNextSidebarResizeWidth({
         clientX: event.clientX,
         startX: startXRef.current,
@@ -156,7 +168,7 @@ export function useSidebarResize<T extends HTMLElement>({
         onDraftWidthChange?.(draftWidthRef.current)
       })
     },
-    [applyRenderedWidth, deltaSign, maxWidth, minWidth, onDraftWidthChange]
+    [applyRenderedWidth, collapse, deltaSign, maxWidth, minWidth, onDraftWidthChange, stopResize]
   )
 
   useEffect(() => {

@@ -12,8 +12,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/store', () => ({
   useAppStore: {
     getState: () => ({
+      activeView: 'terminal',
       recordFeatureInteraction: mocks.recordFeatureInteraction
-    })
+    }),
+    subscribe: () => () => {}
   }
 }))
 

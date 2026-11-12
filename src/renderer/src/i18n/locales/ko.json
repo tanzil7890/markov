@@ -611,7 +611,6 @@
     "filter": {
       "emptyTitle": "활성 필터와 일치하는 결과가 없습니다",
       "emptySubtitle": "위의 필터를 지우거나 더 많은 호스트와 프로젝트로 범위를 넓히세요.",
-      "tabKey": "Tab",
       "label": "필터",
       "activeCount": "{{value0}}개 활성",
       "removeChip": "{{value0}} 필터 제거",
@@ -2725,11 +2724,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "이동",
-        "75499e01d9": "닫기",
-        "66b5a67bee": "Esc",
-        "45def60329": "열기",
-        "f65d992a11": "Enter",
         "c5081f2814": "현재 워크트리",
         "52404f8096": "현재 탭",
         "739bda980c": "기본",
@@ -2750,7 +2744,6 @@
         "088d66d980": "작업 및 설정",
         "34c8fbb46e": "SSH 원격",
         "63c2be1914": "SSH 연결이 끊어졌습니다.",
-        "95be6587d3": "워크트리 \"{{value0}}\" 만들기",
         "worktreesHeader": "작업 공간",
         "recentWorktreesHeader": "최근 작업 공간",
         "settingsBadge": "설정",
@@ -2761,7 +2754,6 @@
         "projectBadge": "프로젝트",
         "repoGroupBadge": "리포지토리 그룹",
         "pluginCommandFailed": "플러그인 명령을 실행할 수 없습니다.",
-        "27f10cca63": "채팅, 터미널, 워크스페이스, 작업, 설정 및 동작 검색...",
         "2770f02910": "채팅, 터미널, 워크스페이스, 작업, 설정 및 동작 검색",
         "recentChatsTerminalsHeader": "최근 채팅 및 터미널",
         "lastActiveTime": "마지막 활동: {{value0}} 전",
@@ -5577,7 +5569,6 @@
           "keepDefaultBranchAria": "슬립 중인 워크스페이스를 숨겨도 기본 브랜치는 계속 표시"
         },
         "SidebarHeader": {
-          "92154beb7e": "새로운 워크스페이스",
           "addProject": "프로젝트 추가"
         },
         "SidebarNav": {
@@ -5623,8 +5614,6 @@
           "b7e4d2a19c": "온보딩"
         },
         "SidebarToolbar": {
-          "87d0064026": "워크스페이스 보드가 하단 바로 옮겨졌습니다",
-          "a30e34eb5c": "워크스페이스 보드 닫기",
           "49f62c5665": "워크스페이스 보드"
         },
         "SidebarWorkspaceFilterSection": {

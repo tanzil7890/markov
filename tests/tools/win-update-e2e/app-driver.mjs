@@ -10,7 +10,7 @@ import { isPidAlive } from './daemon-processes.mjs'
 
 const NEW_TAB_BUTTON = { role: 'button', name: 'New tab' }
 const NEW_TERMINAL_ITEM = /New Terminal/i
-const NEW_WORKSPACE_BUTTON = { role: 'button', name: 'New workspace' }
+const NEW_WORKSPACE_BUTTON = { role: 'button', name: /^Create workspace for / }
 const SORTABLE_TAB = '[data-testid="sortable-tab"]'
 // Target :visible because hidden duplicate panes must not receive focus or measurements.
 const TERMINAL_SURFACE_VISIBLE = '[data-terminal-tab-id]:visible'
@@ -220,7 +220,10 @@ export async function ensureTerminal(page, { allowCreate = true, timeoutMs = 60_
 async function createWorkspaceFromSeededRepo(page, timeoutMs) {
   // Share one deadline across creation rather than reset each step’s budget.
   const deadline = Date.now() + timeoutMs
-  const newWorkspace = page
+  // New workspace lives on the seeded project's row, whose actions appear on hover.
+  const projectRow = page.locator('[data-repo-header-id]').first()
+  await projectRow.hover({ timeout: Math.max(1, deadline - Date.now()) })
+  const newWorkspace = projectRow
     .getByRole(NEW_WORKSPACE_BUTTON.role, { name: NEW_WORKSPACE_BUTTON.name })
     .first()
   if (!(await tryClickWithKnownOverlayRetry(page, newWorkspace, deadline - Date.now()))) {

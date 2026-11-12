@@ -5,6 +5,7 @@ import type {
   WorkspaceCardShowOptions
 } from '../../../../../../shared/workspace-cards/workspace-card-facts'
 import type { WorktreeCardController } from '../controller/use-worktree-card-controller'
+import { getDirectoryName } from '../controller/worktree-card-model'
 
 const showOptionsCache = new WeakMap<readonly WorktreeCardProperty[], WorkspaceCardShowOptions>()
 
@@ -46,6 +47,7 @@ export function buildWorkspaceCardFacts(card: WorktreeCardController): Workspace
       title: card.visibleCardTitle,
       kind: card.isFolder ? 'folder' : 'git',
       path: worktree.path,
+      folderName: getDirectoryName(worktree.path),
       branch: card.branch,
       identity: card.identityDisplay ?? null,
       isMain: worktree.isMainWorktree,

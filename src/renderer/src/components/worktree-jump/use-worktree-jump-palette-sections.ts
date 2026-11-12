@@ -31,6 +31,11 @@ import type { WorktreeJumpPaletteQuickActions } from './use-worktree-jump-palett
 import type { WorktreeJumpPaletteRecentTabs } from './use-worktree-jump-palette-recent-tabs'
 import type { WorktreeJumpPaletteWorktrees } from './use-worktree-jump-palette-worktrees'
 
+const EMPTY_SECTION: { visible: readonly PaletteItem[]; overflowCount: number } = {
+  visible: [],
+  overflowCount: 0
+}
+
 type WorktreeJumpPaletteSectionsInput = WorktreeJumpPaletteOpenTabs &
   WorktreeJumpPaletteRecentTabs &
   WorktreeJumpPaletteProjectTargets &
@@ -43,6 +48,7 @@ type WorktreeJumpPaletteSectionsInput = WorktreeJumpPaletteOpenTabs &
     | 'expandedSectionCaps'
     | 'setExpandedSectionCaps'
     | 'selectedItemId'
+    | 'scope'
   >
 
 export function useWorktreeJumpPaletteSections({
@@ -56,7 +62,8 @@ export function useWorktreeJumpPaletteSections({
   showCreateAction,
   expandedSectionCaps,
   setExpandedSectionCaps,
-  selectedItemId
+  selectedItemId,
+  scope
 }: WorktreeJumpPaletteSectionsInput) {
   const openTabsLeadSections = useMemo(() => {
     if (!hasQuery) {
@@ -129,9 +136,15 @@ export function useWorktreeJumpPaletteSections({
     const recentTabsCap = expandedSectionCaps['open-tabs']
       ? openTabsCap
       : EMPTY_QUERY_RECENT_TAB_CAP
-    const openTabs = hasQuery
-      ? capPaletteSection(openTabItems, openTabsCap, retainOpenTab)
-      : capPaletteSection(recentTabItems, recentTabsCap)
+    // Why: a section outside the scope stays empty so digit shortcuts cannot open hidden rows.
+    const showsTabs = scope === 'all' || scope === 'tabs'
+    const showsWorktrees = scope === 'all' || scope === 'workspaces'
+    const showsIntents = scope === 'all' || scope === 'actions'
+    const openTabs = !showsTabs
+      ? EMPTY_SECTION
+      : hasQuery
+        ? capPaletteSection(openTabItems, openTabsCap, retainOpenTab)
+        : capPaletteSection(recentTabItems, recentTabsCap)
     const baseWorktreeCap = hasQuery
       ? Infinity
       : Math.min(
@@ -141,22 +154,24 @@ export function useWorktreeJumpPaletteSections({
     const worktreeCap = hasQuery
       ? typedWorktreeCap
       : baseWorktreeCap + (expandedSectionCaps.worktrees ?? 0)
-    const worktrees = hasQuery
-      ? capPaletteSection(worktreeItems, worktreeCap, retainWorktree)
-      : {
-          visible: worktreeItems.slice(0, worktreeCap),
-          overflowCount: Math.max(0, worktreeItems.length - worktreeCap)
-        }
+    const worktrees = !showsWorktrees
+      ? EMPTY_SECTION
+      : hasQuery
+        ? capPaletteSection(worktreeItems, worktreeCap, retainWorktree)
+        : {
+            visible: worktreeItems.slice(0, worktreeCap),
+            overflowCount: Math.max(0, worktreeItems.length - worktreeCap)
+          }
     const projectTargets = capPaletteSection(
-      hasQuery ? projectTargetItems : [],
+      hasQuery && showsIntents ? projectTargetItems : [],
       PALETTE_SECTION_RENDER_CAP + (expandedSectionCaps.projects ?? 0)
     )
     const middle = capPaletteSection(
-      hasQuery ? middleItems : [],
+      hasQuery && showsIntents ? middleItems : [],
       PALETTE_SECTION_RENDER_CAP + (expandedSectionCaps.middle ?? 0)
     )
     const multiPrimaryFirstScreen =
-      hasQuery && openTabs.visible.length > 0 && worktrees.visible.length > 0
+      scope === 'all' && hasQuery && openTabs.visible.length > 0 && worktrees.visible.length > 0
     const multiPrimaryLayout = multiPrimaryFirstScreen
       ? layoutMultiPrimaryPaletteSections<WorktreePaletteItem | OpenTabPaletteItem>({
           leadingItems: openTabsLeadSections ? openTabItems : worktreeItems,
@@ -197,6 +212,7 @@ export function useWorktreeJumpPaletteSections({
     recentTabItems,
     retainedOpenTabId,
     retainedWorktreeId,
+    scope,
     typedWorktreeCap,
     worktreeItems
   ])

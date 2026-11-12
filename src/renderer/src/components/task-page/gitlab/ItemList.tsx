@@ -5,6 +5,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { Button } from '@/components/ui/button'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+import { TaskPageAddProjectAction } from '../TaskPageAddProjectAction'
 export function TaskPageGitLabItemList({
   model
 }: {
@@ -64,6 +65,7 @@ export function TaskPageGitLabItemList({
           <div className="px-4 py-12 text-center">
             <p className="text-base font-medium text-foreground">{gitlabEmptyState.title}</p>
             <p className="mt-2 text-sm text-muted-foreground">{gitlabEmptyState.description}</p>
+            {gitlabEmptyState.offerAddProject ? <TaskPageAddProjectAction /> : null}
           </div>
         ) : null}
         <div className="divide-y divide-border/50">

@@ -22,7 +22,7 @@ import { getUsageRosterRowState, type UsageRosterRowState } from './usage-roster
 import type { StatusBarUsageMode } from '../../../../shared/status-bar-usage-mode'
 
 type ProviderId = ProviderRateLimits['provider']
-export type UsageSection = { label: string; window: RateLimitWindow }
+export type UsageSection = { label: string; window: RateLimitWindow; countdown?: boolean }
 
 // Drop null and missing windows from partial/rehydrated snapshots before reading percentages.
 function usedSections(p: ProviderRateLimits): UsageSection[] {
@@ -58,6 +58,10 @@ function shortLabel(
     : formatWindowLabel(section.window.windowMinutes)
 }
 
+function isResetCountdownLabel(window: RateLimitWindow, label: string): boolean {
+  return window.resetsAt != null && label === formatRateLimitWindowChipLabel(window)
+}
+
 export function getTightestUsageSection(p: ProviderRateLimits): UsageSection | null {
   const sections = usedSections(p)
   if (sections.length === 0) {
@@ -69,7 +73,8 @@ export function getTightestUsageSection(p: ProviderRateLimits): UsageSection | n
       ? candidate
       : current
   )
-  return { ...tightest, label: shortLabel(p, tightest, true) }
+  const label = shortLabel(p, tightest, true)
+  return { ...tightest, label, countdown: isResetCountdownLabel(tightest.window, label) }
 }
 
 export function getUsageHeadlineSection(p: ProviderRateLimits): UsageSection | null {

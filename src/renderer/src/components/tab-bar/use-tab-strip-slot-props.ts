@@ -13,7 +13,8 @@ export function useTabStripSlotProps(tabId: string, isActive: boolean): TabStrip
   const isTabDragActive = useTabDragActive()
   const docks = isActive && !isTabDragActive
   return {
-    className: cn(TAB_CONTAINER_WIDTH_CLASSES, docks && 'sticky inset-x-0 z-10'),
+    // Why pt: the gap above lets the active tab's rounded top read against the strip.
+    className: cn(TAB_CONTAINER_WIDTH_CLASSES, 'pt-[3px]', docks && 'sticky inset-x-0 z-10'),
     'data-tab-strip-slot': tabId,
     'data-active-tab-dock': docks ? '' : undefined
   }

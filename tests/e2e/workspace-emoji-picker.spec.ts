@@ -71,9 +71,7 @@ test.describe('Workspace emoji picker', () => {
 
     await markovPage.evaluate(() => window.__store!.getState().openModal('worktree-palette'))
     const palette = markovPage.getByRole('dialog', { name: 'Jump to...' })
-    const paletteInput = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    const paletteInput = palette.getByPlaceholder('Search or jump to…')
     await expect(paletteInput).toBeFocused()
     await captureProof(markovPage, testInfo, 'cmd-j-before.png')
     await paletteInput.pressSequentially(':wink', { delay: 60 })

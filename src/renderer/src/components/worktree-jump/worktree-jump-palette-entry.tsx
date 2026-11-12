@@ -29,7 +29,7 @@ export function WorktreeJumpPaletteEntry({
 }): React.JSX.Element {
   if (entry.type === 'section-header') {
     return (
-      <div className="mx-0.5 mt-3 mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+      <div className="mx-0.5 mt-2.5 mb-0.5 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {entry.label}
       </div>
     )
@@ -56,7 +56,7 @@ export function WorktreeJumpPaletteEntry({
       >
         <span className="truncate">{entry.label}</span>
         {entry.onSeeMore ? (
-          <span className="h-6 shrink-0 rounded-md border border-input bg-background px-2 text-xs font-medium leading-6 text-foreground">
+          <span className="shrink-0 font-medium text-foreground">
             {translate('worktreeJumpPalette.seeMore', 'See more')}
           </span>
         ) : null}

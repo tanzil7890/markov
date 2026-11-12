@@ -90,6 +90,7 @@ function listInput(query: string, overrides: Partial<ListInput> = {}): ListInput
     taskSourceUrl: null,
     handleExpandSection: vi.fn(),
     taskItems: [],
+    scope: 'all',
     ...overrides
   }
 }

@@ -109,7 +109,7 @@ export function PaletteCreateWorktreeRow({
                 {linearIssue?.identifier ?? linearIdentifier}
               </span>
               {linearIssue ? (
-                <span className="truncate text-[14px] font-semibold tracking-[-0.01em] text-foreground">
+                <span className="truncate text-[13px] font-medium text-foreground">
                   {linearIssue.title}
                 </span>
               ) : null}
@@ -134,7 +134,7 @@ export function PaletteCreateWorktreeRow({
               <span className="shrink-0 font-mono text-[12px] font-semibold text-muted-foreground">
                 {taskUrlPreview.identifier}
               </span>
-              <span className="truncate text-[14px] font-semibold tracking-[-0.01em] text-foreground">
+              <span className="truncate text-[13px] font-medium text-foreground">
                 {taskUrlPreview.subtitle}
               </span>
             </div>
@@ -153,17 +153,17 @@ export function PaletteCreateWorktreeRow({
         </>
       ) : (
         <>
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-dashed border-border/60 bg-muted/25 text-muted-foreground/70">
-            <Plus size={13} aria-hidden="true" />
+          <div className="flex h-5 w-4 shrink-0 items-center justify-center text-muted-foreground">
+            <Plus className="size-3.5" aria-hidden="true" />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-[14px] font-semibold tracking-[-0.01em] text-foreground">
-              {translate(
-                'auto.components.WorktreeJumpPalette.95be6587d3',
-                'Create worktree "{{value0}}"',
-                { value0: createWorktreeName }
-              )}
-            </div>
+          <div className="min-w-0 flex-1 truncate text-[13px] text-foreground">
+            {translate(
+              'worktreeJumpPalette.createWorkspaceNamed',
+              'Create workspace “{{value0}}”',
+              {
+                value0: createWorktreeName
+              }
+            )}
           </div>
         </>
       )}

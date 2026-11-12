@@ -115,7 +115,6 @@ export function PaletteOpenTabPrimaryLine({
   secondaryRanges,
   secondaryMatches = NO_SECONDARY_MATCHES,
   elideSecondaryPathHead = false,
-  sessionAge,
   leadingBadges
 }: {
   title: string
@@ -124,10 +123,10 @@ export function PaletteOpenTabPrimaryLine({
   secondaryRanges: readonly MatchRange[]
   secondaryMatches?: readonly { text: string; ranges: readonly MatchRange[] }[]
   elideSecondaryPathHead?: boolean
-  sessionAge?: string
   leadingBadges?: React.ReactNode
 }): React.JSX.Element {
-  const showSecondary = secondaryText.trim().length > 0
+  // Why: a file whose path is its name would read "README.md README.md".
+  const showSecondary = secondaryText.trim().length > 0 && secondaryText !== title
   const additionalSecondaryMatches = secondaryMatches.filter(
     (match) => match.text && match.text !== secondaryText
   )
@@ -137,24 +136,12 @@ export function PaletteOpenTabPrimaryLine({
       <span
         data-slot="palette-open-tab-title"
         className={cn(
-          'truncate text-[14px] font-semibold tracking-[-0.01em] text-foreground',
-          showSecondary ? 'max-w-[62%] shrink-0' : 'min-w-0'
+          'truncate text-[13px] text-foreground',
+          showSecondary ? 'max-w-[70%] shrink-0' : 'min-w-0'
         )}
       >
         <HighlightedText text={title} matchRanges={titleRanges} />
       </span>
-      {sessionAge ? (
-        <span
-          aria-label={translate(
-            'auto.components.WorktreeJumpPalette.lastActiveTime',
-            'Last active {{value0}} ago',
-            { value0: sessionAge }
-          )}
-          className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground/70"
-        >
-          {sessionAge}
-        </span>
-      ) : null}
       {leadingBadges}
       {showSecondary ? (
         <PaletteOpenTabSecondaryText
@@ -224,12 +211,12 @@ export function PaletteLocationChip({
     : repoRanges
   const label = [showRepo ? repoName : '', showWorktree ? worktreeName : '']
     .filter(Boolean)
-    .join(' · ')
+    .join(' › ')
   const chip = (
     <span
       data-slot="palette-location-chip"
       className={cn(
-        'inline-flex min-w-0 max-w-[260px] items-center gap-1.5 overflow-hidden rounded-md border border-border bg-muted px-2 py-1 text-[11px] font-semibold leading-none text-foreground',
+        'inline-flex min-w-0 items-center gap-1.5 overflow-hidden text-[12px] text-muted-foreground',
         className
       )}
     >
@@ -245,15 +232,12 @@ export function PaletteLocationChip({
         </>
       ) : null}
       {showRepo && showWorktree ? (
-        <span aria-hidden className="shrink-0 text-muted-foreground/50">
-          ·
+        <span aria-hidden className="shrink-0">
+          ›
         </span>
       ) : null}
       {showWorktree ? (
-        <span
-          data-slot="palette-open-tab-worktree"
-          className="min-w-[3ch] truncate font-medium text-muted-foreground"
-        >
+        <span data-slot="palette-open-tab-worktree" className="min-w-[3ch] truncate">
           <HighlightedText text={worktreeName} matchRanges={worktreeRanges} />
         </span>
       ) : null}

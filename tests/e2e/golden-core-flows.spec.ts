@@ -489,7 +489,7 @@ test.describe('New-user golden core flow', () => {
       .locator('[data-contextual-tour-target="workspace-create-control"]')
       .first()
     await expect(createControl).toBeVisible()
-    await expect(createControl).toHaveAttribute('aria-label', 'New workspace')
+    await expect(createControl).toHaveAttribute('aria-label', /^Create workspace for /)
     const createControlBox = await createControl.boundingBox()
     expect(createControlBox?.width ?? 0).toBeGreaterThan(0)
     expect(createControlBox?.height ?? 0).toBeGreaterThan(0)

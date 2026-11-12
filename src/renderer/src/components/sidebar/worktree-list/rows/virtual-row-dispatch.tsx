@@ -31,6 +31,10 @@ import {
   type WorktreeItemRowContext
 } from './item-row'
 import { renderWorktreeSectionHeaderRow, type SectionHeaderRowContext } from './SectionHeader'
+import {
+  getMergedFolderWorkspaceRow,
+  isMergedIntoFolderProjectHeader
+} from './merged-folder-project-row'
 import type { WorktreeRowDragState } from '../drag/row-state'
 
 export type WorktreeVirtualRowContext = {
@@ -161,10 +165,14 @@ export function renderWorktreeVirtualRow(
   }
 
   if (row.type === 'header') {
+    const merged = getMergedFolderWorkspaceRow(ctx.renderRows, vItem.index, ctx.groupBy)
     return renderWorktreeSectionHeaderRow({
       ctx: ctx.header,
       row,
       vItem,
+      mergedWorkspace: merged
+        ? { rowKey: merged.rowKey, active: merged.worktree.id === ctx.activeWorktreeId }
+        : null,
       isActiveStickyHeader: ctx.activeStickyHeaderIndexRef.current === vItem.index,
       hasStickyHost: ctx.activeStickyHostIndexRef.current !== null,
       hasHeaderTopSpacing: shouldUseHeaderTopSpacing({
@@ -256,7 +264,14 @@ export function renderWorktreeVirtualRow(
           : undefined
       }
     >
-      {renderWorktreeItemRow(ctx.item, row, false)}
+      {renderWorktreeItemRow(
+        ctx.item,
+        row,
+        false,
+        undefined,
+        false,
+        isMergedIntoFolderProjectHeader(ctx.renderRows, vItem.index, ctx.groupBy)
+      )}
     </div>
   )
 }

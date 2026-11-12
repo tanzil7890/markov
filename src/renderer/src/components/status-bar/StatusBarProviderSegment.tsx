@@ -59,14 +59,30 @@ function WindowLabel({
   label,
   display,
   showLabel = true,
-  labelFirst = false
+  labelFirst = false,
+  countdown = false
 }: {
   w: RateLimitWindow
   label: string
   display: UsagePercentageDisplay
   showLabel?: boolean
   labelFirst?: boolean
+  countdown?: boolean
 }): React.JSX.Element {
+  if (showLabel && countdown) {
+    return (
+      <span className="tabular-nums">
+        {formatBareUsagePercentage(w.usedPercent, display)}{' '}
+        <span className="text-muted-foreground">
+          {label === 'now'
+            ? translate('auto.components.status.bar.StatusBar.resetsNow', 'resets now')
+            : translate('auto.components.status.bar.StatusBar.resetsIn', 'resets in {{value0}}', {
+                value0: label
+              })}
+        </span>
+      </span>
+    )
+  }
   return (
     <span className="tabular-nums">
       {showLabel && labelFirst ? `${label} ` : ''}
@@ -314,6 +330,9 @@ export function ProviderSegment({
   return (
     <span className="inline-flex items-center gap-1.5">
       <ProviderIcon provider={provider} />
+      {!compact ? (
+        <span className="text-muted-foreground">{getProviderDisplayName(provider)}</span>
+      ) : null}
       {mode === 'verbose' && tightest && !compact ? (
         <MiniBar usedPct={clampUsedPercent(tightest.window.usedPercent)} display={display} />
       ) : null}
@@ -334,6 +353,7 @@ export function ProviderSegment({
               display={display}
               showLabel={showLabels}
               labelFirst={section.labelFirst}
+              countdown={section.countdown}
             />
           </React.Fragment>
         ))

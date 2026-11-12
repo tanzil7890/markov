@@ -380,10 +380,10 @@
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  /* Mirror light mode’s lifted worktree sidebar above the dark canvas. */
-  --worktree-sidebar: #2a2a2a;
+  /* Recessed like --sidebar so the dark canvas, not the list, holds the eye. */
+  --worktree-sidebar: #171717;
   --worktree-sidebar-foreground: #f0f0f0;
-  --worktree-sidebar-accent: #353535;
+  --worktree-sidebar-accent: #262626;
   --worktree-sidebar-accent-foreground: #f0f0f0;
   /* Match --border / --sidebar-border (7%) so the left sidebar's divider lines
      aren't brighter than the rest of the UI in dark mode (#5906). */
@@ -628,6 +628,12 @@ body[data-modal-overlay-open]
 [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-close-button]:hover {
   color: var(--accent-foreground);
   background: var(--accent);
+}
+
+/* Tasks sit on the chat surface like every other page; inner panels that paint --background follow it.
+   --chat-canvas is resolved at the root, so this cannot loop back into itself. */
+.task-page-surface {
+  --background: var(--chat-canvas);
 }
 
 /* Re-evaluate chat colors where the appearance producer supplies their source colors. */
@@ -1100,6 +1106,18 @@ html.native-shell .app-layout {
   user-select: none;
 }
 
+/* Why a container: its own controls must not hold the left column wider than the sidebar below,
+   and the app name gives way before the controls run out of room. */
+.titlebar-left[data-tracks-sidebar-width] {
+  container-type: inline-size;
+}
+
+@container (max-width: 239px) {
+  .titlebar-left[data-tracks-sidebar-width] .titlebar-app-name {
+    display: none;
+  }
+}
+
 /* Why: when the sidebar is collapsed this header floats over the tab strip,
    so keep the standard titlebar surface instead of the sidebar tint. */
 .titlebar-left-floating {
@@ -1497,30 +1515,41 @@ html.native-shell .app-layout {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--worktree-sidebar-ring) 30%, transparent);
 }
 
-/* Why: the brighter border carries the selected state; a translucent wash keeps
-   card text legible instead of lifting the surface toward the foreground color. */
+/* A folder project's only workspace shares the project row, so its card keeps just the agent list. */
+[data-worktree-merged-into-header] [data-worktree-card-status-slot],
+[data-worktree-merged-into-header] [data-worktree-card-hover-trigger] {
+  display: none;
+}
+
+[data-worktree-merged-into-header] [data-worktree-card-surface] {
+  padding-block: 0;
+  --worktree-sidebar-active: color-mix(in srgb, var(--worktree-sidebar-foreground) 4%, transparent);
+}
+
+[data-worktree-merged-into-header] [data-compact-agent-list] {
+  margin-top: 1px;
+}
+
+/* Agent rows start under the project's name, past its chevron. */
+[data-worktree-merged-into-header] .compact-agent-row {
+  padding-left: 30px;
+}
+
+/* Why: the wash alone carries the selected state; translucent so card text stays
+   legible instead of lifting the surface toward the foreground color. */
 [data-worktree-card-surface][data-worktree-card-active='primary'] {
-  border-color: var(
-    --worktree-sidebar-active-border,
-    color-mix(in srgb, var(--worktree-sidebar-border) 40%, transparent)
-  );
+  border-color: var(--worktree-sidebar-active-border, transparent);
   background: var(
     --worktree-sidebar-active,
     color-mix(in srgb, var(--worktree-sidebar-foreground) 8%, transparent)
   );
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 4%, transparent);
 }
 
 .dark [data-worktree-card-surface][data-worktree-card-active='primary'] {
-  border-color: var(
-    --worktree-sidebar-active-border,
-    color-mix(in srgb, var(--worktree-sidebar-foreground) 18%, var(--worktree-sidebar-border))
-  );
   background: var(
     --worktree-sidebar-active,
     color-mix(in srgb, var(--worktree-sidebar-foreground) 10%, transparent)
   );
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--worktree-sidebar-foreground) 3%, transparent);
 }
 
 /* #15971: the wash matches the pill's fill, so its border carries the shape. A neutral sidebar tint

@@ -54,10 +54,10 @@ function PresetChip({
           : undefined
       }
       className={cn(
-        'rounded-md border px-2.5 py-1 text-xs font-medium transition',
+        'rounded-md px-2.5 py-1 text-xs font-medium transition',
         active
-          ? 'border-border/50 bg-foreground/90 text-background shadow-xs'
-          : 'border-border/60 bg-background text-foreground shadow-xs hover:bg-muted/60'
+          ? 'bg-background text-foreground shadow-xs dark:bg-accent'
+          : 'text-muted-foreground hover:text-foreground'
       )}
     >
       {label}
@@ -119,13 +119,13 @@ export function TaskPageGitHubFilters({
   return (
     // Join filter chrome and table as one surface.
     <div
-      className="flex min-w-0 flex-col gap-2.5 rounded-md rounded-b-none border border-border/50 bg-muted/35 px-3 py-2.5"
+      className="flex min-w-0 flex-col gap-2.5 rounded-md rounded-b-none border border-border/50 bg-muted/35 px-3 py-2.5 dark:bg-transparent"
       data-contextual-tour-target="tasks-search-presets"
     >
       {activeGithubTaskKind === 'prs' ? (
         // Why: each group wraps as one unit so the divider always separates state from who.
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-fit flex-wrap gap-0.5 rounded-lg bg-muted p-0.5">
             {getGitHubPRStateChips().map(({ id, label }) => (
               <PresetChip
                 key={id}
@@ -142,8 +142,7 @@ export function TaskPageGitHubFilters({
               />
             ))}
           </div>
-          <span aria-hidden className="mx-0.5 h-4 w-px bg-border/60" />
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex w-fit flex-wrap gap-0.5 rounded-lg bg-muted p-0.5">
             {getGitHubPRWhoChips().map(({ id, label }) => (
               <PresetChip
                 key={id}
@@ -165,7 +164,7 @@ export function TaskPageGitHubFilters({
           </div>
         </div>
       ) : (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex w-fit flex-wrap gap-0.5 rounded-lg bg-muted p-0.5">
           {getIssueTaskQueryPresets().map((option) => (
             <PresetChip
               key={option.id}
@@ -226,35 +225,28 @@ export function TaskPageGitHubFilters({
           className="flex shrink-0 items-center gap-2"
           data-contextual-tour-target="tasks-actions"
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  // Why: restore a non-empty draft (accidental dismissal recoverable); empty default guards a stale draft after a repo change.
-                  const seed = resolveNewIssueOpenSeed({
-                    draft: useAppStore.getState().newIssueDraft,
-                    selectedRepoIds: selectedRepos.map((r) => r.id)
-                  })
-                  setNewIssueTitle(seed.title)
-                  setNewIssueBody(seed.body)
-                  setNewIssueLabels(seed.labels)
-                  setNewIssueAssignees(seed.assignees)
-                  setNewIssueRepoId(seed.repoId)
-                  setNewIssueOpen(true)
-                }}
-                disabled={!newIssueTargetRepo}
-                aria-label={translate('auto.components.TaskPage.d3d0998b7d', 'New GitHub issue')}
-                className="size-8 border-border/60 bg-background text-foreground shadow-xs hover:bg-muted/60"
-              >
-                <Plus className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              {translate('auto.components.TaskPage.d3d0998b7d', 'New GitHub issue')}
-            </TooltipContent>
-          </Tooltip>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Why: restore a non-empty draft (accidental dismissal recoverable); empty default guards a stale draft after a repo change.
+              const seed = resolveNewIssueOpenSeed({
+                draft: useAppStore.getState().newIssueDraft,
+                selectedRepoIds: selectedRepos.map((r) => r.id)
+              })
+              setNewIssueTitle(seed.title)
+              setNewIssueBody(seed.body)
+              setNewIssueLabels(seed.labels)
+              setNewIssueAssignees(seed.assignees)
+              setNewIssueRepoId(seed.repoId)
+              setNewIssueOpen(true)
+            }}
+            disabled={!newIssueTargetRepo}
+            aria-label={translate('auto.components.TaskPage.d3d0998b7d', 'New GitHub issue')}
+          >
+            <Plus className="size-3.5" />
+            {translate('auto.components.TaskPage.newIssue', 'New issue')}
+          </Button>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

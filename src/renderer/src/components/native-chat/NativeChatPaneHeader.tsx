@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useCallback } from 'react'
 import { MessageSquarePlus, SquareSplitVertical } from 'lucide-react'
 import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'
 import { Button } from '@/components/ui/button'
@@ -13,9 +13,12 @@ import { NativeChatResumeInCliButton } from './NativeChatResumeInCliButton'
 import { NativeChatSettingsButton } from './NativeChatSettingsButton'
 import type { NativeChatStructuredViewProps } from './native-chat-view-types'
 import type { NativeChatHandOff } from './use-native-chat-hand-off'
+import { setNativeChatPaneSlot } from './native-chat-pane-slots'
 
+// Why inherit: the labelled actions read in the chat's font, not the terminal title's mono.
 const HEADER_STYLE: React.CSSProperties & Record<'--markov-pane-title-bg', string> = {
-  '--markov-pane-title-bg': 'var(--chat-canvas)'
+  '--markov-pane-title-bg': 'var(--chat-canvas)',
+  fontFamily: 'inherit'
 }
 
 export type NativeChatHeaderHandOff = { open: () => void; disabled: boolean }
@@ -38,6 +41,10 @@ export function NativeChatPaneHeader({
   handOff?: NativeChatHeaderHandOff
 }): React.JSX.Element {
   const actions = useStructuredChatPaneActions(tabId, worktreeId, groupId)
+  const workspaceSlotRef = useCallback(
+    (element: HTMLDivElement | null) => setNativeChatPaneSlot('header-workspace', tabId, element),
+    [tabId]
+  )
   const documentDark = useDocumentDarkTheme()
   const light = colorScheme ? colorScheme === 'light' : !documentDark
   const split = translate(
@@ -52,11 +59,11 @@ export function NativeChatPaneHeader({
   return (
     <div
       className="pane-title-bar z-20"
-      data-chromeless=""
       data-active-pane={focused ? '' : undefined}
       data-pane-title-surface={light ? 'light' : 'dark'}
       style={HEADER_STYLE}
     >
+      <div ref={workspaceSlotRef} className="flex min-w-0 flex-1 items-center" />
       <div className="pane-title-actions ml-auto flex shrink-0 items-center gap-0">
         {handOff && focused ? (
           <Tooltip>
@@ -64,7 +71,7 @@ export function NativeChatPaneHeader({
               <Button
                 type="button"
                 variant="pane-title"
-                size="icon-xs"
+                size="xs"
                 aria-label={handOffLabel}
                 disabled={handOff.disabled}
                 onClick={(event) => {
@@ -73,6 +80,7 @@ export function NativeChatPaneHeader({
                 }}
               >
                 <MessageSquarePlus className="size-3" />
+                <span>{translate('components.native-chat.header.handOff', 'Hand off')}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" sideOffset={4}>
@@ -92,7 +100,7 @@ export function NativeChatPaneHeader({
             <Button
               type="button"
               variant="pane-title"
-              size="icon-xs"
+              size="xs"
               aria-label={split}
               data-contextual-tour-target={focused ? 'chat-pane-split-target' : undefined}
               onClick={(event) => {
@@ -101,6 +109,7 @@ export function NativeChatPaneHeader({
               }}
             >
               <SquareSplitVertical className="size-3" />
+              <span>{translate('components.native-chat.header.split', 'Split')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" sideOffset={4}>

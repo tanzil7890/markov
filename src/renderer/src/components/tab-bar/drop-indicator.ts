@@ -11,26 +11,19 @@ export function getDropIndicatorClasses(dropIndicator: DropIndicator): string {
   return ''
 }
 
-// Keep the foreground marker above selection/unread layers; zero horizontal inset avoids scrollWidth jitter at the strip’s end.
-export const ACTIVE_TAB_INDICATOR_CLASSES =
-  'pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-tab-active-indicator z-20 group-data-[single-tab]/tab-strip:hidden'
+// The active tab is marked by its lifted surface and border, so the bar stays out of the layout.
+export const ACTIVE_TAB_INDICATOR_CLASSES = 'hidden'
 
 export function getTabRootStateClasses(isActive: boolean): string {
   return isActive
-    ? 'bg-tab-active text-tab-active-foreground'
-    : 'bg-tab-inactive text-tab-inactive-foreground hover:text-tab-active-foreground'
+    ? 'rounded-t-md border-border bg-tab-active font-medium text-tab-active-foreground'
+    : 'border-transparent bg-transparent text-tab-inactive-foreground hover:text-tab-active-foreground'
 }
 
+// Why widths only: every tab reserves the same border so activating one never shifts its neighbours.
 export function getTabStripBorderClasses(
-  hasTabsToRight: boolean,
+  _hasTabsToRight: boolean,
   options?: { includeTopBorder?: boolean }
 ): string {
-  const includeTopBorder = options?.includeTopBorder ?? true
-  return [
-    includeTopBorder ? 'border-t' : '',
-    'border-r border-border',
-    hasTabsToRight ? '' : 'border-r-transparent'
-  ]
-    .filter(Boolean)
-    .join(' ')
+  return (options?.includeTopBorder ?? true) ? 'border-x border-t' : 'border-x'
 }

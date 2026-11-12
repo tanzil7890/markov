@@ -86,7 +86,7 @@ export function NativeChatResumeInCliButton({
         <Button
           type="button"
           variant="pane-title"
-          size="icon-xs"
+          size="xs"
           aria-label={label}
           disabled={pending}
           aria-busy={pending || undefined}
@@ -102,6 +102,9 @@ export function NativeChatResumeInCliButton({
           }}
         >
           <SquareTerminal className="size-3" />
+          <span>
+            {translate('components.native-chat.header.continueInTerminal', 'Continue in terminal')}
+          </span>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4}>

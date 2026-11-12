@@ -1,3 +1,4 @@
+import { MergedIntoProjectHeaderContext } from '../../workspace-card/controller/merged-into-project-header-context'
 import type { DraggedWorktreeCopies } from '../drag/dragged-worktree-copies'
 import React from 'react'
 import { cn } from '@/lib/utils'
@@ -89,7 +90,8 @@ export function renderWorktreeItemRow(
   itemRow: WorktreeItemRow,
   nested: boolean,
   lineageChildren?: React.ReactNode,
-  forceActiveSurface = false
+  forceActiveSurface = false,
+  mergedIntoHeader = false
 ): React.JSX.Element {
   const { surfaceInset, cardContentIndent } = getWorktreeItemRowGeometry(ctx, itemRow, nested)
   const lineageChildrenStyle = lineageChildren
@@ -117,6 +119,7 @@ export function renderWorktreeItemRow(
       data-worktree-host-identity={worktreeIdentity}
       data-worktree-row-key={itemRow.rowKey}
       data-worktree-section-key={itemRow.sectionKey}
+      data-worktree-merged-into-header={mergedIntoHeader ? '' : undefined}
       data-worktree-drag-id={worktreeDragGroupKey ? itemRow.worktree.id : undefined}
       data-worktree-drag-group-key={worktreeDragGroupKey}
       data-worktree-drag-group-index={ctx.groupIndexByRowKey.get(itemRow.rowKey)}
@@ -150,49 +153,55 @@ export function renderWorktreeItemRow(
         paddingLeft: surfaceInset > 0 ? `${surfaceInset}px` : undefined
       }}
     >
-      <WorktreeCard
-        worktree={itemRow.worktree}
-        repo={itemRow.repo}
-        isActive={isActiveWorktree}
-        isCurrentWorktree={ctx.currentWorktreeId === itemRow.worktree.id}
-        // Why: a child-active parent should look active without the active-card side effects (e.g. SSH reconnect UI).
-        isActiveSurface={forceActiveSurface || isActiveWorktree}
-        activeSurfaceVariant={
-          isActiveWorktree && !forceActiveSurface ? ctx.getActiveSurfaceVariant(itemRow) : 'primary'
-        }
-        isMultiSelected={isMultiSelected}
-        revealHighlight={ctx.highlightedRevealRowKey === itemRow.rowKey}
-        revealHighlightTone={
-          ctx.agentSendTargetWorktreeId === itemRow.worktree.id ? 'ai' : 'default'
-        }
-        // Only selected rows act on the selection; passing it to the rest would re-render every card per click.
-        selectedWorktrees={isMultiSelected ? ctx.selectedWorktrees : undefined}
-        nativeDragEnabled={false}
-        isLineageDropTarget={Boolean(isLineageDropTarget)}
-        contentIndent={cardContentIndent}
-        flushSurface
-        activationRowKey={itemRow.rowKey}
-        onImmediateActivate={ctx.onImmediateActivate}
-        onSelectionGesture={ctx.onSelectionGesture}
-        onWorktreeCardClick={ctx.onWorktreeCardClick}
-        onContextMenuSelect={ctx.onContextMenuSelect}
-        onCardDragStart={ctx.onCardDragStart}
-        onCardDragEnd={ctx.onCardDragEnd}
-        hideRepoBadge={ctx.groupBy === 'repo' && !itemRow.showProjectName}
-        // Why: pinned worktrees mix repos; cross-repo children opt into the existing project-name badge.
-        hostContextLabel={itemRow.hostContextLabel}
-        showProjectName={itemRow.showProjectName}
-        inPinnedSection={itemRow.sectionKey === PINNED_GROUP_KEY}
-        renameRowKey={itemRow.rowKey}
-        lineageChildCount={itemRow.lineageChildCount}
-        lineageChildWorktreeIds={itemRow.lineageChildWorktreeIds}
-        lineageCollapsed={itemRow.lineageCollapsed}
-        lineageChildren={lineageChildren}
-        lineageChildrenStyle={lineageChildrenStyle}
-        onLineageToggle={
-          itemRow.lineageGroupKey ? ctx.getLineageToggleHandler(itemRow.lineageGroupKey) : undefined
-        }
-      />
+      <MergedIntoProjectHeaderContext.Provider value={mergedIntoHeader}>
+        <WorktreeCard
+          worktree={itemRow.worktree}
+          repo={itemRow.repo}
+          isActive={isActiveWorktree}
+          isCurrentWorktree={ctx.currentWorktreeId === itemRow.worktree.id}
+          // Why: a child-active parent should look active without the active-card side effects (e.g. SSH reconnect UI).
+          isActiveSurface={forceActiveSurface || isActiveWorktree}
+          activeSurfaceVariant={
+            isActiveWorktree && !forceActiveSurface
+              ? ctx.getActiveSurfaceVariant(itemRow)
+              : 'primary'
+          }
+          isMultiSelected={isMultiSelected}
+          revealHighlight={ctx.highlightedRevealRowKey === itemRow.rowKey}
+          revealHighlightTone={
+            ctx.agentSendTargetWorktreeId === itemRow.worktree.id ? 'ai' : 'default'
+          }
+          // Only selected rows act on the selection; passing it to the rest would re-render every card per click.
+          selectedWorktrees={isMultiSelected ? ctx.selectedWorktrees : undefined}
+          nativeDragEnabled={false}
+          isLineageDropTarget={Boolean(isLineageDropTarget)}
+          contentIndent={cardContentIndent}
+          flushSurface
+          activationRowKey={itemRow.rowKey}
+          onImmediateActivate={ctx.onImmediateActivate}
+          onSelectionGesture={ctx.onSelectionGesture}
+          onWorktreeCardClick={ctx.onWorktreeCardClick}
+          onContextMenuSelect={ctx.onContextMenuSelect}
+          onCardDragStart={ctx.onCardDragStart}
+          onCardDragEnd={ctx.onCardDragEnd}
+          hideRepoBadge={ctx.groupBy === 'repo' && !itemRow.showProjectName}
+          // Why: pinned worktrees mix repos; cross-repo children opt into the existing project-name badge.
+          hostContextLabel={itemRow.hostContextLabel}
+          showProjectName={itemRow.showProjectName}
+          inPinnedSection={itemRow.sectionKey === PINNED_GROUP_KEY}
+          renameRowKey={itemRow.rowKey}
+          lineageChildCount={itemRow.lineageChildCount}
+          lineageChildWorktreeIds={itemRow.lineageChildWorktreeIds}
+          lineageCollapsed={itemRow.lineageCollapsed}
+          lineageChildren={lineageChildren}
+          lineageChildrenStyle={lineageChildrenStyle}
+          onLineageToggle={
+            itemRow.lineageGroupKey
+              ? ctx.getLineageToggleHandler(itemRow.lineageGroupKey)
+              : undefined
+          }
+        />
+      </MergedIntoProjectHeaderContext.Provider>
     </div>
   )
 }

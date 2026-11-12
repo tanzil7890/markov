@@ -254,7 +254,13 @@ function CommandGroup({
 const commandItemVariants = cva('', {
   variants: {
     selection: { default: '', palette: 'jump-palette-item' },
-    density: { default: '', workspace: 'px-3 py-2 text-xs' },
+    density: {
+      default: '',
+      workspace: 'px-3 py-2 text-xs',
+      // One-line search results: the row owns its icon column, title and trailing time.
+      palette:
+        'mx-0.5 cursor-pointer items-start gap-2.5 rounded-lg border border-transparent text-[13px] transition-[background-color,border-color,box-shadow]'
+    },
     emphasis: { default: '', pinned: 'bg-muted/35' }
   },
   defaultVariants: { selection: 'default' }

@@ -11,6 +11,7 @@ import { getWorktreePaletteCreateActionState } from '@/lib/workspace/search/work
 import type { CmdJActiveGroupSnapshot } from '@/components/cmd-j/quick-action-context'
 import type { WorkspaceVisibleTabType } from '../../../../shared/tab-types'
 import type { PaletteItem } from './worktree-jump-palette-model'
+import { paletteScopeShowsCreateRow, type PaletteScope } from './worktree-jump-palette-scope'
 
 export function useWorktreeJumpPaletteLocalState({
   createLookupGuard,
@@ -39,7 +40,11 @@ export function useWorktreeJumpPaletteLocalState({
     [deferredQuery]
   )
   const createWorktreeName = taskSourceUrl ? query.trim() : deferredCreateAction.createWorktreeName
-  const showCreateAction = deferredCreateAction.showCreateAction || taskSourceUrl !== null
+  const [scope, setScope] = useState<PaletteScope>('all')
+  // Why: a pasted issue link still offers its create row while Tasks is the scope.
+  const showCreateAction =
+    (deferredCreateAction.showCreateAction || taskSourceUrl !== null) &&
+    (paletteScopeShowsCreateRow(scope) || (taskSourceUrl !== null && scope === 'tasks'))
   const [selectedItemId, setSelectedItemId] = useState('')
   const latestQueryRef = useRef('')
   const autoSelectedItemIdRef = useRef<string | null>(null)
@@ -75,6 +80,7 @@ export function useWorktreeJumpPaletteLocalState({
     setExpandedSectionCaps({})
     if (visibilityChanged && visible) {
       setFilter(buildPaletteFilterFromSidebarScope(sidebarScope))
+      setScope('all')
     }
   }
   return {
@@ -111,7 +117,9 @@ export function useWorktreeJumpPaletteLocalState({
     createLookupGuard,
     preserveCreateLookupOnCloseRef,
     expandedSectionCaps,
-    setExpandedSectionCaps
+    setExpandedSectionCaps,
+    scope,
+    setScope
   }
 }
 

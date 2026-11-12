@@ -196,46 +196,48 @@ export function PRActionsPanel({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          type="button"
-          variant={nextState === 'closed' ? 'outline' : 'secondary'}
-          size="sm"
-          className={cn(
-            'w-full justify-center gap-2',
-            nextState === 'closed' &&
-              'border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50'
-          )}
-          disabled={!canMutateState || statePending}
-          onClick={() =>
-            void changePullRequestState({
-              canMutateState,
-              statePending,
-              nextState,
-              localState,
-              item,
-              repoPath,
-              repoId,
-              sourceContext,
-              projectOrigin,
-              prRepo,
-              confirm,
-              setStatePending,
-              applyStatePatch,
-              onMutated
-            })
-          }
-        >
-          {statePending ? (
-            <LoaderCircle className="size-3.5 animate-spin" />
-          ) : nextState === 'closed' ? (
-            <GitPullRequestClosed className="size-3.5 text-destructive" />
-          ) : (
-            <CircleDot className="size-3.5" />
-          )}
-          {nextState === 'closed'
-            ? translate('auto.components.PullRequestPage.96d013ed28', 'Close pull request')
-            : translate('auto.components.PullRequestPage.9d5425918e', 'Reopen PR')}
-        </Button>
+        {localState === 'merged' ? null : (
+          <Button
+            type="button"
+            variant={nextState === 'closed' ? 'outline' : 'secondary'}
+            size="sm"
+            className={cn(
+              'w-full justify-center gap-2',
+              nextState === 'closed' &&
+                'border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50'
+            )}
+            disabled={!canMutateState || statePending}
+            onClick={() =>
+              void changePullRequestState({
+                canMutateState,
+                statePending,
+                nextState,
+                localState,
+                item,
+                repoPath,
+                repoId,
+                sourceContext,
+                projectOrigin,
+                prRepo,
+                confirm,
+                setStatePending,
+                applyStatePatch,
+                onMutated
+              })
+            }
+          >
+            {statePending ? (
+              <LoaderCircle className="size-3.5 animate-spin" />
+            ) : nextState === 'closed' ? (
+              <GitPullRequestClosed className="size-3.5 text-destructive" />
+            ) : (
+              <CircleDot className="size-3.5" />
+            )}
+            {nextState === 'closed'
+              ? translate('auto.components.PullRequestPage.96d013ed28', 'Close pull request')
+              : translate('auto.components.PullRequestPage.9d5425918e', 'Reopen PR')}
+          </Button>
+        )}
       </div>
     </aside>
   )

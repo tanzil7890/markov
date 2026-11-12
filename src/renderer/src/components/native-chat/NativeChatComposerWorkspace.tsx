@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Folder, GitBranch, GitCommitHorizontal, Server } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
@@ -12,6 +13,7 @@ import {
   createNativeChatComposerWorkspaceSelector,
   type NativeChatComposerWorkspaceTarget
 } from './native-chat-composer-workspace'
+import { setNativeChatPaneSlot, useNativeChatPaneSlot } from './native-chat-pane-slots'
 
 export function NativeChatComposerWorkspace({
   terminalTabId,
@@ -33,6 +35,12 @@ export function NativeChatComposerWorkspace({
     [terminalTabId, worktreeId, runtimeEnvironmentId, hasTransport]
   )
   const { hostId, machine, checkout, kind, path, branch, head } = useAppStore(useShallow(selector))
+  const headerSlot = useNativeChatPaneSlot('header-workspace', terminalTabId)
+  const belowComposerRef = useCallback(
+    (element: HTMLDivElement | null) =>
+      setNativeChatPaneSlot('below-composer', terminalTabId, element),
+    [terminalTabId]
+  )
 
   const identity = getWorktreeGitIdentityDisplay({ branch, head })
   const label = identity?.kind === 'branch' ? identity.branchName : identity?.sourceControlLabel
@@ -57,8 +65,14 @@ export function NativeChatComposerWorkspace({
         ? translate('components.native-chat.composerWorkspace.mainCheckout', 'Main checkout')
         : translate('components.native-chat.composerWorkspace.worktree', 'Worktree')
 
-  return (
-    <div className="@container mt-1 flex h-6 shrink-0 min-w-0 items-center gap-2 px-3 text-xs text-chat-foreground-faint">
+  const content = (
+    <div
+      className={
+        headerSlot
+          ? '@container flex h-6 min-w-0 flex-1 items-center gap-2 text-xs text-chat-foreground-faint'
+          : '@container mt-1 flex h-6 shrink-0 min-w-0 items-center gap-2 px-3 text-xs text-chat-foreground-faint'
+      }
+    >
       {hostId && (
         <span
           className={
@@ -135,6 +149,16 @@ export function NativeChatComposerWorkspace({
         </Tooltip>
       )}
     </div>
+  )
+  if (!headerSlot) {
+    return content
+  }
+  return (
+    <>
+      {createPortal(content, headerSlot)}
+      {/* Why min-h: keeps the composer clear of the window's bottom edge once its label has moved up. */}
+      <div ref={belowComposerRef} className="min-h-3 shrink-0" />
+    </>
   )
 }
 

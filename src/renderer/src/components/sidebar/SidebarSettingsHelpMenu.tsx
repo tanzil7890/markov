@@ -173,7 +173,7 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="icon-xs"
+              size="xs"
               type="button"
               aria-label={translate(
                 'auto.components.sidebar.SidebarSettingsHelpMenu.a428c25998',
@@ -183,6 +183,12 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
               onClick={openSettingsPage}
             >
               <Settings className="size-3.5" />
+              <span className="@max-[15rem]:hidden">
+                {translate(
+                  'auto.components.sidebar.SidebarSettingsHelpMenu.a428c25998',
+                  'Settings'
+                )}
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top" sideOffset={4} className="flex items-center gap-1.5">
@@ -204,7 +210,7 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon-xs"
+                  size="xs"
                   type="button"
                   aria-label={translate(
                     'auto.components.sidebar.SidebarSettingsHelpMenu.2991a0106c',
@@ -213,6 +219,12 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
                   className="text-muted-foreground"
                 >
                   <CircleHelp className="size-3.5" />
+                  <span className="@max-[15rem]:hidden">
+                    {translate(
+                      'auto.components.sidebar.SidebarSettingsHelpMenu.2991a0106c',
+                      'Help'
+                    )}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>

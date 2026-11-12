@@ -1291,7 +1291,6 @@
     "filter": {
       "emptyTitle": "No results match the active filter",
       "emptySubtitle": "Clear the filter above, or widen it to more hosts and projects.",
-      "tabKey": "Tab",
       "label": "Filter",
       "activeCount": "{{value0}} active",
       "removeChip": "Remove filter {{value0}}",
@@ -1310,7 +1309,8 @@
       "back": "Back",
       "scopedTo": "Scoped to",
       "ariaActiveCount_one": "Filter: {{count}} active.",
-      "ariaActiveCount_other": "Filter: {{count}} active."
+      "ariaActiveCount_other": "Filter: {{count}} active.",
+      "allProjects": "All projects"
     },
     "taskUrl": {
       "loadingHint": "Loading {{value0}}…",
@@ -1320,7 +1320,42 @@
     "taskCreate": "Create workspace",
     "taskSearchLoading": "Searching tasks…",
     "taskSearchFailed": "Some task sources could not be searched",
-    "taskSearchRetry": "Retry"
+    "taskSearchRetry": "Retry",
+    "createWorkspaceNamed": "Create workspace “{{value0}}”",
+    "start": {
+      "newAgent": "New agent",
+      "newAgentDescription": "Open your default agent in a new tab.",
+      "newTerminal": "New terminal",
+      "newWorkspace": "New workspace",
+      "label": "Start something new"
+    },
+    "scope": {
+      "emptyTryAll": "Choose All to search everything.",
+      "tabsNoMatch": "No open tabs match",
+      "tabsEmpty": "No open tabs",
+      "tabsEmptyHint": "Chats, terminals and files you open show up here.",
+      "workspacesNoMatch": "No workspaces match",
+      "workspacesEmpty": "No other workspaces",
+      "tasksNoMatch": "No open issues match",
+      "tasksNoMatchHint": "Tasks searches open GitHub and GitLab issues in your projects.",
+      "tasksEmpty": "Search open issues",
+      "tasksEmptyHint": "Type an issue title, or paste an issue link.",
+      "actionsNoMatch": "No actions or settings match",
+      "actionsEmpty": "Search actions and settings",
+      "actionsEmptyHint": "Type what you want to do, like new terminal or theme.",
+      "label": "Search in",
+      "all": "All",
+      "tabs": "Tabs",
+      "workspaces": "Workspaces",
+      "tasks": "Tasks",
+      "actions": "Actions & settings",
+      "announce": "Showing {{value0}}."
+    },
+    "placeholder": "Search or jump to…",
+    "footer": {
+      "openRecent": "Open recent",
+      "switchScope": "Switch scope"
+    }
   },
   "auto": {
     "App": {
@@ -3376,7 +3411,14 @@
           "linearViewNotFound": "Saved Linear view was not found.",
           "linearViewRestoreFailed": "Failed to restore saved Linear view."
         },
-        "shownCount_one": "{{count}} shown"
+        "shownCount_one": "{{count}} shown",
+        "sources": "Task sources",
+        "title": "Tasks",
+        "showAllStates": "Show all states",
+        "newIssue": "New issue",
+        "groupInWorkspace": "In a workspace",
+        "groupNotStarted": "Not started",
+        "newProject": "New project"
       },
       "Terminal": {
         "73768427cf": "Close",
@@ -3470,11 +3512,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Move",
-        "75499e01d9": "Close",
-        "66b5a67bee": "Esc",
-        "45def60329": "Open",
-        "f65d992a11": "Enter",
         "c5081f2814": "Current Worktree",
         "52404f8096": "Current Tab",
         "739bda980c": "primary",
@@ -3495,7 +3532,6 @@
         "088d66d980": "Actions & Settings",
         "34c8fbb46e": "SSH remote",
         "63c2be1914": "SSH disconnected",
-        "95be6587d3": "Create worktree \"{{value0}}\"",
         "worktreesHeader": "Workspaces",
         "recentWorktreesHeader": "Recent Workspaces",
         "settingsBadge": "Settings",
@@ -3507,7 +3543,6 @@
         "repoGroupBadge": "Repo group",
         "pluginCommandFailed": "Could not run the plugin command.",
         "recentChatsTerminalsHeader": "Recent Chats & Terminals",
-        "27f10cca63": "Search chats, terminals, workspaces, tasks, settings, and actions...",
         "2770f02910": "Search chats, terminals, workspaces, tasks, settings, and actions",
         "lastActiveTime": "Last active {{value0}} ago",
         "resultsFound_one": "{{count}} result found.",
@@ -4848,7 +4883,9 @@
             "signedOutAccounts": "Signed out",
             "addAnotherAccount": "Add another account…",
             "staleCodexSessions_one": "{{count}} Codex session is still on the old account.",
-            "staleCodexSessions_other": "{{count}} Codex sessions are still on the old account."
+            "staleCodexSessions_other": "{{count}} Codex sessions are still on the old account.",
+            "resetsNow": "resets now",
+            "resetsIn": "resets in {{value0}}"
           },
           "StatusBarUsageEmptyCta": {
             "828c764a79": "Connect an account",
@@ -5153,7 +5190,8 @@
             "ariaLabel": "{{title}}, {{status}}",
             "onDescription": "Keep this computer awake continuously",
             "autoDescription": "Stay awake while an agent is working",
-            "offDescription": "Allow normal system sleep behavior"
+            "offDescription": "Allow normal system sleep behavior",
+            "awakeMode": "Awake: {{mode}}"
           },
           "RuntimeHostStatusRow": {
             "previous_connection_closed": "The previous connection closed",
@@ -6492,7 +6530,6 @@
           "keepDefaultBranchAria": "Keep the default branch visible while hiding sleeping workspaces"
         },
         "SidebarHeader": {
-          "92154beb7e": "New workspace",
           "addProject": "Add project",
           "expandAllProjects": "Expand all projects",
           "collapseAllProjects": "Collapse all projects"
@@ -6541,9 +6578,8 @@
           "b7e4d2a19c": "Onboarding"
         },
         "SidebarToolbar": {
-          "87d0064026": "Workspace board moved to the bottom bar",
-          "a30e34eb5c": "Close workspace board",
-          "49f62c5665": "Workspace board"
+          "49f62c5665": "Workspace board",
+          "boardShort": "Board"
         },
         "SidebarWorkspaceFilterSection": {
           "c3fa13dc2e": "Hide default branch",
@@ -6787,7 +6823,7 @@
           "bc1460beb3": "Update the group name shown in the sidebar.",
           "13757c053c": "New Project Group",
           "f9dc6cc5d3": "Rename Project Group",
-          "370c6a55dd": "Clear Filters",
+          "370c6a55dd": "Show all",
           "b7acbf038b": "No workspaces found",
           "c83968f87f": "Remove Project",
           "64e55f7f01": "Remove from group",
@@ -6828,7 +6864,8 @@
           "projectGroupRefreshSuccess_other": "Added {{count}} projects to {{group}}",
           "projectGroupRefreshing": "Refreshing {{group}}…",
           "refreshProjectGroup": "Refresh projects",
-          "hostServerReplaced": "Different server: forget it, then connect"
+          "hostServerReplaced": "Different server: forget it, then connect",
+          "hiddenByFilters": "Filters are hiding workspaces."
         },
         "WorktreeMetaDialog": {
           "3db0a2a593": "Cancel",
@@ -7558,6 +7595,9 @@
           "needsInput": "Needs input",
           "running": "Running",
           "idle": "Idle"
+        },
+        "SidebarNeedsYou": {
+          "more": "{{count}} more"
         }
       },
       "shared": {
@@ -8258,7 +8298,8 @@
           "41eb95f7f0": "Shows the floating workspace button and panel.",
           "5136813663": "Enable Floating Workspace",
           "37df688d6f": "Enable the floating workspace and choose where new tabs start.",
-          "1f67f39384": "Floating Workspace"
+          "1f67f39384": "Floating Workspace",
+          "topBar": "Top Bar"
         },
         "AgentCacheTimerSection": {
           "05de84a104": "1 hour",
@@ -15851,7 +15892,8 @@
           "FloatingTerminalIconContextMenu": {
             "8e7d775287": "Hide Floating Workspace",
             "763f5fa2c1": "Move to Floating Button",
-            "0ee79e0674": "Move to Status Bar"
+            "0ee79e0674": "Move to Status Bar",
+            "moveToTopBar": "Move to Top Bar"
           },
           "FloatingTerminalOrchestrationDialog": {
             "f726054620": "Enables agents to hand off context and coordinate work through Markov.",
@@ -20287,7 +20329,12 @@
         },
         "empty": {
           "title": "Start a chat with {{value0}}",
-          "subtitle": "Ask {{value0}} to inspect code, explain output, or make a change."
+          "subtitle": "Ask {{value0}} to inspect code, explain output, or make a change.",
+          "starterExplain": "Explain what this project does and how it is laid out",
+          "starterImprove": "Suggest three improvements, most important first",
+          "heroTitle": "What should {{agent}} do in {{workspace}}?",
+          "heroSubtitle": "It can read the project, run commands and make changes.",
+          "starterRun": "Run the app and fix the first thing that breaks"
         }
       },
       "stop": "Stop the agent",
@@ -20756,6 +20803,11 @@
         "hide": "Don't show opened pull requests",
         "many_one": "Opened {{count}} pull request",
         "many_other": "Opened {{count}} pull requests"
+      },
+      "header": {
+        "handOff": "Hand off",
+        "split": "Split",
+        "continueInTerminal": "Continue in terminal"
       }
     },
     "tab": {

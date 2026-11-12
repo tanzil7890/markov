@@ -13,10 +13,12 @@ import { useWorktreeJumpPaletteSelectionActions } from './use-worktree-jump-pale
 import { useWorktreeJumpPaletteCreateAction } from './use-worktree-jump-palette-create-action'
 import { useWorktreeJumpPaletteTaskSearch } from './use-worktree-jump-palette-task-search'
 import { useWorktreeJumpPaletteTaskUrl } from './use-worktree-jump-palette-task-url'
+import { usePaletteDigitModifierHeld } from './use-palette-digit-modifier-held'
 import { useWorkspaceEmojiShortcodeInput } from '@/components/workspace-emoji/useWorkspaceEmojiShortcodeInput'
 import { usePaletteSearchEvaluationContext } from '@/hooks/use-palette-search-evaluation-context'
 import type { WorktreePaletteRequestGuard } from '@/lib/workspace/search/worktrees/worktree-palette-create-action'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import type { PaletteScope } from './worktree-jump-palette-scope'
 
 export function useWorktreeJumpPaletteController({
   visible,
@@ -108,6 +110,7 @@ export function useWorktreeJumpPaletteController({
     ...quickActions,
     ...taskUrl
   })
+  const digitModifierHeld = usePaletteDigitModifierHeld(visible, sections.digitShortcutModifiers)
   const listEntries = useWorktreeJumpPaletteListEntries({
     ...localState,
     ...worktrees,
@@ -154,6 +157,16 @@ export function useWorktreeJumpPaletteController({
     ...taskUrl
   })
 
+  const { setScope, setSelectedItemId } = localState
+  const selectScope = useCallback(
+    (next: PaletteScope) => {
+      setScope(next)
+      // Why: an empty id lets selection fall to the first row of the new scope.
+      setSelectedItemId('')
+    },
+    [setScope, setSelectedItemId]
+  )
+
   return {
     ...storeState,
     ...localState,
@@ -171,6 +184,8 @@ export function useWorktreeJumpPaletteController({
     ...selectionActions,
     paletteNowMs: worktrees.hasQuery ? paletteSearchContext.nowMs : storeState.paletteNowMs,
     emojiInput,
+    digitModifierHeld,
+    selectScope,
     ...createAction
   }
 }

@@ -1055,7 +1055,6 @@
     "filter": {
       "emptyTitle": "Etkin filtreyle eşleşen sonuç yok",
       "emptySubtitle": "Yukarıdaki filtreyi temizleyin veya daha fazla sunucu ve projeyi kapsayacak şekilde genişletin.",
-      "tabKey": "Tab",
       "label": "Filtre",
       "activeCount": "{{value0}} etkin",
       "removeChip": "{{value0}} filtresini kaldır",
@@ -3225,11 +3224,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Taşı",
-        "75499e01d9": "Kapat",
-        "66b5a67bee": "Esc",
-        "45def60329": "Aç",
-        "f65d992a11": "Enter",
         "c5081f2814": "Geçerli Worktree",
         "52404f8096": "Geçerli Sekme",
         "739bda980c": "birincil",
@@ -3250,7 +3244,6 @@
         "088d66d980": "İşlemler ve Ayarlar",
         "34c8fbb46e": "SSH uzak sunucusu",
         "63c2be1914": "SSH bağlantısı kesildi",
-        "95be6587d3": "\"{{value0}}\" worktree'sini oluştur",
         "worktreesHeader": "Çalışma Alanları",
         "recentWorktreesHeader": "Son Çalışma Alanları",
         "settingsBadge": "Ayarlar",
@@ -3262,7 +3255,6 @@
         "repoGroupBadge": "Repo grubu",
         "pluginCommandFailed": "Eklenti komutu çalıştırılamadı.",
         "recentChatsTerminalsHeader": "Son Sohbetler ve Terminaller",
-        "27f10cca63": "Sohbetlerde, terminallerde, çalışma alanlarında, görevlerde, ayarlarda ve işlemlerde ara...",
         "2770f02910": "Sohbetlerde, terminallerde, çalışma alanlarında, görevlerde, ayarlarda ve işlemlerde ara",
         "lastActiveTime": "Son aktivite: {{value0}} önce",
         "resultsFound_other": "{{count}} sonuç bulundu.",
@@ -6205,7 +6197,6 @@
           "keepDefaultBranchAria": "Uyuyan çalışma alanlarını gizlerken varsayılan branch'i görünür tut"
         },
         "SidebarHeader": {
-          "92154beb7e": "Yeni çalışma alanı",
           "addProject": "Proje ekle"
         },
         "SidebarNav": {
@@ -6252,8 +6243,6 @@
           "b7e4d2a19c": "Başlangıç"
         },
         "SidebarToolbar": {
-          "87d0064026": "Çalışma alanı panosu alt çubuğa taşındı",
-          "a30e34eb5c": "Çalışma alanı panosunu kapat",
           "49f62c5665": "Çalışma alanı panosu"
         },
         "SidebarWorkspaceFilterSection": {

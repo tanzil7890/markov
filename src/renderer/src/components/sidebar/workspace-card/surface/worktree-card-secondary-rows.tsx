@@ -64,6 +64,7 @@ export function WorktreeCardSecondaryRows({
         <WorktreeCardAgents
           worktreeId={worktree.id}
           agents={agentActivityDisplayMode === 'compact' ? compactInlineAgentRows : undefined}
+          cardShowsStatus={card.showStatus}
           className={hasMetaRow || remoteBranchConflict ? 'mt-0' : '-mt-1'}
         />
       )}

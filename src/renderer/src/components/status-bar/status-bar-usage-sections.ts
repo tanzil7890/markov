@@ -10,6 +10,17 @@ export type StatusBarUsageSection = {
   window: RateLimitWindow
   label: string
   labelFirst?: boolean
+  /** The label is time left until this window resets. */
+  countdown?: boolean
+}
+
+function windowSection(key: string, window: RateLimitWindow): StatusBarUsageSection {
+  return {
+    key,
+    window,
+    label: formatRateLimitWindowChipLabel(window),
+    countdown: window.resetsAt != null
+  }
 }
 
 const STATUS_BAR_BUCKET_NAMES = new Set(['Flash', 'Pro', '1.5 Pro'])
@@ -42,17 +53,11 @@ export function getStatusBarUsageSections(
       }))
     }
     const fallback = p.session ?? p.monthly ?? p.weekly
-    return fallback
-      ? [{ key: 'fallback', window: fallback, label: formatRateLimitWindowChipLabel(fallback) }]
-      : []
+    return fallback ? [windowSection('fallback', fallback)] : []
   }
   return [
-    p.session
-      ? { key: 'session', window: p.session, label: formatRateLimitWindowChipLabel(p.session) }
-      : null,
-    p.weekly
-      ? { key: 'weekly', window: p.weekly, label: formatRateLimitWindowChipLabel(p.weekly) }
-      : null,
+    p.session ? windowSection('session', p.session) : null,
+    p.weekly ? windowSection('weekly', p.weekly) : null,
     p.fableWeekly
       ? {
           key: 'fableWeekly',
@@ -61,8 +66,6 @@ export function getStatusBarUsageSections(
         }
       : null,
     // Monthly-only providers keep their limit inline; other plans show it in the details.
-    p.monthly && !p.session && !p.weekly
-      ? { key: 'monthly', window: p.monthly, label: formatRateLimitWindowChipLabel(p.monthly) }
-      : null
+    p.monthly && !p.session && !p.weekly ? windowSection('monthly', p.monthly) : null
   ].filter((section) => section !== null)
 }

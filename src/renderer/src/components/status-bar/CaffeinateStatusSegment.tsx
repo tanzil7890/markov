@@ -102,7 +102,13 @@ export function CaffeinateStatusSegment({
             >
               <Coffee className={`size-3 ${active ? 'text-foreground' : ''}`} />
               {!iconOnly ? (
-                <span className="text-[11px] font-medium">{getAgentAwakeModeLabel(mode)}</span>
+                <span className="text-[11px] font-medium">
+                  {translate(
+                    'auto.components.status.bar.CaffeinateStatusSegment.awakeMode',
+                    'Awake: {{mode}}',
+                    { mode: getAgentAwakeModeLabel(mode) }
+                  )}
+                </span>
               ) : null}
               <span
                 aria-hidden

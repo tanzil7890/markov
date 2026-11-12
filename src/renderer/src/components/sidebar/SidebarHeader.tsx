@@ -32,6 +32,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
   const counts = useAgentBucketCounts()
   const activityBadgeId = useId()
   const activityCount = counts.attention || counts.working
+  const showActivityBadge = activityCount > 0
   const activityStatusLabel = counts.attention
     ? translate('dashboardPopout.bucket.attention', 'Needs You')
     : counts.working
@@ -65,7 +66,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
       >
         <span
           // Truncate localized titles because fixed-width actions cannot shrink inside the short header row.
-          className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-muted-foreground/80"
+          className="min-w-0 truncate select-none pl-2 pr-0.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground"
           data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}
         >
           {sidebarTitle}
@@ -92,6 +93,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
                     size="icon-xs"
                     className={cn(
                       'w-8 text-muted-foreground',
+                      !showActivityBadge && 'w-6',
                       agentsViewActive &&
                         'bg-foreground/10 text-foreground hover:bg-foreground/15 dark:hover:bg-foreground/15'
                     )}
@@ -100,38 +102,42 @@ const SidebarHeader = React.memo(function SidebarHeader({
                     aria-describedby={activityBadgeId}
                     onClick={() => setSidebarBody?.(agentsViewActive ? 'workspaces' : 'agents')}
                   >
-                    <span className="relative h-5 w-6 shrink-0">
-                      <Bell className="absolute left-0 top-1 size-3" />
-                      <span
-                        className="pointer-events-none absolute inset-0"
-                        id={activityBadgeId}
-                        aria-label={`${activityStatusLabel}: ${activityCount}`}
-                      >
-                        <span className="absolute right-0 top-0 flex h-2 w-3 items-center justify-center">
-                          {counts.attention > 0 ? (
-                            <AgentQuestionIcon className="size-2" />
-                          ) : (
+                    {showActivityBadge ? (
+                      <span className="relative h-5 w-6 shrink-0">
+                        <Bell className="absolute left-0 top-1 size-3" />
+                        <span
+                          className="pointer-events-none absolute inset-0"
+                          id={activityBadgeId}
+                          aria-label={`${activityStatusLabel}: ${activityCount}`}
+                        >
+                          <span className="absolute right-0 top-0 flex h-2 w-3 items-center justify-center">
+                            {counts.attention > 0 ? (
+                              <AgentQuestionIcon className="size-2" />
+                            ) : (
+                              <span className="size-1 rounded-full bg-(--status-warning)" />
+                            )}
+                          </span>
+                          <span className="absolute right-0 top-2.5 flex h-2.5 w-3 items-center justify-center">
                             <span
                               className={cn(
-                                'size-1 rounded-full',
-                                counts.working > 0 ? 'bg-(--status-warning)' : 'bg-muted-foreground'
+                                'icon-superscript-count',
+                                activityCount > 99 && 'origin-center scale-x-65'
                               )}
-                            />
-                          )}
-                        </span>
-                        <span className="absolute right-0 top-2.5 flex h-2.5 w-3 items-center justify-center">
-                          <span
-                            className={cn(
-                              'icon-superscript-count',
-                              activityCount > 99 && 'origin-center scale-x-65'
-                            )}
-                            data-multiple-digits={activityCount > 9}
-                          >
-                            {activityCount > 99 ? '99+' : activityCount}
+                              data-multiple-digits={activityCount > 9}
+                            >
+                              {activityCount > 99 ? '99+' : activityCount}
+                            </span>
                           </span>
                         </span>
                       </span>
-                    </span>
+                    ) : (
+                      <>
+                        <Bell className="size-3.5" strokeWidth={2.25} />
+                        <span id={activityBadgeId} className="sr-only">
+                          {activityStatusLabel}
+                        </span>
+                      </>
+                    )}
                   </Button>
                 </PopoverAnchor>
               </span>

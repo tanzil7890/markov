@@ -171,7 +171,7 @@ export function FloatingWorkspacePane({
           control={
             <ToggleGroup
               type="single"
-              value={settings.floatingTerminalTriggerLocation ?? 'floating-button'}
+              value={settings.floatingTerminalTriggerLocation ?? 'top-bar'}
               onValueChange={(value) => {
                 if (!value) {
                   return
@@ -182,6 +182,9 @@ export function FloatingWorkspacePane({
                 useAppStore.getState().recordFeatureInteraction('floating-workspace')
               }}
             >
+              <ToggleGroupItem value="top-bar">
+                {translate('auto.components.settings.FloatingWorkspacePane.topBar', 'Top Bar')}
+              </ToggleGroupItem>
               <ToggleGroupItem value="floating-button">
                 {translate(
                   'auto.components.settings.FloatingWorkspacePane.9fb225f2d7',

@@ -20,7 +20,7 @@ import { persistedUIValuesEqual } from '../../../../../shared/persisted-ui-equal
 import { DEFAULT_STATUS_BAR_ITEMS } from '../../../../../shared/constants'
 import type { UISlice } from './ui-slice-contract'
 
-const MIN_SIDEBAR_WIDTH = 220
+const MIN_SIDEBAR_WIDTH = 180
 
 export function preserveStringArrayIdentity<T extends string>(
   current: readonly T[] | null,

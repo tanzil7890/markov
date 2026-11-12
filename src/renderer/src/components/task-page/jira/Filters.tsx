@@ -133,44 +133,37 @@ export function TaskPageJiraFilters({
             onUpdate={updateJiraSavedFilter}
             onDelete={deleteJiraSavedFilter}
           />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
-                  const draft = useAppStore.getState().newJiraIssueDraft
-                  setNewJiraIssueTitle(draft?.title ?? '')
-                  setNewJiraIssueBody(draft?.body ?? '')
-                  const projectFilter = model.jiraProjectFilter
-                  const defaultProject = projectFilter
-                    ? sortedAvailableJiraProjects.find((project) =>
-                        matchesJiraProject(project, projectFilter)
-                      )
-                    : null
-                  const project = defaultProject ?? sortedAvailableJiraProjects[0]
-                  setNewJiraIssueProjectId(project ? getJiraProjectSelectionKey(project) : null)
-                  setNewJiraIssueProjectQuery('')
-                  setNewJiraIssueProjectCommandValue('')
-                  setNewJiraIssueTypeId(null)
-                  setNewJiraIssueOpen(true)
-                }}
-                disabled={sortedAvailableJiraProjects.length === 0 || jiraProjectsLoading}
-                aria-label={translate('auto.components.TaskPage.0c11ca0b6d', 'New Jira issue')}
-                className="border-border/50 bg-transparent hover:bg-muted/50 backdrop-blur-md supports-[backdrop-filter]:bg-transparent"
-              >
-                {jiraProjectsLoading ? (
-                  <LoaderCircle className="size-4 animate-spin" />
-                ) : (
-                  <Plus className="size-4" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              {translate('auto.components.TaskPage.0c11ca0b6d', 'New Jira issue')}
-            </TooltipContent>
-          </Tooltip>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Why: restore dismissed typed text (accidental dismissal recoverable); pickers keep their fresh open-time defaults.
+              const draft = useAppStore.getState().newJiraIssueDraft
+              setNewJiraIssueTitle(draft?.title ?? '')
+              setNewJiraIssueBody(draft?.body ?? '')
+              const projectFilter = model.jiraProjectFilter
+              const defaultProject = projectFilter
+                ? sortedAvailableJiraProjects.find((project) =>
+                    matchesJiraProject(project, projectFilter)
+                  )
+                : null
+              const project = defaultProject ?? sortedAvailableJiraProjects[0]
+              setNewJiraIssueProjectId(project ? getJiraProjectSelectionKey(project) : null)
+              setNewJiraIssueProjectQuery('')
+              setNewJiraIssueProjectCommandValue('')
+              setNewJiraIssueTypeId(null)
+              setNewJiraIssueOpen(true)
+            }}
+            disabled={sortedAvailableJiraProjects.length === 0 || jiraProjectsLoading}
+            aria-label={translate('auto.components.TaskPage.0c11ca0b6d', 'New Jira issue')}
+          >
+            {jiraProjectsLoading ? (
+              <LoaderCircle className="size-3.5 animate-spin" />
+            ) : (
+              <Plus className="size-3.5" />
+            )}
+            {translate('auto.components.TaskPage.newIssue', 'New issue')}
+          </Button>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

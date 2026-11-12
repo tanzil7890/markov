@@ -3,7 +3,7 @@ import { WorktreeJumpPaletteTaskSearchStatus } from './worktree-jump-palette-tas
 import type React from 'react'
 import { CommandDialog, CommandEmpty, CommandInput, CommandList } from '@/components/ui/command'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import PaletteFilterMenu from '@/components/cmd-j/PaletteFilterMenu'
+import { DialogOverlaySurface } from '@/components/ui/dialog'
 import PaletteFilterChips from '@/components/cmd-j/PaletteFilterChips'
 import { PaletteLiveStatusProvider } from '@/components/cmd-j/palette-live-status'
 import { getPaletteFilterSelectionCount } from '@/components/cmd-j/palette-filter'
@@ -11,7 +11,10 @@ import { translate } from '@/i18n/i18n'
 import { WorkspaceEmojiSuggestionPopover } from '@/components/workspace-emoji/WorkspaceEmojiSuggestionPopover'
 import type { WorktreeJumpPaletteController } from './use-worktree-jump-palette-controller'
 import { WorktreeJumpPaletteEntry } from './worktree-jump-palette-entry'
-import { FooterKey, PaletteState } from './worktree-jump-palette-primitives'
+import { PaletteState } from './worktree-jump-palette-primitives'
+import { WorktreeJumpPaletteScopeBar } from './worktree-jump-palette-scope-bar'
+import { WorktreeJumpPaletteStartActions } from './worktree-jump-palette-start-actions'
+import { getPaletteScopeLabel, stepPaletteScope } from './worktree-jump-palette-scope'
 import {
   getWorktreeJumpPaletteEmptyState,
   getWorktreeJumpPaletteResultCount
@@ -28,6 +31,10 @@ export function WorktreeJumpPaletteSurface({
   const modKey = navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl'
   const emptyState = getWorktreeJumpPaletteEmptyState(controller)
   const resultCount = getWorktreeJumpPaletteResultCount(controller)
+  const showDigitHint =
+    !controller.hasQuery &&
+    controller.recentTabShortcutIndexByItem.size > 0 &&
+    controller.digitShortcutModifiers.length > 0
   const paletteDialog = (
     <CommandDialog
       open={controller.visible}
@@ -41,12 +48,13 @@ export function WorktreeJumpPaletteSurface({
         'Search chats, terminals, workspaces, tasks, settings, and actions'
       )}
       surface="palette"
-      contentClassName="top-[min(10%,4rem)] w-[900px] max-w-[96vw] max-h-[min(90vh,calc(100vh-1.5rem))] overflow-hidden"
+      contentClassName="top-[min(12%,5rem)] w-[640px] max-w-[96vw] max-h-[min(90vh,calc(100vh-1.5rem))] overflow-hidden"
       commandProps={{
         loop: true,
         value: controller.commandSelectedItemId,
         onValueChange: controller.handleCommandSelectionChange,
-        className: 'jump-palette-command bg-transparent',
+        // Why: the dialog's default item padding outranks row classes; one line per result needs less.
+        className: 'jump-palette-command bg-transparent [&_[cmdk-item]]:py-1.5',
         onKeyDownCapture: (event: React.KeyboardEvent) => {
           if (
             selectedTask &&
@@ -69,29 +77,26 @@ export function WorktreeJumpPaletteSurface({
     >
       <CommandInput
         ref={controller.inputRef}
-        placeholder={translate(
-          'auto.components.WorktreeJumpPalette.27f10cca63',
-          'Search chats, terminals, workspaces, tasks, settings, and actions...'
-        )}
+        placeholder={translate('worktreeJumpPalette.placeholder', 'Search or jump to…')}
         value={controller.query}
         onValueChange={controller.emojiInput.handleValueChange}
         onClick={(event) => controller.emojiInput.syncCursor(event.currentTarget)}
         onSelect={(event) => controller.emojiInput.syncCursor(event.currentTarget)}
-        onKeyDown={(event) => controller.emojiInput.handleKeyDown(event)}
-        wrapperClassName="mx-3 mt-3 rounded-lg border border-border/55 bg-muted/28 px-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+        onKeyDown={(event) => {
+          // Why: Tab steps through scopes, then leaves the box so the filter stays reachable.
+          const nextScope =
+            event.key === 'Tab' && !controller.emojiInput.open && !event.altKey
+              ? stepPaletteScope(controller.scope, event.shiftKey ? -1 : 1)
+              : null
+          if (nextScope) {
+            event.preventDefault()
+            controller.selectScope(nextScope)
+            return
+          }
+          controller.emojiInput.handleKeyDown(event)
+        }}
         iconClassName="mr-2.5 h-4 w-4 text-muted-foreground/60"
         className="h-12 min-w-0 flex-1"
-        trailing={
-          <div ref={controller.setDialogElementFromNode} className="shrink-0">
-            <PaletteFilterMenu
-              model={controller.filterModel}
-              filter={controller.filter}
-              onFilterChange={controller.setFilter}
-              onRequestInputFocus={controller.focusPaletteInput}
-              portalContainer={controller.dialogElement}
-            />
-          </div>
-        }
       />
       <WorkspaceEmojiSuggestionPopover
         anchorRef={controller.inputRef}
@@ -106,11 +111,15 @@ export function WorktreeJumpPaletteSurface({
         side="bottom"
         contentClassName="w-80"
       />
+      <WorktreeJumpPaletteScopeBar controller={controller} />
       <PaletteFilterChips
         model={controller.filterModel}
         filter={controller.filter}
         onFilterChange={controller.setFilter}
       />
+      {!controller.hasQuery && controller.scope === 'all' ? (
+        <WorktreeJumpPaletteStartActions controller={controller} />
+      ) : null}
       <CommandList
         ref={controller.listRef}
         onPointerDownCapture={() => {
@@ -147,35 +156,38 @@ export function WorktreeJumpPaletteSurface({
             ))}
           </>
         )}
-        <WorktreeJumpPaletteTaskSearchStatus
-          loading={controller.taskSearchLoading}
-          failures={controller.taskSearchFailures}
-          onRetry={controller.retryTaskSearch}
-        />
+        {controller.scope === 'all' || controller.scope === 'tasks' ? (
+          <WorktreeJumpPaletteTaskSearchStatus
+            loading={controller.taskSearchLoading}
+            failures={controller.taskSearchFailures}
+            onRetry={controller.retryTaskSearch}
+          />
+        ) : null}
       </CommandList>
-      <div className="flex items-center justify-end border-t border-border/60 px-3.5 py-2.5 text-[11px] text-muted-foreground/82">
-        <div className="flex items-center gap-2">
-          {selectedTask ? (
-            <>
-              <ShortcutKeyCombo keys={[modKey, 'Enter']} />
-              <span>{translate('worktreeJumpPalette.taskCreate', 'Create workspace')}</span>
-            </>
-          ) : null}
-          <FooterKey>
-            {translate('auto.components.WorktreeJumpPalette.f65d992a11', 'Enter')}
-          </FooterKey>
-          <span>{translate('auto.components.WorktreeJumpPalette.45def60329', 'Open')}</span>
-          <FooterKey>
-            {translate('auto.components.WorktreeJumpPalette.66b5a67bee', 'Esc')}
-          </FooterKey>
-          <span>{translate('auto.components.WorktreeJumpPalette.75499e01d9', 'Close')}</span>
-          <FooterKey>↑↓</FooterKey>
-          <span>{translate('auto.components.WorktreeJumpPalette.ac037cfac2', 'Move')}</span>
-          <FooterKey>{translate('worktreeJumpPalette.filter.tabKey', 'Tab')}</FooterKey>
-          <span>{translate('worktreeJumpPalette.filter.label', 'Filter')}</span>
-        </div>
+      <div className="flex items-center gap-3 border-t border-border/60 px-4 py-2 text-[11px] text-muted-foreground">
+        {showDigitHint ? (
+          <span className="flex items-center gap-1.5">
+            <ShortcutKeyCombo keys={[...controller.digitShortcutModifiers, '1–9']} />
+            {translate('worktreeJumpPalette.footer.openRecent', 'Open recent')}
+          </span>
+        ) : null}
+        <span className="flex items-center gap-1.5">
+          <ShortcutKeyCombo keys={['Tab']} />
+          {translate('worktreeJumpPalette.footer.switchScope', 'Switch scope')}
+        </span>
+        {selectedTask ? (
+          <span className="ml-auto flex items-center gap-1.5">
+            <ShortcutKeyCombo keys={[modKey, 'Enter']} />
+            {translate('worktreeJumpPalette.taskCreate', 'Create workspace')}
+          </span>
+        ) : null}
       </div>
       <div aria-live="polite" className="sr-only">
+        {controller.scope === 'all'
+          ? ''
+          : `${translate('worktreeJumpPalette.scope.announce', 'Showing {{value0}}.', {
+              value0: getPaletteScopeLabel(controller.scope)
+            })} `}
         {controller.filterActive
           ? `${translate(
               'worktreeJumpPalette.filter.ariaActiveCount',
@@ -207,7 +219,7 @@ export function WorktreeJumpPaletteSurface({
   return (
     <TooltipProvider delayDuration={400}>
       <PaletteLiveStatusProvider active={controller.paletteStatusInputsActive}>
-        {paletteDialog}
+        <DialogOverlaySurface value="palette">{paletteDialog}</DialogOverlaySurface>
       </PaletteLiveStatusProvider>
     </TooltipProvider>
   )

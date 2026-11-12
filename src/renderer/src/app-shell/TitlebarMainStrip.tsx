@@ -8,6 +8,8 @@ import { useAppStore } from '../store'
 import { selectActiveTerminalChromeState } from '../store/active-terminal-chrome-selector'
 import { hasCustomTitleBar } from './app-window-chrome'
 import type { AppChromeLayout } from './use-app-chrome-layout'
+import { FloatingWorkspaceTopBarToggle } from './FloatingWorkspaceTopBarToggle'
+import { registerTitlebarPageControlsSlot } from '@/lib/titlebar-page-controls-slot'
 
 export function RightSidebarToggle(): React.JSX.Element {
   const toggleRightSidebar = useAppStore((s) => s.toggleRightSidebar)
@@ -47,6 +49,12 @@ export function TitlebarMainStrip({ layout }: { layout: AppChromeLayout }): Reac
 
   return (
     <>
+      {layout.activeView === 'tasks' ? (
+        <div
+          ref={registerTitlebarPageControlsSlot}
+          className="flex shrink-0 items-center gap-1 pl-2 [-webkit-app-region:no-drag]"
+        />
+      ) : null}
       {layout.activeView === 'activity' ? (
         <ActivityTitlebarControls />
       ) : layout.creationLayoutActive ? null : (
@@ -72,6 +80,8 @@ export function TitlebarMainStrip({ layout }: { layout: AppChromeLayout }): Reac
           </TooltipContent>
         </Tooltip>
       )}
+      {/* Workspace views draw this beside their tab strip instead. */}
+      {layout.workspaceChromeActive ? null : <FloatingWorkspaceTopBarToggle />}
       {/* The open sidebar already renders its close button. */}
       {layout.showRightSidebarControls && !layout.rightSidebarOpen ? <RightSidebarToggle /> : null}
       {/* Reserve the custom window-controls overlay’s width. */}

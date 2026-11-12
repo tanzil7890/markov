@@ -611,7 +611,6 @@
     "filter": {
       "emptyTitle": "有効なフィルターに一致する結果がありません",
       "emptySubtitle": "上のフィルターをクリアするか、より多くのホストとプロジェクトに広げてください。",
-      "tabKey": "Tab",
       "label": "フィルター",
       "activeCount": "{{value0}} 件アクティブ",
       "removeChip": "フィルター {{value0}} を削除",
@@ -2725,11 +2724,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "移動",
-        "75499e01d9": "閉じる",
-        "66b5a67bee": "ESC",
-        "45def60329": "オープン",
-        "f65d992a11": "入力",
         "c5081f2814": "現在のワークツリー",
         "52404f8096": "現在のタブ",
         "739bda980c": "プライマリ",
@@ -2750,7 +2744,6 @@
         "088d66d980": "操作と設定",
         "34c8fbb46e": "SSH リモート",
         "63c2be1914": "SSH が切断されました",
-        "95be6587d3": "ワークツリー「{{value0}}」を作成する",
         "worktreesHeader": "ワークスペース",
         "recentWorktreesHeader": "最近のワークスペース",
         "settingsBadge": "設定",
@@ -2761,7 +2754,6 @@
         "projectBadge": "プロジェクト",
         "repoGroupBadge": "リポジトリグループ",
         "pluginCommandFailed": "プラグインのコマンドを実行できませんでした。",
-        "27f10cca63": "チャット、ターミナル、ワークスペース、タスク、設定、操作を検索します…",
         "2770f02910": "チャット、ターミナル、ワークスペース、タスク、設定、操作を検索します",
         "recentChatsTerminalsHeader": "最近のチャットとターミナル",
         "lastActiveTime": "最後にアクティブになったのは{{value0}}前です",
@@ -5577,7 +5569,6 @@
           "keepDefaultBranchAria": "スリープ中のワークスペースを非表示にしてもデフォルトのブランチは表示したままにする"
         },
         "SidebarHeader": {
-          "92154beb7e": "新規ワークスペース",
           "addProject": "プロジェクトを追加"
         },
         "SidebarNav": {
@@ -5623,8 +5614,6 @@
           "b7e4d2a19c": "オンボーディング"
         },
         "SidebarToolbar": {
-          "87d0064026": "ワークスペースボードは下部バーに移動しました",
-          "a30e34eb5c": "ワークスペースボードを閉じる",
           "49f62c5665": "ワークスペースボード"
         },
         "SidebarWorkspaceFilterSection": {

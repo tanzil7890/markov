@@ -136,11 +136,15 @@ export default function PRFilterDropdowns({
   >(null)
   const reviewerMode = reviewerModeOverride ?? reviewerKind
 
-  // Expose any non-default status as a removable pill.
-  const statusActive = (parsed.state !== null && parsed.state !== 'open') || parsed.draft
+  // Expose any non-default status as a removable pill; PR state already has its own buttons beside this.
+  const stateShownElsewhere = kind === 'prs'
+  const statusActive =
+    (!stateShownElsewhere && parsed.state !== null && parsed.state !== 'open') || parsed.draft
   const statusPillValue = ((): string | null => {
     const parts: string[] = []
-    if (parsed.state === 'closed' || parsed.state === 'merged') {
+    if (stateShownElsewhere) {
+      // Only draft has no button of its own.
+    } else if (parsed.state === 'closed' || parsed.state === 'merged') {
       parts.push(filterStateLabel(parsed.state))
     } else if (parsed.state === 'all') {
       parts.push(translate('auto.components.github.PRFilterDropdowns.anyState', 'Any'))
@@ -248,7 +252,9 @@ export default function PRFilterDropdowns({
         <ActivePill
           label={translate('auto.components.github.PRFilterDropdowns.13b3ac0a84', 'Status')}
           value={statusPillValue}
-          onClear={() => onChange({ state: 'open', draft: false })}
+          onClear={() =>
+            onChange(stateShownElsewhere ? { draft: false } : { state: 'open', draft: false })
+          }
         />
       ) : null}
       {parsed.author ? (

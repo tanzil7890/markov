@@ -6,6 +6,7 @@ import {
 } from '../../../../../../shared/repo-host-identity'
 import { getComposerEligibleRepos } from '@/lib/new-workspace-composer-repo'
 import { useAppStore } from '@/store'
+import { openWorkspaceCreationComposerWithTourHandoff } from '../../../contextual-tours/workspace-creation-tour-handoff'
 import {
   getRepoWorkspaceCreationTargetHint,
   type WorkspaceCreationTargetHint
@@ -32,10 +33,9 @@ export function getHeaderCreateWorkspaceTarget(
 
 /** A project header's Create: the composer seeded with its repo, pinned to its host when its rows all sit there. */
 export function openHeaderCreateComposer(repo: Repo, { pinHost }: { pinHost: boolean }): void {
-  const { repos, projectHostSetups, openModal } = useAppStore.getState()
-  openModal('new-workspace-composer', {
+  const { repos, projectHostSetups } = useAppStore.getState()
+  openWorkspaceCreationComposerWithTourHandoff({
     initialRepoId: repo.id,
-    ...(pinHost ? getHeaderCreateWorkspaceTarget(repo, repos, projectHostSetups) : {}),
-    telemetrySource: 'sidebar'
+    ...(pinHost ? getHeaderCreateWorkspaceTarget(repo, repos, projectHostSetups) : {})
   })
 }

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { EyeOff, PanelBottom, PanelTop } from 'lucide-react'
+import { EyeOff, PanelBottom, PanelTop, PictureInPicture2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,27 +40,37 @@ export function FloatingTerminalIconContextMenu({
     }
   }, [])
 
-  const moveAction = useMemo(() => {
-    if (currentLocation === 'floating-button') {
-      return {
-        icon: <PanelBottom className="size-3.5" />,
-        label: translate(
-          'auto.components.floating.terminal.FloatingTerminalIconContextMenu.0ee79e0674',
-          'Move to Status Bar'
-        ),
-        location: 'status-bar' as const
-      }
-    }
-    return {
-      icon: <PanelTop className="size-3.5" />,
-      label: translate(
-        'auto.components.floating.terminal.FloatingTerminalIconContextMenu.763f5fa2c1',
-        'Move to Floating Button'
-      ),
-      location: 'floating-button' as const
-    }
+  const moveActions = useMemo(
+    () =>
+      [
+        {
+          location: 'top-bar' as const,
+          icon: <PanelTop className="size-3.5" />,
+          label: translate(
+            'auto.components.floating.terminal.FloatingTerminalIconContextMenu.moveToTopBar',
+            'Move to Top Bar'
+          )
+        },
+        {
+          location: 'floating-button' as const,
+          icon: <PictureInPicture2 className="size-3.5" />,
+          label: translate(
+            'auto.components.floating.terminal.FloatingTerminalIconContextMenu.763f5fa2c1',
+            'Move to Floating Button'
+          )
+        },
+        {
+          location: 'status-bar' as const,
+          icon: <PanelBottom className="size-3.5" />,
+          label: translate(
+            'auto.components.floating.terminal.FloatingTerminalIconContextMenu.0ee79e0674',
+            'Move to Status Bar'
+          )
+        }
+      ].filter((action) => action.location !== currentLocation),
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- translate() reads the UI language implicitly.
-  }, [currentLocation, languageRevision])
+    [currentLocation, languageRevision]
+  )
 
   return (
     <>
@@ -99,15 +109,18 @@ export function FloatingTerminalIconContextMenu({
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-52" sideOffset={0} align="start">
-          <DropdownMenuItem
-            className="whitespace-nowrap"
-            onSelect={() => {
-              void updateSettings({ floatingTerminalTriggerLocation: moveAction.location })
-            }}
-          >
-            {moveAction.icon}
-            {moveAction.label}
-          </DropdownMenuItem>
+          {moveActions.map((action) => (
+            <DropdownMenuItem
+              key={action.location}
+              className="whitespace-nowrap"
+              onSelect={() => {
+                void updateSettings({ floatingTerminalTriggerLocation: action.location })
+              }}
+            >
+              {action.icon}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="whitespace-nowrap"

@@ -846,7 +846,6 @@
     "filter": {
       "emptyTitle": "Aucun résultat ne correspond au filtre actif",
       "emptySubtitle": "Effacez le filtre ci-dessus, ou élargissez-le à davantage d'hôtes et de projets.",
-      "tabKey": "Tab",
       "label": "Filtre",
       "activeCount": "{{value0}} actif(s)",
       "removeChip": "Supprimer le filtre {{value0}}",
@@ -2997,11 +2996,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Déplacer",
-        "75499e01d9": "Fermer",
-        "66b5a67bee": "Esc",
-        "45def60329": "Ouvert",
-        "f65d992a11": "Enter",
         "c5081f2814": "Worktree actuel",
         "52404f8096": "Onglet actuel",
         "739bda980c": "principal",
@@ -3022,7 +3016,6 @@
         "088d66d980": "Actions et paramètres",
         "34c8fbb46e": "Remote SSH",
         "63c2be1914": "SSH déconnecté",
-        "95be6587d3": "Créer le worktree « {{value0}} »",
         "worktreesHeader": "Espaces de travail",
         "recentWorktreesHeader": "Espaces de travail récents",
         "settingsBadge": "Paramètres",
@@ -3034,7 +3027,6 @@
         "repoGroupBadge": "Groupe de dépôts",
         "pluginCommandFailed": "Impossible d'exécuter la commande du plugin.",
         "recentChatsTerminalsHeader": "Chats et terminaux récents",
-        "27f10cca63": "Rechercher chats, terminaux, espaces de travail, tâches, paramètres et actions...",
         "2770f02910": "Rechercher chats, terminaux, espaces de travail, tâches, paramètres et actions",
         "lastActiveTime": "Dernière activité il y a {{value0}}",
         "resultsFound_one": "{{count}} résultat trouvé.",
@@ -6061,7 +6053,6 @@
           "keepDefaultBranchAria": "Garder la branche par défaut visible tout en masquant les espaces de travail en veille"
         },
         "SidebarHeader": {
-          "92154beb7e": "Nouvel espace de travail",
           "addProject": "Ajouter un projet"
         },
         "SidebarNav": {
@@ -6109,8 +6100,6 @@
           "b7e4d2a19c": "Prise en main"
         },
         "SidebarToolbar": {
-          "87d0064026": "Tableau des espaces de travail déplacé dans la barre inférieure",
-          "a30e34eb5c": "Fermer le tableau des espaces de travail",
           "49f62c5665": "Tableau des espaces de travail"
         },
         "SidebarWorkspaceFilterSection": {

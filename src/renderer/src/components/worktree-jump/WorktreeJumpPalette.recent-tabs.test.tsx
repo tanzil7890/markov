@@ -222,6 +222,20 @@ function getTabRowShortcutDigits(): string[] {
       .filter((text) => /^\d+$/.test(text))
   )
 }
+async function holdDigitModifier(): Promise<void> {
+  // Numbers show only while the chord's modifiers are down; press them all so any binding qualifies.
+  await act(async () => {
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Control',
+        metaKey: true,
+        ctrlKey: true,
+        altKey: true,
+        shiftKey: true
+      })
+    )
+  })
+}
 function clickSeeMore(): void {
   ;[...testContainer.querySelectorAll('button')]
     .find((button) => button.textContent?.includes('See more'))
@@ -329,6 +343,8 @@ describe('WorktreeJumpPalette recent chats & terminals', () => {
   })
   it('stops badging expanded recent rows at the last addressable digit', async () => {
     await renderPalette(makeManyTabState(12))
+    expect(getTabRowShortcutDigits()).toEqual([])
+    await holdDigitModifier()
     expect(getTabRowShortcutDigits()).toEqual(['1', '2', '3', '4', '5', '6'])
     await act(async () => {
       clickSeeMore()

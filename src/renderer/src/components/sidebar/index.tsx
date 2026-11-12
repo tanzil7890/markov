@@ -10,6 +10,7 @@ import SetupScriptPromptCard from './SetupScriptPromptCard'
 import WorktreeList from './worktree-list/listing/WorktreeList'
 import WslMovedProjectsSection from './WslMovedProjectsSection'
 import SidebarToolbar from './SidebarToolbar'
+import { SidebarNeedsYouGate } from './SidebarNeedsYouGate'
 import WorkspaceKanbanDrawer from './workspace-board/surface/WorkspaceKanbanDrawer'
 import type { VirtualizedScrollAnchor } from '@/hooks/useVirtualizedScrollAnchor'
 import { cn } from '@/lib/utils'
@@ -44,7 +45,9 @@ const ForgetSshWorkspaceDialog = lazyWithRetry(
 )
 const AgentDashboardSidebarHost = lazyWithRetry(() => import('./AgentDashboardSidebarHost'))
 
-const MIN_WIDTH = 220
+// Why 180: the title bar controls above the sidebar need this much once the app name gives way.
+const MIN_WIDTH = 180
+const COLLAPSE_BELOW_WIDTH = MIN_WIDTH - 60
 const MAX_WIDTH = 500
 // Why: stay above retained panes and past the seam strip so scrolling and resizing remain separate.
 export const WORKTREE_SIDEBAR_RESIZE_HANDLE_CLASS_NAME =
@@ -145,6 +148,11 @@ function Sidebar({
     }
   }, [agentDashboardDrawerOpen, setAgentDashboardDrawerOpen, showAgentDashboard])
 
+  const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
+  const sidebarCollapse = useMemo(
+    () => ({ belowWidth: COLLAPSE_BELOW_WIDTH, onCollapse: () => setSidebarOpen(false) }),
+    [setSidebarOpen]
+  )
   const { containerRef, onResizeStart, isResizing } = useSidebarResize<HTMLDivElement>({
     isOpen: sidebarOpen,
     width: sidebarWidth,
@@ -152,7 +160,8 @@ function Sidebar({
     maxWidth: MAX_WIDTH,
     deltaSign: 1,
     setWidth: setSidebarWidth,
-    onDraftWidthChange: setSidebarLiveWidth
+    onDraftWidthChange: setSidebarLiveWidth,
+    collapse: sidebarCollapse
   })
 
   const drawerCoversSeam =
@@ -180,7 +189,12 @@ function Sidebar({
         >
           {sidebarOpen && (
             <>
-              <SidebarNav />
+              <SidebarNav
+                workspaceBoardOpen={workspaceBoardOpen}
+                workspaceBoardDragPreviewOpen={workspaceBoardDragPreviewOpen}
+                onWorkspaceBoardToggle={toggleWorkspaceBoard}
+              />
+              {sidebarBody === 'agents' ? null : <SidebarNeedsYouGate />}
               <SidebarHeader
                 onWorkspaceBoardMenuOpenChange={setWorkspaceBoardMenuOpen}
                 activityOptionsTarget={setAgentOptionsTarget}
@@ -224,11 +238,7 @@ function Sidebar({
               <div className="relative shrink-0">
                 <SetupScriptPromptCard />
 
-                <SidebarToolbar
-                  workspaceBoardOpen={workspaceBoardOpen}
-                  workspaceBoardDragPreviewOpen={workspaceBoardDragPreviewOpen}
-                  onWorkspaceBoardToggle={toggleWorkspaceBoard}
-                />
+                <SidebarToolbar />
               </div>
             </>
           )}

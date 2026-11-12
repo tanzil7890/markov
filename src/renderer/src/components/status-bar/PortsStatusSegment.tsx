@@ -114,6 +114,7 @@ export function PortsStatusSegment({ iconOnly }: PortsStatusSegmentProps): React
               )}
               {!iconOnly && (
                 <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
+                  {translate('auto.components.status.bar.PortsStatusSegment.c22ea609fd', 'Ports')}{' '}
                   {workspacePortCount}
                 </span>
               )}

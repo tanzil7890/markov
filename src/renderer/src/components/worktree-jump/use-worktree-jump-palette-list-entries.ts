@@ -19,10 +19,12 @@ import type { WorktreeJumpPaletteLocalState } from './use-worktree-jump-palette-
 
 import type { WorktreeJumpPaletteTaskSearch } from './use-worktree-jump-palette-task-search'
 
+const NO_TASK_ITEMS: WorktreeJumpPaletteTaskSearch['taskItems'] = []
+
 type WorktreeJumpPaletteListEntriesInput = WorktreeJumpPaletteSections &
   Pick<WorktreeJumpPaletteTaskSearch, 'taskItems'> &
   Pick<WorktreeJumpPaletteWorktrees, 'hasQuery'> &
-  Pick<WorktreeJumpPaletteLocalState, 'autoSelectedItemIdRef' | 'taskSourceUrl'> &
+  Pick<WorktreeJumpPaletteLocalState, 'autoSelectedItemIdRef' | 'taskSourceUrl' | 'scope'> &
   Pick<WorktreeJumpPaletteSections, 'middleLeadsSections' | 'handleExpandSection'>
 
 export function useWorktreeJumpPaletteListEntries({
@@ -34,8 +36,10 @@ export function useWorktreeJumpPaletteListEntries({
   taskSourceUrl,
   handleExpandSection,
   middleLeadsSections,
-  taskItems
+  taskItems,
+  scope
 }: WorktreeJumpPaletteListEntriesInput) {
+  const scopedTaskItems = scope === 'all' || scope === 'tasks' ? taskItems : NO_TASK_ITEMS
   const languageRevision = useUiLanguageRevision()
   const listEntries = useMemo<PaletteListEntry[]>(() => {
     const entries: PaletteListEntry[] = []
@@ -61,13 +65,13 @@ export function useWorktreeJumpPaletteListEntries({
         : undefined
     const visibleMiddleItems = middleItems.filter((item) => item !== browserNavigationItem)
     const pushTasks = (): void => {
-      if (taskItems.length) {
+      if (scopedTaskItems.length) {
         entries.push({
           id: '__header_tasks__',
           type: 'section-header',
           label: translate('worktreeJumpPalette.tasksHeader', 'Tasks')
         })
-        appendPaletteListEntries(entries, taskItems)
+        appendPaletteListEntries(entries, scopedTaskItems)
       }
     }
     const pushOverflowHint = (id: string, overflowCount: number, onSeeMore?: () => void): void => {
@@ -269,7 +273,7 @@ export function useWorktreeJumpPaletteListEntries({
     paletteSections,
     showCreateAction,
     taskSourceUrl,
-    taskItems,
+    scopedTaskItems,
     languageRevision
   ])
   const selectableItems = useMemo<PaletteItem[]>(

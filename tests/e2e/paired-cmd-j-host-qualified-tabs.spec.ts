@@ -359,9 +359,7 @@ test('routes same-id browser and simulator Cmd-J rows to their owning paired hos
     }
     await page.evaluate(() => window.__store!.getState().openModal('worktree-palette'))
     let palette = page.getByRole('dialog', { name: 'Jump to...' })
-    let input = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    let input = palette.getByPlaceholder('Search or jump to…')
     await expectSameIdCollisionIntact('remote browser page palette open')
     const remoteBrowserAfterOpen = await page.evaluate(
       ({ tabId, worktreeId }) => {
@@ -452,9 +450,7 @@ test('routes same-id browser and simulator Cmd-J rows to their owning paired hos
 
     await page.evaluate(() => window.__store!.getState().openModal('worktree-palette'))
     palette = page.getByRole('dialog', { name: 'Jump to...' })
-    input = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    input = palette.getByPlaceholder('Search or jump to…')
     await input.fill('local.example.test')
     await expect(palette.locator(`[cmdk-item][data-value="${localBrowserIdentity}"]`)).toHaveCount(
       1
@@ -483,9 +479,7 @@ test('routes same-id browser and simulator Cmd-J rows to their owning paired hos
 
     await page.evaluate(() => window.__store!.getState().openModal('worktree-palette'))
     palette = page.getByRole('dialog', { name: 'Jump to...' })
-    input = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    input = palette.getByPlaceholder('Search or jump to…')
     await input.fill('Remote emulator proof')
     await expect(palette.getByText('Local emulator proof', { exact: true })).toHaveCount(0)
     await expect(palette.getByText('Remote emulator proof', { exact: true })).toHaveCount(1)
@@ -519,9 +513,7 @@ test('routes same-id browser and simulator Cmd-J rows to their owning paired hos
 
     await page.evaluate(() => window.__store!.getState().openModal('worktree-palette'))
     palette = page.getByRole('dialog', { name: 'Jump to...' })
-    input = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    input = palette.getByPlaceholder('Search or jump to…')
     await input.fill('Local emulator proof')
     const localSimulatorRow = palette.locator(`[cmdk-item][data-value="${localSimulatorIdentity}"]`)
     await expect(localSimulatorRow).toHaveCount(1)

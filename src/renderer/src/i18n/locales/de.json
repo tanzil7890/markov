@@ -1077,7 +1077,6 @@
     "filter": {
       "emptyTitle": "Keine Ergebnisse für den aktiven Filter",
       "emptySubtitle": "Den obigen Filter zurücksetzen oder auf weitere Hosts und Projekte erweitern.",
-      "tabKey": "Tab",
       "label": "Filter",
       "activeCount": "{{value0}} aktiv",
       "removeChip": "Filter {{value0}} entfernen",
@@ -3247,11 +3246,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "Navigieren",
-        "75499e01d9": "Schließen",
-        "66b5a67bee": "Esc",
-        "45def60329": "Öffnen",
-        "f65d992a11": "Enter",
         "c5081f2814": "Aktueller Worktree",
         "52404f8096": "Aktueller Tab",
         "739bda980c": "Primär",
@@ -3272,7 +3266,6 @@
         "088d66d980": "Aktionen & Einstellungen",
         "34c8fbb46e": "SSH-Host",
         "63c2be1914": "SSH-Verbindung getrennt",
-        "95be6587d3": "Worktree „{{value0}}“ erstellen",
         "worktreesHeader": "Arbeitsbereiche",
         "recentWorktreesHeader": "Zuletzt verwendete Arbeitsbereiche",
         "settingsBadge": "Einstellungen",
@@ -3284,7 +3277,6 @@
         "repoGroupBadge": "Repo-Gruppe",
         "pluginCommandFailed": "Der Plugin-Befehl konnte nicht ausgeführt werden.",
         "recentChatsTerminalsHeader": "Zuletzt verwendete Chats & Terminals",
-        "27f10cca63": "Chats, Terminals, Arbeitsbereiche, Aufgaben, Einstellungen und Aktionen suchen…",
         "2770f02910": "Chats, Terminals, Arbeitsbereiche, Aufgaben, Einstellungen und Aktionen suchen",
         "lastActiveTime": "Zuletzt vor {{value0}} aktiv",
         "resultsFound_one": "{{count}} Ergebnis gefunden.",
@@ -6219,7 +6211,6 @@
           "keepDefaultBranchAria": "Standard-Branch sichtbar lassen, während ruhende Arbeitsbereiche ausgeblendet werden"
         },
         "SidebarHeader": {
-          "92154beb7e": "Neuer Arbeitsbereich",
           "addProject": "Projekt hinzufügen"
         },
         "SidebarNav": {
@@ -6266,8 +6257,6 @@
           "b7e4d2a19c": "Einstieg"
         },
         "SidebarToolbar": {
-          "87d0064026": "Arbeitsbereichsübersicht in die untere Leiste verschoben",
-          "a30e34eb5c": "Arbeitsbereichsübersicht schließen",
           "49f62c5665": "Arbeitsbereichsübersicht"
         },
         "SidebarWorkspaceFilterSection": {

@@ -1,3 +1,5 @@
+import { isCreateWorkspaceTourStepActive } from '../../../contextual-tours/workspace-creation-tour-handoff'
+import { useAppStore } from '@/store'
 import { useTranslation } from 'react-i18next'
 import React from 'react'
 import { useRepoSshGate } from '@/hooks/use-repo-ssh-gate'
@@ -202,6 +204,7 @@ export const RepoHeaderCreateWorkspaceButton = React.memo(function RepoHeaderCre
   useTranslation()
   const sshGate = useRepoSshGate(repo)
   const createState = getRepoHeaderCreateState({ repo, label, sshGate })
+  const announcing = useAppStore(isCreateWorkspaceTourStepActive)
   const fallbackLabel = translate(
     'auto.components.sidebar.WorktreeList.bb85cd86ba',
     'Create workspace for {{value0}}',
@@ -238,6 +241,8 @@ export const RepoHeaderCreateWorkspaceButton = React.memo(function RepoHeaderCre
             size="icon-xs"
             className={REPO_HEADER_ACTION_BUTTON_CLASS}
             data-repo-header-action=""
+            data-contextual-tour-target="workspace-create-control"
+            data-tour-announcing={announcing ? '' : undefined}
             aria-label={createState?.ariaLabel ?? fallbackLabel}
             onKeyDown={stopRepoHeaderKeyboardToggle}
             onPointerDown={handleRepoHeaderActionPointerDown}

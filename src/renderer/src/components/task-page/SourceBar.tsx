@@ -1,3 +1,4 @@
+import React from 'react'
 import type { TaskPageComposerActionsModel } from './use-task-page-composer-actions'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,8 @@ import {
   SelectItem
 } from '@/components/ui/select'
 import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+import { createPortal } from 'react-dom'
+import { useTitlebarPageControlsSlot } from '@/lib/titlebar-page-controls-slot'
 export function TaskPageSourceBar({
   model
 }: {
@@ -33,7 +36,6 @@ export function TaskPageSourceBar({
     visibleSourceOptions,
     taskSource,
     taskSourceAvailabilityNoticeByProvider,
-    taskSourceContextSummary,
     taskSourceManuallyChangedRef,
     setSelectedJiraIssueKey,
     setSelectedJiraIssueFallback,
@@ -49,90 +51,108 @@ export function TaskPageSourceBar({
     handleLinearTeamSelectionChange,
     handleLinearScopeOpen
   } = model
-  return (
-    <div className="flex items-center justify-between gap-2">
+  const titlebarSlot = useTitlebarPageControlsSlot()
+  const sourceSwitcher = (
+    <div
+      className="flex min-w-0 items-center gap-2"
+      data-contextual-tour-target="tasks-source-filters"
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 rounded-full"
+            onClick={closeTaskPage}
+            aria-label={translate('auto.components.TaskPage.1a06219d5c', 'Close tasks')}
+          >
+            <X className="size-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={6}>
+          {translate('auto.components.TaskPage.4826fd1ad8', 'Close · Esc')}
+        </TooltipContent>
+      </Tooltip>
+      <h1 className="text-[13px] font-semibold text-foreground">
+        {translate('auto.components.TaskPage.title', 'Tasks')}
+      </h1>
       <div
-        className="flex min-w-0 flex-wrap items-center gap-2"
-        data-contextual-tour-target="tasks-source-filters"
+        role="group"
+        aria-label={translate('auto.components.TaskPage.sources', 'Task sources')}
+        className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5"
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 rounded-full"
-              onClick={closeTaskPage}
-              aria-label={translate('auto.components.TaskPage.1a06219d5c', 'Close tasks')}
-            >
-              <X className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={6}>
-            {translate('auto.components.TaskPage.4826fd1ad8', 'Close · Esc')}
-          </TooltipContent>
-        </Tooltip>
-        <div className="mx-1 h-5 w-px bg-border/50" aria-hidden />
         {visibleSourceOptions.map((source) => {
           const active = taskSource === source.id
           const sourceAvailabilityNotice = taskSourceAvailabilityNoticeByProvider[source.id] ?? null
           const sourceDisabled = source.disabled || sourceAvailabilityNotice?.blocking
-          return (
-            <Tooltip key={source.id}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  disabled={sourceDisabled}
-                  onClick={() => {
-                    if (sourceAvailabilityNotice?.blocking) {
-                      return
-                    }
-                    taskSourceManuallyChangedRef.current = true
-                    openTaskPage(
-                      {
-                        taskSource: source.id
-                      },
-                      {
-                        recordTasksInteraction: false
-                      }
+          const sourceButton = (
+            <button
+              type="button"
+              disabled={sourceDisabled}
+              onClick={() => {
+                if (sourceAvailabilityNotice?.blocking) {
+                  return
+                }
+                taskSourceManuallyChangedRef.current = true
+                openTaskPage(
+                  {
+                    taskSource: source.id
+                  },
+                  {
+                    recordTasksInteraction: false
+                  }
+                )
+                void updateSettings({
+                  defaultTaskSource: source.id
+                }).catch(() => {
+                  toast.error(
+                    translate(
+                      'auto.components.TaskPage.609532fae7',
+                      'Failed to save default task source.'
                     )
-                    void updateSettings({
-                      defaultTaskSource: source.id
-                    }).catch(() => {
-                      toast.error(
-                        translate(
-                          'auto.components.TaskPage.609532fae7',
-                          'Failed to save default task source.'
-                        )
-                      )
-                    })
-                  }}
-                  data-task-source={source.id}
-                  aria-label={sourceAvailabilityNotice?.label ?? source.label}
-                  aria-pressed={active}
-                  className={cn(
-                    'group flex h-8 w-8 items-center justify-center rounded-md border transition',
-                    active
-                      ? 'border-foreground/40 bg-muted/70 text-foreground shadow-sm'
-                      : 'border-border/40 bg-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground',
-                    sourceDisabled && 'cursor-not-allowed opacity-55'
-                  )}
-                >
-                  <source.Icon className="size-3.5" />
-                </button>
-              </TooltipTrigger>
+                  )
+                })
+              }}
+              data-task-source={source.id}
+              aria-label={sourceAvailabilityNotice?.label ?? source.label}
+              aria-pressed={active}
+              className={cn(
+                'flex h-6 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition',
+                active
+                  ? 'bg-background text-foreground shadow-xs dark:bg-accent'
+                  : 'text-muted-foreground hover:text-foreground',
+                sourceDisabled && 'cursor-not-allowed opacity-55'
+              )}
+            >
+              <source.Icon className="size-3.5" />
+              <span>{source.label}</span>
+            </button>
+          )
+          // Why: the label is visible, so only an availability notice needs a tooltip.
+          return sourceAvailabilityNotice ? (
+            <Tooltip key={source.id}>
+              <TooltipTrigger asChild>{sourceButton}</TooltipTrigger>
               <TooltipContent side="bottom" sideOffset={6}>
-                {sourceAvailabilityNotice?.label ?? source.label}
+                {sourceAvailabilityNotice.label}
               </TooltipContent>
             </Tooltip>
+          ) : (
+            <React.Fragment key={source.id}>{sourceButton}</React.Fragment>
           )
         })}
-        <div
-          className="hidden min-w-0 max-w-[min(420px,40vw)] items-center rounded-md border border-border/50 bg-muted/35 px-2 py-1 text-xs text-muted-foreground sm:flex"
-          title={taskSourceContextSummary.title}
-        >
-          <span className="truncate">{taskSourceContextSummary.label}</span>
-        </div>
       </div>
+    </div>
+  )
+  const showsSourceScope =
+    (taskSource === 'linear' && linearConnected) || (taskSource === 'jira' && jiraConnected)
+  // Why: with the switcher in the title bar, GitHub has nothing left for this row.
+  if (titlebarSlot && !showsSourceScope) {
+    return createPortal(sourceSwitcher, titlebarSlot)
+  }
+  return (
+    <div className="flex items-center justify-between gap-3">
+      {titlebarSlot ? createPortal(sourceSwitcher, titlebarSlot) : sourceSwitcher}
+      <div className="flex-1" />
       {taskSource === 'linear' && linearConnected ? (
         <div className="flex items-center gap-2">
           <LinearScopeSelector

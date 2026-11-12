@@ -13,7 +13,9 @@ import { Button } from '@/components/ui/button'
 import { LoaderCircle } from 'lucide-react'
 import { TaskPageGitHubRows } from './Rows'
 import { PaginationBar } from '../PaginationBar'
+import { TaskPageAddProjectAction } from '../TaskPageAddProjectAction'
 import { supersedeGitHubListScrollRestore } from './task-page-github-list-scroll-restore'
+import { deriveGitHubPRStateChip } from './task-page-pr-chips'
 export function TaskPageGitHubList({
   model
 }: {
@@ -42,6 +44,8 @@ export function TaskPageGitHubList({
     retryingSourceKeys,
     handleRetryIssuesFetch,
     activeGithubTaskKind,
+    appliedTaskQuery,
+    applyPRFilterChange,
     filteredWorkItems,
     softHiddenVisibleCount,
     showGitHubTaskSkeletons,
@@ -292,6 +296,20 @@ export function TaskPageGitHubList({
           <div className="px-4 py-10 text-center">
             <p className="text-base font-medium text-foreground">{githubEmptyState.title}</p>
             <p className="mt-2 text-sm text-muted-foreground">{githubEmptyState.description}</p>
+            {githubEmptyState.offerAddProject ? <TaskPageAddProjectAction /> : null}
+            {activeGithubTaskKind === 'prs' &&
+            !githubEmptyState.offerAddProject &&
+            deriveGitHubPRStateChip(appliedTaskQuery) !== 'all' ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => applyPRFilterChange({ state: 'all' })}
+              >
+                {translate('auto.components.TaskPage.showAllStates', 'Show all states')}
+              </Button>
+            ) : null}
           </div>
         ) : null}
 

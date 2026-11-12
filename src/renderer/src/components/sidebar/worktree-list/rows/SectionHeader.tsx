@@ -1,5 +1,4 @@
 import React from 'react'
-import { ChevronDown } from 'lucide-react'
 import { ProjectHeaderHostLabel, ProjectHeaderHostTooltip } from './ProjectHeaderHostLabel'
 import type { ProjectHeaderHostContext } from './project-header-host-context'
 import type { VirtualItem } from '@tanstack/react-virtual'
@@ -46,13 +45,11 @@ import {
   RepoHeaderProjectActionsMenu,
   type RepoHeaderProjectActions
 } from './repo-header-project-actions'
-import {
-  handleRepoHeaderCollapseAffordancePointerDown,
-  shouldIgnoreRepoHeaderToggle,
-  toggleSectionHeaderCollapse
-} from './header-event-guards'
+import { shouldIgnoreRepoHeaderToggle, toggleSectionHeaderCollapse } from './header-event-guards'
 import type { WorktreeSidebarHeaderDrag } from '../drag/use-header-drag'
 import { getWorktreeOptionId } from './option-dom'
+import { forwardHeaderEventToMergedWorkspace } from './merged-folder-project-row'
+import { hasChosenRepoGlyph, HeaderChevron, HeaderMeta } from './project-header-lead'
 
 export type SectionHeaderRowContext = {
   groupBy: WorktreeGroupBy
@@ -98,8 +95,9 @@ export function renderWorktreeSectionHeaderRow(args: {
   hasStickyHost: boolean
   hasHeaderTopSpacing: boolean
   measureVirtualRowElement: (element: HTMLDivElement | null) => void
+  mergedWorkspace?: { rowKey: string; active: boolean } | null
 }): React.JSX.Element {
-  const { ctx, row, vItem, isActiveStickyHeader } = args
+  const { ctx, row, vItem, isActiveStickyHeader, mergedWorkspace } = args
   const { headerDrag } = ctx
   const isRepoHeader = ctx.groupBy === 'repo' && row.repo !== undefined
   const isProjectGroupHeader = ctx.groupBy === 'repo' && row.projectGroup !== undefined
@@ -190,6 +188,10 @@ export function renderWorktreeSectionHeaderRow(args: {
   const showHeaderCollapseAffordance =
     row.count > 0 &&
     (isRepoHeader || isProjectGroupHeader || headerWorkspaceStatus !== null || isPinnedHeader)
+  // Project rows lead with their chevron; a repo keeps its glyph only when the user chose one.
+  const leadsWithChevron = showHeaderCollapseAffordance && (isRepoHeader || isProjectGroupHeader)
+  const hasCustomRepoGlyph = hasChosenRepoGlyph(row.repo, repoHeaderColor)
+  const collapseChevron = <HeaderChevron collapsed={isHeaderCollapsed} onToggle={toggleHeader} />
   return (
     <div
       key={vItem.key}
@@ -248,6 +250,7 @@ export function renderWorktreeSectionHeaderRow(args: {
             // Keep grab on the title; action buttons use pointer cursors.
             'group relative flex h-7 w-full items-center gap-1.5 pr-2 text-left transition-all',
             !(isDraggableRepoHeader || isDraggableProjectGroupHeader) && 'cursor-pointer',
+            mergedWorkspace?.active && 'rounded-md bg-worktree-sidebar-accent',
             ctx.highlightedRevealRowKey === row.key &&
               'rounded-md bg-worktree-sidebar-accent ring-1 ring-worktree-sidebar-ring/50',
             (isDraggingThis || isDraggingThisProjectGroup) &&
@@ -298,10 +301,16 @@ export function renderWorktreeSectionHeaderRow(args: {
                 : undefined
           }
           onClick={(event) => {
-            if (!shouldIgnoreRepoHeaderToggle(event)) {
+            if (shouldIgnoreRepoHeaderToggle(event)) {
+              return
+            }
+            if (!forwardHeaderEventToMergedWorkspace(event, mergedWorkspace?.rowKey)) {
               toggleHeader(event)
             }
           }}
+          onContextMenu={(event) =>
+            forwardHeaderEventToMergedWorkspace(event, mergedWorkspace?.rowKey)
+          }
           onKeyDown={(e) => {
             if (shouldIgnoreRepoHeaderToggle(e)) {
               return
@@ -323,10 +332,12 @@ export function renderWorktreeSectionHeaderRow(args: {
                 'cursor-grab active:cursor-grabbing'
             )}
           >
+            {leadsWithChevron ? collapseChevron : null}
             <div
               className={cn(
                 'flex size-4 shrink-0 items-center justify-center rounded-[4px]',
-                repoHeaderColor ? 'text-muted-foreground' : headerVisual.tone
+                repoHeaderColor ? 'text-muted-foreground' : headerVisual.tone,
+                leadsWithChevron && !hasCustomRepoGlyph && 'hidden'
               )}
             >
               {row.repo ? (
@@ -350,26 +361,11 @@ export function renderWorktreeSectionHeaderRow(args: {
                 {isRepoHeader ? <RepoScanUnavailableIndicator repo={row.repo!} /> : null}
               </div>
             </div>
+            {isRepoHeader && row.repo ? <HeaderMeta repo={row.repo} count={row.count} /> : null}
           </div>
 
           <ProjectHeaderActions>
-            {showHeaderCollapseAffordance ? (
-              <div
-                className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground"
-                data-repo-header-collapse-affordance=""
-                aria-hidden
-                onPointerDown={handleRepoHeaderCollapseAffordancePointerDown}
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  toggleHeader(event)
-                }}
-              >
-                <ChevronDown
-                  className={cn('size-3.5 transition-transform', isHeaderCollapsed && '-rotate-90')}
-                />
-              </div>
-            ) : null}
+            {showHeaderCollapseAffordance && !leadsWithChevron ? collapseChevron : null}
 
             {isProjectGroupHeader && !row.repo && projectGroupIdForHeader ? (
               <ProjectGroupHeaderMenu

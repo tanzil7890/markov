@@ -32,6 +32,8 @@ export type WorkspaceCardFacts = {
     title: string
     kind: 'git' | 'folder'
     path: string
+    /** Last segment of `path`. */
+    folderName: string
     /** Short branch name; empty for folders and detached HEADs. */
     branch: string
     /** Branch, or the folder path where project groups show it; null when neither applies. */

@@ -46,7 +46,8 @@ function WorkspaceKanbanCard({
 
   return (
     <div
-      className="relative rounded-lg data-[workspace-board-card-area-selected=true]:ring-1 data-[workspace-board-card-area-selected=true]:ring-worktree-sidebar-ring/40"
+      // Why: cards rise off the neutral lane; dark mode lifts with a lighter fill instead of a shadow.
+      className="relative rounded-lg border border-border/70 bg-background shadow-xs dark:bg-muted data-[workspace-board-card-area-selected=true]:ring-1 data-[workspace-board-card-area-selected=true]:ring-worktree-sidebar-ring/40"
       data-workspace-board-card-id={worktreeIdentity}
       data-workspace-board-worktree-id={worktree.id}
       data-workspace-board-card-index={laneIndex}

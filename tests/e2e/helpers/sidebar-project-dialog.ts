@@ -10,11 +10,10 @@ export async function openSidebarProjectDialog(page: Page): Promise<void> {
   await expect(page.getByRole('dialog', { name: /Add a project/i })).toBeVisible()
 }
 
+// New workspace lives on each project row; its actions appear on hover.
 export async function openSidebarWorkspaceComposer(page: Page): Promise<void> {
-  const createButton = sidebarHeaderActions(page).getByRole('button', {
-    name: 'New workspace',
-    exact: true
-  })
-  await expect(createButton).toBeVisible()
-  await createButton.click()
+  const projectRow = page.locator('[data-repo-header-id]').first()
+  await expect(projectRow).toBeVisible()
+  await projectRow.hover()
+  await projectRow.getByRole('button', { name: /^Create workspace for / }).click()
 }

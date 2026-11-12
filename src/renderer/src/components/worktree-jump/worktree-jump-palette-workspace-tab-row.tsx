@@ -4,16 +4,19 @@ import { AgentIcon } from '@/lib/agent-catalog'
 import { CommandItem } from '@/components/ui/command'
 import { PaletteRecentTabStatusDot } from '@/components/cmd-j/palette-live-status'
 import { getPaletteHostBadge } from '@/components/cmd-j/palette-host-badge'
-import { cn } from '@/lib/utils'
-import { translate } from '@/i18n/i18n'
 import type { WorkspaceTabPaletteItem } from './worktree-jump-palette-model'
 import type { WorktreeJumpPaletteController } from './use-worktree-jump-palette-controller'
 import {
   PaletteHostBadgeChip,
   PaletteLocationChip,
-  PaletteOpenTabPrimaryLine,
-  PaletteRowShortcutBadge
+  PaletteOpenTabPrimaryLine
 } from './worktree-jump-palette-primitives'
+import {
+  PaletteCurrentTabLabel,
+  PaletteRowBody,
+  PaletteRowTrailing
+} from './worktree-jump-palette-row-layout'
+import { getPaletteTabPeekText } from './worktree-jump-palette-tab-peek'
 import { formatPaletteSessionAge } from '@/components/cmd-j/palette-session-age'
 import { resolvePaletteRepoForWorktree } from '@/lib/workspace/search/palette-repo-resolution'
 import { isEditorTabContentType } from '@/store/slices/editor/tabs/editor-tab-content-type'
@@ -57,21 +60,24 @@ export function WorktreeJumpPaletteWorkspaceTabRow({
   )
   const sessionAge = formatPaletteSessionAge(result.lastActiveAt ?? null, controller.paletteNowMs)
 
+  const selected = controller.commandSelectedItemId === renderKey
+  const peek =
+    selected && result.contentType !== 'editor'
+      ? getPaletteTabPeekText(controller.agentStatusByPaneKey, [result.tabId, result.entityId])
+      : null
+
   return (
     <CommandItem
       value={renderKey}
       onSelect={() => controller.handleSelectItem(entry)}
-      className={cn(
-        'group mx-0.5 flex cursor-pointer items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left outline-none transition-[background-color,border-color,box-shadow]',
-        'data-[selected=true]:border-border data-[selected=true]:bg-accent data-[selected=true]:text-foreground'
-      )}
+      density="palette"
     >
-      <div className="flex h-5 w-4 shrink-0 items-center justify-center self-start text-muted-foreground/85">
+      <div className="flex h-5 w-4 shrink-0 items-center justify-center text-muted-foreground">
         <PaletteRecentTabStatusDot row={recentRow} fallback={fallback} />
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <div className="flex items-center justify-between gap-2.5">
-          <div className="min-w-0 flex-1 overflow-hidden">
+      <PaletteRowBody
+        primary={
+          <>
             <PaletteOpenTabPrimaryLine
               title={result.title}
               titleRanges={result.titleRanges}
@@ -79,47 +85,35 @@ export function WorktreeJumpPaletteWorkspaceTabRow({
               secondaryRanges={result.secondaryRanges}
               secondaryMatches={result.secondaryMatches}
               elideSecondaryPathHead={isEditorTabContentType(result.contentType)}
-              sessionAge={sessionAge}
-              leadingBadges={
-                <>
-                  {result.isCurrentTab && (
-                    <span className="shrink-0 self-center rounded-[6px] border border-border/60 bg-background/45 px-1.5 py-px text-[9px] font-medium leading-normal text-muted-foreground/88">
-                      {translate('auto.components.WorktreeJumpPalette.52404f8096', 'Current Tab')}
-                    </span>
-                  )}
-                  {!result.isCurrentTab && result.isCurrentWorktree && (
-                    <span className="shrink-0 self-center rounded-[6px] border border-border/60 bg-background/45 px-1.5 py-px text-[9px] font-medium leading-normal text-muted-foreground/88">
-                      {translate(
-                        'auto.components.WorktreeJumpPalette.c5081f2814',
-                        'Current Worktree'
-                      )}
-                    </span>
-                  )}
-                </>
-              }
+              leadingBadges={<PaletteCurrentTabLabel result={result} />}
             />
             {result.typeAliasMatches.length ? (
               <span className="sr-only">
                 {result.typeAliasMatches.map((match) => match.text).join(', ')}
               </span>
             ) : null}
-          </div>
-          <div className="flex min-w-0 max-w-[40%] items-center justify-end gap-1.5">
-            <PaletteHostBadgeChip badge={workspaceTabHostBadge} />
-            <PaletteLocationChip
-              repoName={workspaceTabRepoName}
-              repoRanges={result.repoRanges}
-              repoColor={workspaceTabRepo?.badgeColor}
-              worktreeName={result.worktreeName}
-              worktreeRanges={result.worktreeRanges}
-            />
-            <PaletteRowShortcutBadge
-              index={controller.recentTabShortcutIndexByItem.get(entry)}
-              modifierKeys={controller.digitShortcutModifiers}
-            />
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        context={
+          <PaletteLocationChip
+            repoName={workspaceTabRepoName}
+            repoRanges={result.repoRanges}
+            repoColor={workspaceTabRepo?.badgeColor}
+            worktreeName={result.worktreeName}
+            worktreeRanges={result.worktreeRanges}
+          />
+        }
+        badges={<PaletteHostBadgeChip badge={workspaceTabHostBadge} />}
+        trailing={
+          <PaletteRowTrailing
+            sessionAge={sessionAge}
+            shortcutIndex={controller.recentTabShortcutIndexByItem.get(entry)}
+            modifierKeys={controller.digitShortcutModifiers}
+            showShortcut={controller.digitModifierHeld}
+          />
+        }
+        peek={peek}
+      />
     </CommandItem>
   )
 }

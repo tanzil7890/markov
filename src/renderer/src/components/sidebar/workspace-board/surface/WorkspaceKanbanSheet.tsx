@@ -6,6 +6,7 @@ import {
   WORKSPACE_TOP_CHROME_HEIGHT
 } from '../../workspace-chrome-metrics'
 import { trackSidebarLiveWidth } from '../../sidebar-live-width'
+import { useWorkspaceColumnRect } from './use-workspace-column-rect'
 
 type WorkspaceKanbanSheetProps = {
   boardRef: React.RefObject<HTMLDivElement | null>
@@ -37,6 +38,24 @@ export default function WorkspaceKanbanSheet({
     ? `var(--workspace-sidebar-live-width, ${sidebarWidth}px)`
     : '0px'
   const drawerBottom = `${statusBarVisible ? STATUS_BAR_RESERVE_HEIGHT : 0}px`
+  // Why: the board is a page, so it replaces the whole workspace column, tab strip included, and stops at the right sidebar.
+  const columnRect = useWorkspaceColumnRect(open)
+  const placement = columnRect
+    ? {
+        left: `${columnRect.left}px`,
+        top: columnRect.top,
+        bottom: 'auto',
+        height: `${columnRect.height}px`,
+        width: `${columnRect.width}px`
+      }
+    : {
+        left: drawerLeftCss,
+        top: WORKSPACE_TOP_CHROME_HEIGHT,
+        bottom: drawerBottom,
+        height: 'auto',
+        width: `min(calc(100vw - ${drawerLeftCss}), 1294px)`
+      }
+  const sheetStyle: React.CSSProperties = { ...leftSidebarStyle, ...placement }
   const keepOpenForOutsideEvent = (event: {
     preventDefault: () => void
     detail: { originalEvent: Event }
@@ -75,21 +94,13 @@ export default function WorkspaceKanbanSheet({
         ref={trackSidebarLiveWidth}
         className="workspace-kanban-sheet-content bg-worktree-sidebar p-0 sm:max-w-none"
         overlayStyle={{
-          top: WORKSPACE_TOP_CHROME_HEIGHT,
-          bottom: drawerBottom,
-          left: drawerLeftCss,
+          top: placement.top,
+          bottom: placement.bottom,
+          left: placement.left,
+          height: placement.height,
           pointerEvents: 'none'
         }}
-        style={
-          {
-            ...leftSidebarStyle,
-            left: drawerLeftCss,
-            top: WORKSPACE_TOP_CHROME_HEIGHT,
-            bottom: drawerBottom,
-            height: 'auto',
-            width: `min(calc(100vw - ${drawerLeftCss}), 1294px)`
-          } as React.CSSProperties
-        }
+        style={sheetStyle}
         data-contextual-tour-target="workspace-board-surface"
         data-workspace-board-sheet=""
         data-workspace-board-drag-preview={dragPreview ? 'true' : undefined}

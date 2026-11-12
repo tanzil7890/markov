@@ -17,7 +17,7 @@ import {
   getWorktreeCardPrDisplay,
   isCachedMergedBranchPRCurrentForWorktree
 } from '../review/worktree-card-pr-display'
-import type { WorktreeCardProps } from '../controller/worktree-card-model'
+import { getDirectoryName, type WorktreeCardProps } from '../controller/worktree-card-model'
 import type { useWorktreeCardFoundation } from '../controller/use-worktree-card-foundation'
 
 type Foundation = ReturnType<typeof useWorktreeCardFoundation>
@@ -48,7 +48,8 @@ export function useWorktreeCardReviewDetails({
   const showIdentityInNewCard = newCardStyle && hasPathIdentityEnabled && Boolean(identityDisplay)
   const folderMetaRowContent = newCardStyle
     ? hasPathIdentityEnabled && Boolean(folderPathIdentityDisplay)
-    : isFolder
+    : // Why: a folder named like its workspace would repeat the title on the next line.
+      isFolder && getDirectoryName(worktree.path) !== worktree.displayName
   const hostedReviewExactKey = getDetachedWorkspaceReviewRequest(worktree, repo)?.key
   const hostedReviewCacheKey =
     hostedReviewExactKey ??

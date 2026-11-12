@@ -216,9 +216,7 @@ test.describe('Linear URL workspace entry', () => {
   }, testInfo) => {
     await openJumpPalette(electronApp)
     const palette = markovPage.getByRole('dialog', { name: 'Jump to...' })
-    const input = palette.getByPlaceholder(
-      'Search chats, terminals, workspaces, tasks, settings, and actions...'
-    )
+    const input = palette.getByPlaceholder('Search or jump to…')
     await expect(input).toBeVisible()
 
     await pasteLinearUrl(markovPage, input)

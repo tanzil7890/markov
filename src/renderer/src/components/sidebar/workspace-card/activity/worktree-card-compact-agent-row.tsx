@@ -107,6 +107,8 @@ type CompactAgentRowProps = {
   hideIdentityIcon?: boolean
   cacheTimerActive?: boolean
   isUnvisited?: boolean
+  // The card's own status glyph already shows a sole agent's state.
+  hideStateDot?: boolean
 }
 
 export const CompactAgentRow = React.memo(function CompactAgentRow({
@@ -125,7 +127,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
   isFocusedPane = false,
   hideIdentityIcon = false,
   cacheTimerActive = true,
-  isUnvisited = false
+  isUnvisited = false,
+  hideStateDot = false
 }: CompactAgentRowProps) {
   const view = useClaudeAgentRowView(agent)
   const highlighted = view ? view.current && view.focused : isFocusedPane
@@ -162,8 +165,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
     primary,
     secondary
   )
-  const rowTitle = `${leadingText}${trailingText ? ` - ${trailingText}` : ''}`
   const model = agent.entry.model?.trim() ?? ''
+  const rowTitle = `${leadingText}${trailingText ? ` - ${trailingText}` : ''}${showModel && model ? ` · ${model}` : ''}`
   const shortTime = getCompactAgentTime(agent, now)
   const cacheTimer = usePromptCacheCountdownForPane(agent.paneKey, cacheTimerActive)
 
@@ -230,20 +233,22 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
       ) : (
         <>
           {/* Show the actionable disabled reason over every hit area. */}
-          <AgentStateDot
-            state={dotState}
-            size="sm"
-            title={sendTargetDisabledReason ? null : undefined}
-            tooltipSide="right"
-            progress={presentation.progress}
-          />
+          {hideStateDot && presentation.progress == null ? null : (
+            <AgentStateDot
+              state={dotState}
+              size="sm"
+              title={sendTargetDisabledReason ? null : undefined}
+              tooltipSide="right"
+              progress={presentation.progress}
+            />
+          )}
           {!hideIcon && (
             <span className="inline-flex shrink-0" title={formatAgentTypeLabel(agent.agentType)}>
               <AgentTypeIcon agentType={agent.agentType} size={13} />
             </span>
           )}
           <span
-            className="min-w-0 flex-1 truncate"
+            className="min-w-0 flex-auto truncate"
             title={sendTargetDisabledReason ? undefined : rowTitle}
           >
             <span className={leadClassName}>{leadingText}</span>
@@ -259,7 +264,8 @@ export const CompactAgentRow = React.memo(function CompactAgentRow({
       {showModel && model && (
         <span
           className={cn(
-            'min-w-0 max-w-24 truncate font-mono text-3xs',
+            // Why: the model gives up its width before the agent's title does.
+            'min-w-0 max-w-24 shrink-[99] truncate font-mono text-3xs',
             highlighted ? 'text-foreground/70' : 'text-muted-foreground/70'
           )}
           title={model}

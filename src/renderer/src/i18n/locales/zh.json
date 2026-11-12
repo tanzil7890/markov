@@ -611,7 +611,6 @@
     "filter": {
       "emptyTitle": "没有结果符合当前筛选条件",
       "emptySubtitle": "清除上方筛选条件，或扩大到更多主机和项目。",
-      "tabKey": "Tab",
       "label": "筛选",
       "activeCount": "{{value0}} 个生效",
       "removeChip": "移除筛选 {{value0}}",
@@ -2725,11 +2724,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "移动",
-        "75499e01d9": "关闭",
-        "66b5a67bee": "Esc键",
-        "45def60329": "打开",
-        "f65d992a11": "进入",
         "c5081f2814": "当前工作树",
         "52404f8096": "当前选项卡",
         "739bda980c": "主要",
@@ -2750,7 +2744,6 @@
         "088d66d980": "操作与设置",
         "34c8fbb46e": "SSH远程",
         "63c2be1914": "SSH 已断开连接",
-        "95be6587d3": "创建工作树“{{value0}}”",
         "worktreesHeader": "工作区",
         "recentWorktreesHeader": "最近的工作区",
         "settingsBadge": "设置",
@@ -2761,7 +2754,6 @@
         "projectBadge": "项目",
         "repoGroupBadge": "仓库组",
         "pluginCommandFailed": "无法运行插件命令。",
-        "27f10cca63": "搜索聊天、终端、工作区、任务、设置和操作...",
         "2770f02910": "搜索聊天、终端、工作区、任务、设置和操作",
         "recentChatsTerminalsHeader": "最近的聊天和终端",
         "lastActiveTime": "最后活跃时间 {{value0}} 前",
@@ -5577,7 +5569,6 @@
           "keepDefaultBranchAria": "隐藏休眠工作区时仍显示默认分支"
         },
         "SidebarHeader": {
-          "92154beb7e": "新工作区",
           "addProject": "添加项目"
         },
         "SidebarNav": {
@@ -5623,8 +5614,6 @@
           "b7e4d2a19c": "入门引导"
         },
         "SidebarToolbar": {
-          "87d0064026": "工作区看板已移到底部栏",
-          "a30e34eb5c": "关闭工作区看板",
           "49f62c5665": "工作区看板"
         },
         "SidebarWorkspaceFilterSection": {

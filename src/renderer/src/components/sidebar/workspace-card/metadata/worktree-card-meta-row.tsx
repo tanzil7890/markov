@@ -25,7 +25,7 @@ export function WorktreeCardMetaRow({
     worktree,
     repo,
     identityDisplay,
-    isFolder,
+    folderMetaRowContent,
     newCardStyle,
     branch,
     detachedHeadDisplay,
@@ -67,7 +67,7 @@ export function WorktreeCardMetaRow({
             className="text-[11px] text-muted-foreground leading-none"
             tooltipEnabled={!hasHoverDetails}
           />
-        ) : isFolder && !newCardStyle ? (
+        ) : folderMetaRowContent && !newCardStyle ? (
           <WorktreeCardFolderPath path={worktree.path} />
         ) : showBranch ? (
           <TruncatedSidebarLabel

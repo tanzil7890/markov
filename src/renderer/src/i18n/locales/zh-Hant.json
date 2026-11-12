@@ -1028,7 +1028,6 @@
     "filter": {
       "emptyTitle": "沒有符合目前篩選條件的結果",
       "emptySubtitle": "請清除上方的篩選條件，或納入更多主機與專案。",
-      "tabKey": "Tab 鍵",
       "label": "篩選",
       "activeCount": "已啟用 {{value0}} 個",
       "removeChip": "移除篩選條件 {{value0}}",
@@ -3179,11 +3178,6 @@
         }
       },
       "WorktreeJumpPalette": {
-        "ac037cfac2": "移動",
-        "75499e01d9": "關閉",
-        "66b5a67bee": "Esc 鍵",
-        "45def60329": "開啟",
-        "f65d992a11": "Enter 鍵",
         "c5081f2814": "目前工作樹",
         "52404f8096": "目前分頁",
         "739bda980c": "主要",
@@ -3204,7 +3198,6 @@
         "088d66d980": "操作與設定",
         "34c8fbb46e": "SSH 遠端",
         "63c2be1914": "SSH 已斷開連線",
-        "95be6587d3": "建立工作樹「{{value0}}」",
         "worktreesHeader": "工作區",
         "recentWorktreesHeader": "最近的工作區",
         "settingsBadge": "設定",
@@ -3216,7 +3209,6 @@
         "repoGroupBadge": "存放庫組",
         "pluginCommandFailed": "無法執行外掛命令。",
         "recentChatsTerminalsHeader": "最近的聊天和終端機",
-        "27f10cca63": "搜尋聊天、終端機、工作區、任務、設定和操作...",
         "2770f02910": "搜尋聊天、終端機、工作區、任務、設定和操作",
         "lastActiveTime": "上次活動時間為 {{value0}} 前",
         "resultsFound_other": "找到 {{count}} 個結果。",
@@ -6062,7 +6054,6 @@
           "keepDefaultBranchAria": "隱藏休眠工作區時仍顯示預設分支"
         },
         "SidebarHeader": {
-          "92154beb7e": "新工作區",
           "addProject": "新增專案"
         },
         "SidebarNav": {
@@ -6108,8 +6099,6 @@
           "b7e4d2a19c": "入門引導"
         },
         "SidebarToolbar": {
-          "87d0064026": "工作區看板已移到底部列",
-          "a30e34eb5c": "關閉工作區看板",
           "49f62c5665": "工作區看板"
         },
         "SidebarWorkspaceFilterSection": {

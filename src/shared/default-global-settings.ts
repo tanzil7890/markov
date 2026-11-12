@@ -171,7 +171,8 @@ export function buildDefaultSettings(args: {
     sourceControlCompareAgainstUpstream: false,
     showTitlebarAppName: true,
     showTasksButton: true,
-    showAutomationsButton: true,
+    // Why off: the sidebar starts with only Search and Tasks; the rest stay reachable from Settings.
+    showAutomationsButton: false,
     artifactsEnabled: true,
     artifactSharingEnabled: false,
     agentSkillSharingEnabled: false,
@@ -180,7 +181,7 @@ export function buildDefaultSettings(args: {
     orchestrationWorkerAutoReleaseEnabled: true,
     showArtifactsButton: false,
     showSkillsButton: false,
-    showMobileButton: true,
+    showMobileButton: false,
     showPinnedWorktreesInGroups: false,
     ctrlTabOrderMode: 'mru',
     // Why: Markov-first keeps core shortcuts working from a focused terminal; TUI-ownership users opt in.
@@ -191,7 +192,7 @@ export function buildDefaultSettings(args: {
     floatingTerminalCwd: '~',
     floatingTerminalTrustedCwds: [],
     floatingTerminalCwdMigratedToAppWorkspace: true,
-    floatingTerminalTriggerLocation: 'floating-button',
+    floatingTerminalTriggerLocation: 'top-bar',
     notifications: args.notifications,
     diffDefaultView: 'inline',
     diffWordWrap: false,
