@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SetupGuideSidebarEntry } from './SetupGuideSidebarEntry'
 import { SidebarBoardNavButton } from './SidebarBoardNavButton'
+import { SidebarCreateNavButton } from './SidebarCreateNavButton'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
 import { HideSidebarMenu } from './sidebar-nav-controls'
 import { translate } from '@/i18n/i18n'
@@ -127,6 +128,7 @@ const SidebarNav = React.memo(function SidebarNav({
           ))}
         </span>
       </button>
+      <SidebarCreateNavButton />
       <SetupGuideSidebarEntry />
       <SidebarTaskNavButton />
       <SidebarBoardNavButton

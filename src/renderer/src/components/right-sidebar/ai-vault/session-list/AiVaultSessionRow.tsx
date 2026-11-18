@@ -48,7 +48,6 @@ export function VaultSessionRow({
   showJumpToWorktree,
   onJumpToWorktree,
   onResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   resumeLabel: defaultResumeLabel,
@@ -81,7 +80,6 @@ export function VaultSessionRow({
   showJumpToWorktree: boolean
   onJumpToWorktree?: () => void
   onResume: () => void
-  onContinueInNewSession?: () => void
   onResumeInNewChat?: () => void
   onResumeInNewCli?: () => void
   resumeLabel: string
@@ -208,7 +206,6 @@ export function VaultSessionRow({
           showJumpToWorktree={showJumpToWorktree}
           onJumpToWorktree={onJumpToWorktree}
           onResume={onResume}
-          onContinueInNewSession={onContinueInNewSession}
           onResumeInNewChat={onResumeInNewChat}
           onResumeInNewCli={onResumeInNewCli}
           onCopyResume={onCopyResume}
@@ -258,7 +255,6 @@ export function VaultSessionRow({
           onResumeInWorktree={onResumeInWorktree}
           onResumeInNewTab={onResumeInNewTab}
           subagentResume={onPick ? null : subagentResume}
-          onContinueInNewSession={onContinueInNewSession}
           onResumeInNewChat={onResumeInNewChat}
           onResumeInNewCli={onResumeInNewCli}
           // The unsaved notice's "open the log" hint needs the button the picker hides.
@@ -287,7 +283,6 @@ export function VaultSessionRow({
           jumpWorkspaceId={worktreeInfo?.worktreeId}
           onJumpToWorktree={onJumpToWorktree}
           onResume={onResume}
-          onContinueInNewSession={onContinueInNewSession}
           onResumeInNewChat={onResumeInNewChat}
           onResumeInNewCli={onResumeInNewCli}
           onCopyResume={onCopyResume}

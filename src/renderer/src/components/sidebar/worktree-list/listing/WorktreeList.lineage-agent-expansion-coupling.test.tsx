@@ -401,10 +401,7 @@ function agentChildDisclosure(container: HTMLElement): HTMLButtonElement | null 
 }
 
 function compactAgentSummary(container: HTMLElement): HTMLButtonElement | null {
-  return (
-    [...container.querySelectorAll<HTMLButtonElement>('button.compact-agent-summary-button')][0] ??
-    null
-  )
+  return container.querySelector<HTMLButtonElement>('button[data-worktree-chats-toggle]')
 }
 
 function childWorktreeCardPresent(container: HTMLElement): boolean {
@@ -470,7 +467,7 @@ describe('WorktreeCard agent-list <-> child-worktrees expansion coupling', () =>
     expect(container.textContent).toContain('CHILD_AGENT_PROMPT')
   })
 
-  it('[compact mode] toggling CHILD WORKTREES preserves the compact agent summary expansion (regression)', async () => {
+  it('[compact mode] toggling CHILD WORKTREES keeps the chat list open (regression)', async () => {
     setAgentLineageState({ agentActivityDisplayMode: 'compact', secondRootAgent: true })
     const { container, root } = await renderWorktreeList()
 

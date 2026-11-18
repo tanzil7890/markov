@@ -6,11 +6,15 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
+  CommandSeparator
 } from '@/components/ui/command'
 import { nativeChatModelDescription } from './native-chat-model-description'
 import { translate } from '@/i18n/i18n'
-import type { SessionOptionSelectChoice } from '../../../../shared/native-chat/input/native-chat-session-options'
+import type {
+  SessionOptionOtherAgent,
+  SessionOptionSelectChoice
+} from '../../../../shared/native-chat/input/native-chat-session-options'
 import { nativeChatSessionChoiceLabel } from '../../../../shared/native-chat/input/native-chat-session-option-labels'
 import { sayNativeChatSessionOptionTranslated as say } from './native-chat-session-option-labels-text'
 import { NativeChatSessionOptionChoiceBody } from './NativeChatSessionOptionChoiceBody'
@@ -26,6 +30,15 @@ type NativeChatModelComboboxProps = {
   busy: boolean
   /** Called for a model other than the current one; the list stays as it is. */
   onSelect: (value: string) => void
+  /** Other agents' models, listed under this chat's own; `ownLabel` then heads its own. */
+  otherAgents?: {
+    ownLabel: string
+    agents: readonly SessionOptionOtherAgent[]
+    /** What a pick does beyond changing the model, or why none can be made now. */
+    note: string | null
+    held: boolean
+    onSelect: (agent: string, model: string | null) => void
+  }
 }
 
 // Why not cmdk's scorer: it matches scattered letters and reorders the host's list.
@@ -41,11 +54,15 @@ export function NativeChatModelCombobox({
   readOnly,
   readOnlyReason,
   busy,
-  onSelect
+  onSelect,
+  otherAgents
 }: NativeChatModelComboboxProps): React.JSX.Element {
   const searchLabel = translate('components.native-chat.composer.searchModels', 'Search models…')
   const search = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
+  const listed = (choice: SessionOptionSelectChoice): boolean =>
+    !choice.searchOnly || query.trim() !== ''
+  const others = otherAgents?.agents.length ? otherAgents : null
   return (
     <Command
       surface="inline"
@@ -75,39 +92,76 @@ export function NativeChatModelCombobox({
           )}
         </CommandEmpty>
         <NativeChatSessionOptionWriteGroup busy={busy}>
-          <CommandGroup>
-            {choices
-              .filter((choice) => !choice.searchOnly || query.trim())
-              .map((choice) => {
-                const label = nativeChatSessionChoiceLabel(choice, say)
-                const current = choice.value === currentValue
-                return (
-                  <CommandItem
-                    key={choice.value}
-                    value={choice.value}
-                    keywords={[label, choice.description ?? '']}
-                    selection="palette"
-                    disabled={readOnly}
-                    aria-current={current || undefined}
-                    onSelect={() => {
-                      if (!current) {
-                        onSelect(choice.value)
-                      }
-                    }}
-                  >
-                    <NativeChatSessionOptionChoiceBody
-                      label={label}
-                      description={nativeChatModelDescription(choice.value, choice.description)}
-                    />
-                    {/* Reserve the check slot so selecting a model cannot rewrap its label. */}
-                    <span className="ml-auto flex size-3.5 shrink-0 items-center justify-center">
-                      {current ? <Check className="size-3.5 text-muted-foreground" /> : null}
-                    </span>
-                  </CommandItem>
-                )
-              })}
+          <CommandGroup heading={others?.ownLabel}>
+            {choices.filter(listed).map((choice) => {
+              const label = nativeChatSessionChoiceLabel(choice, say)
+              const current = choice.value === currentValue
+              return (
+                <CommandItem
+                  key={choice.value}
+                  value={choice.value}
+                  keywords={[label, choice.description ?? '']}
+                  selection="palette"
+                  disabled={readOnly}
+                  aria-current={current || undefined}
+                  onSelect={() => {
+                    if (!current) {
+                      onSelect(choice.value)
+                    }
+                  }}
+                >
+                  <NativeChatSessionOptionChoiceBody
+                    label={label}
+                    description={nativeChatModelDescription(choice.value, choice.description)}
+                  />
+                  {/* Reserve the check slot so selecting a model cannot rewrap its label. */}
+                  <span className="ml-auto flex size-3.5 shrink-0 items-center justify-center">
+                    {current ? <Check className="size-3.5 text-muted-foreground" /> : null}
+                  </span>
+                </CommandItem>
+              )
+            })}
           </CommandGroup>
         </NativeChatSessionOptionWriteGroup>
+        {others ? (
+          <>
+            <CommandSeparator />
+            {others.note ? (
+              <div className="px-3 pt-2 text-xs text-muted-foreground">{others.note}</div>
+            ) : null}
+            {others.agents.map((group) => (
+              <CommandGroup key={group.agent} heading={group.label}>
+                {(group.choices.some(listed) ? group.choices.filter(listed) : [null]).map(
+                  (choice) => {
+                    const label = choice
+                      ? nativeChatSessionChoiceLabel(choice, say)
+                      : translate(
+                          'components.native-chat.composer.agentDefaultModel',
+                          'Default model'
+                        )
+                    return (
+                      <CommandItem
+                        key={choice?.value ?? ''}
+                        value={`${group.agent} ${choice?.value ?? ''}`}
+                        keywords={[label, group.label, choice?.description ?? '']}
+                        selection="palette"
+                        disabled={others.held}
+                        onSelect={() => others.onSelect(group.agent, choice?.value ?? null)}
+                      >
+                        <NativeChatSessionOptionChoiceBody
+                          label={label}
+                          description={
+                            choice && nativeChatModelDescription(choice.value, choice.description)
+                          }
+                        />
+                      </CommandItem>
+                    )
+                  }
+                )}
+              </CommandGroup>
+            ))}
+          </>
+        ) : null}
       </CommandList>
     </Command>
   )

@@ -2290,9 +2290,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Свернуть"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Продолжить в новом CLI"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "Прокрутить к последним сообщениям"
     },

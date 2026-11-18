@@ -1,5 +1,5 @@
 import { createElement } from 'react'
-import { Globe, Terminal as TerminalIcon } from 'lucide-react'
+import { Globe, Settings, Terminal as TerminalIcon } from 'lucide-react'
 import { FileTypeIcon } from '@/components/FileTypeIcon'
 import { AgentIcon } from '@/lib/agent-catalog'
 import type { TabDragItemData } from '../tab-group/useTabDragSplit'
@@ -8,6 +8,9 @@ import type { TabDragItemData } from '../tab-group/useTabDragSplit'
 function LeadingIcon({ drag }: { drag: TabDragItemData }): React.JSX.Element {
   if (drag.tabType === 'browser') {
     return <Globe className="h-3.5 w-3.5 shrink-0" />
+  }
+  if (drag.tabType === 'settings') {
+    return <Settings className="h-3.5 w-3.5 shrink-0" />
   }
   if (drag.tabType === 'editor') {
     return createElement(FileTypeIcon, {

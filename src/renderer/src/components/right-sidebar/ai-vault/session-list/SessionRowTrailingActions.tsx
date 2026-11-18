@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react'
 import type React from 'react'
-import {
-  ChevronDown,
-  LocateFixed,
-  MessageSquarePlus,
-  MoreHorizontal,
-  PanelTopOpen,
-  Play
-} from 'lucide-react'
+import { ChevronDown, LocateFixed, MoreHorizontal, PanelTopOpen, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -51,7 +44,6 @@ export function SessionRowTrailingActions({
   showJumpToWorktree,
   onJumpToWorktree,
   onResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   onCopyResume,
@@ -77,7 +69,6 @@ export function SessionRowTrailingActions({
   showJumpToWorktree: boolean
   onJumpToWorktree?: () => void
   onResume: () => void
-  onContinueInNewSession?: () => void
   /** Passed through to the overflow menu only; the resting row keeps its two-icon budget. */
   onResumeInNewChat?: () => void
   onResumeInNewCli?: () => void
@@ -189,36 +180,6 @@ export function SessionRowTrailingActions({
               </TooltipContent>
             </Tooltip>
           ) : null}
-          {onContinueInNewSession ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={translate(
-                    'components.agentSessionContinuation.handOffToAnotherAgent',
-                    'Hand Off to Another Agent'
-                  )}
-                  draggable={false}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onContinueInNewSession()
-                  }}
-                  data-testid="ai-vault-session-continue-in-new-session"
-                  className="can-hover:pointer-events-none group-hover/session-row:pointer-events-auto group-focus-within/session-row:pointer-events-auto focus-visible:pointer-events-auto"
-                >
-                  <MessageSquarePlus className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" sideOffset={4}>
-                {translate(
-                  'components.agentSessionContinuation.handOffToAnotherAgent',
-                  'Hand Off to Another Agent'
-                )}
-              </TooltipContent>
-            </Tooltip>
-          ) : null}
         </div>
       )}
       <Tooltip>
@@ -284,7 +245,6 @@ export function SessionRowTrailingActions({
               resumeHidden={resumeHidden}
               resumeLabel={resumeLabel}
               onResume={onResume}
-              onContinueInNewSession={onContinueInNewSession}
               onResumeInNewChat={onResumeInNewChat}
               onResumeInNewCli={onResumeInNewCli}
               onJumpToOriginalPane={onJumpToOriginalPane}

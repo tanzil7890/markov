@@ -80,12 +80,16 @@ export function prepareCodexPromptAnswer(
 }
 
 /** Mirrors the reply Codex's own TUI sends for an MCP tool-call approval. */
-function codexMcpElicitationReply(decision: CodexApprovalDecision): Record<string, unknown> {
+function codexMcpElicitationReply(
+  decision: CodexApprovalDecision,
+  /** Codex keeps the session-wide Allow; otherwise Markov remembers it and Codex hears a plain Allow. */
+  persistsSession: boolean
+): Record<string, unknown> {
   if (decision === 'accept' || decision === 'acceptForSession') {
     return {
       action: 'accept',
       content: null,
-      _meta: decision === 'acceptForSession' ? { persist: 'session' } : null
+      _meta: decision === 'acceptForSession' && persistsSession ? { persist: 'session' } : null
     }
   }
   // Only accept and cancel are offered; the reason separates a user cancel from an interruption.
@@ -99,7 +103,7 @@ export function applyCodexPromptAnswer(
 ): Record<string, unknown> | null {
   if (prepared.kind === 'decision') {
     return prompt.method === CODEX_MCP_ELICITATION_METHOD
-      ? codexMcpElicitationReply(prepared.decision)
+      ? codexMcpElicitationReply(prepared.decision, prompt.mcpApproval?.persistsSession === true)
       : { decision: prepared.decision }
   }
   prompt.answers.set(prepared.questionId, prepared.answer)

@@ -1031,7 +1031,8 @@
     "followSymlinkedDirectories": "Follow symlinked directories",
     "followSymlinkedDirectoriesDescription": "Search linked folders in Quick Open and expand local linked folders in File Explorer.",
     "accounts": {
-      "claudeRemoveFolder": "Markov deletes this account's Claude folder and its sign-in from this computer. Chat history shared with System default stays. If it is selected, the next Claude you start uses System default."
+      "claudeRemoveFolder": "Markov deletes this account's Claude folder and its sign-in from this computer. Chat history shared with System default stays. If it is selected, the next Claude you start uses System default.",
+      "navDescription": "Optional account switching and usage setup for Claude, Codex, Gemini, and Grok."
     },
     "sourceControl": {
       "gitOperationInAnotherWorkspace": "Git operation running elsewhere",
@@ -1161,6 +1162,11 @@
       "iconPickErrors": {
         "notPng": "Repo icons must be PNG files.",
         "tooLarge": "Repo icon image must be 256KB or smaller."
+      },
+      "tabs": {
+        "worktrees": "Worktrees",
+        "scripts": "Scripts",
+        "git": "Git & AI"
       }
     },
     "windowMaterial": {
@@ -1221,7 +1227,253 @@
       "save": "Save formatter",
       "placeholder": "npx --no-install prettier --stdin-filepath \"${file}\""
     },
-    "experimental": {}
+    "experimental": {},
+    "connections": {
+      "form": {
+        "problem": {
+          "title": "Give the connection a name that starts with a letter or a number.",
+          "nameTaken": "Another connection already uses this name.",
+          "url": "Enter the full address of the server, starting with https://.",
+          "command": "Enter the command that starts the server.",
+          "secretName": "Every value needs a name without spaces."
+        },
+        "title": "Add connection",
+        "description": "Agents can run every tool this server offers. Add only servers you trust.",
+        "kindHttp": "Web address",
+        "kindStdio": "Command",
+        "nameLabel": "Name",
+        "namePlaceholder": "Linear",
+        "toolPrefix": "Agents see its tools as {{prefix}}__…",
+        "urlLabel": "Server address",
+        "commandLabel": "Command",
+        "urlPlaceholder": "https://mcp.example.com/mcp",
+        "commandPlaceholder": "npx -y @modelcontextprotocol/server-everything",
+        "urlHelp": "If the server asks for a sign-in, Markov offers it after the connection is added.",
+        "commandHelp": "Markov runs this command on this computer whenever an agent needs its tools.",
+        "headersLabel": "Request headers",
+        "environmentLabel": "Environment variables",
+        "secretName": "Name",
+        "headerNamePlaceholder": "Authorization",
+        "environmentNamePlaceholder": "API_KEY",
+        "secretValue": "Value",
+        "removeSecret": "Remove value",
+        "addHeader": "Add header",
+        "addVariable": "Add variable",
+        "secretNote": "Values are encrypted with this computer’s keychain and are not shown again.",
+        "cancel": "Cancel",
+        "submit": "Add connection"
+      },
+      "status": {
+        "signingIn": "Waiting for the sign-in in your browser…",
+        "toolCount_one": "{{count}} tool",
+        "toolCount_other": "{{count}} tools",
+        "checking": "Checking…",
+        "off": "Off",
+        "unchecked": "Not checked yet"
+      },
+      "cancelSignIn": "Cancel",
+      "signIn": "Sign in",
+      "signOut": "Sign out",
+      "toggleLabel": "Turn {{name}} on or off",
+      "check": "Check again",
+      "remove": "Remove",
+      "add": "Add connection",
+      "removeTitle": "Remove {{name}}?",
+      "removeDescription": "Agents lose its tools the next time they start. Its saved sign-in and values are deleted from this computer.",
+      "title": "Connections",
+      "description": "Connect MCP servers once and use their tools from every agent.",
+      "keyword": {
+        "mcp": "mcp",
+        "server": "server",
+        "tools": "tools",
+        "connector": "connector",
+        "integration": "integration",
+        "signIn": "sign in",
+        "connections": "connections"
+      },
+      "localOnly": "Connections are set up on this computer. Choose this computer above to manage them.",
+      "moreActions": "More actions for {{name}}",
+      "tools": {
+        "none": "This server offers no tools.",
+        "filter": "Filter tools",
+        "noMatch": "No tools match “{{filter}}”.",
+        "loading": "Loading tools…"
+      },
+      "emptyTitle": "No MCP servers yet",
+      "emptyDescription": "Add a server by its web address or by the command that starts it. Claude Code and Codex started from Markov can then use its tools.",
+      "note": "Claude Code and Codex started from Markov get the tools of every connection that is on. Start a new agent session after you add or change one.",
+      "mcpTitle": "MCP servers"
+    },
+    "destinations": {
+      "needsAttention": "Needs attention",
+      "navLabel": "Settings sections",
+      "groups": {
+        "workspace": "Workspace",
+        "account": "Account",
+        "system": "System"
+      },
+      "overview": {
+        "title": "Overview",
+        "description": "What needs you, and where to start.",
+        "tabs": {
+          "status": "Overview",
+          "setup": "Setup checklist"
+        }
+      },
+      "accounts": {
+        "title": "Accounts"
+      },
+      "skills": {
+        "title": "Skills",
+        "description": "What agents can do on this computer, and whether each skill is installed.",
+        "tabs": {
+          "computerUse": "Computer use",
+          "cli": "Markov CLI"
+        }
+      },
+      "workspaces": {
+        "title": "Workspaces",
+        "description": "Where workspaces live, how tabs behave, and the editor.",
+        "tabs": {
+          "workspaces": "Workspaces",
+          "tabs": "Tabs",
+          "editor": "Editor"
+        }
+      },
+      "terminal": {
+        "description": "Shells, rendering, sessions, and saved commands.",
+        "tabs": {
+          "quickCommands": "Quick commands"
+        }
+      },
+      "browser": {
+        "description": "Home page, links, logins, and the mobile emulator.",
+        "tabs": {
+          "emulator": "Mobile emulator"
+        }
+      },
+      "git": {
+        "title": "Git",
+        "description": "Branch names, comparisons, and AI help with commits and pull requests.",
+        "tabs": {
+          "git": "Git",
+          "ai": "AI actions"
+        }
+      },
+      "features": {
+        "title": "Features",
+        "description": "Optional features: turn them on or off and choose where they appear.",
+        "tabs": {
+          "features": "Features"
+        }
+      },
+      "appearance": {
+        "description": "Theme, fonts, and what the sidebar and status bar show.",
+        "tabs": {
+          "app": "App",
+          "window": "Sidebar & status bar"
+        }
+      },
+      "chat": {
+        "title": "Chat"
+      },
+      "input": {
+        "title": "Input",
+        "description": "Dictation, selection, and editing."
+      },
+      "account": {
+        "title": "Account"
+      },
+      "devices": {
+        "title": "Devices",
+        "description": "Phones, servers, and SSH hosts that work with this computer.",
+        "tabs": {
+          "phones": "Phones",
+          "servers": "Servers",
+          "ssh": "SSH hosts"
+        }
+      },
+      "usage": {
+        "title": "Usage"
+      },
+      "privacy": {
+        "title": "Privacy & permissions",
+        "description": "What Markov may access on this computer, and what it sends."
+      },
+      "advanced": {
+        "description": "Updates, network compatibility, and troubleshooting."
+      },
+      "connections": {
+        "description": "MCP servers, plugins and services that Markov and your agents connect to.",
+        "tabs": {
+          "mcp": "MCP"
+        }
+      }
+    },
+    "overview": {
+      "themeDark": "Dark",
+      "themeLight": "Light",
+      "themeSystem": "Follows the system",
+      "open": "Open",
+      "change": "Change",
+      "attentionTitle": "Needs attention",
+      "attentionEmpty": "Nothing needs your attention.",
+      "setupTitle": "Setup",
+      "setupProgress": "{{done}} of {{total}} steps done.",
+      "glanceTitle": "At a glance",
+      "theme": "Theme",
+      "workspaceFolder": "Workspace folder",
+      "on": "On",
+      "off": "Off"
+    },
+    "sections": {
+      "git": {
+        "description": "Branch naming, base refs, and pull request defaults."
+      },
+      "gitAi": {
+        "title": "Source Control AI",
+        "description": "Which agent writes commit messages, pull request details, and fixes, and with what prompt."
+      },
+      "workspaces": {
+        "title": "Workspaces",
+        "description": "Where workspaces are created and which ones the sidebar lists."
+      },
+      "overview": {
+        "description": "What needs your attention, and the settings people change most."
+      },
+      "tabs": {
+        "title": "Tabs",
+        "description": "Tab order, preview tabs, and what to confirm before a tab closes."
+      },
+      "editor": {
+        "description": "Saving, fonts, diffs, and Markdown."
+      },
+      "cli": {
+        "title": "Markov CLI",
+        "description": "The markov command, and the skill that teaches agents to use it."
+      },
+      "updates": {
+        "description": "The installed version, update checks, and ways to support Markov."
+      },
+      "appearance": {
+        "description": "Theme, zoom, fonts, language, and the window title bar."
+      },
+      "appearanceTerminal": {
+        "title": "Terminal appearance",
+        "description": "Terminal fonts, themes, cursor, and pane colors."
+      },
+      "appearanceWindow": {
+        "title": "Sidebar & status bar",
+        "description": "What the sidebar, status bar, and file explorer show."
+      }
+    },
+    "search": {
+      "resultsLabel": "Search results",
+      "resultsTitle": "Results for \"{{query}}\""
+    },
+    "integrations": {
+      "servicesTitle": "Services"
+    }
   },
   "menu": {
     "checkForUpdates": "Check for Updates...",
@@ -2227,7 +2479,6 @@
         "2eece16ad1": "Notifications",
         "1f452cbd4c": "Selection and editing behavior.",
         "0c6ee88a5f": "Input & Editing",
-        "b11a5a48a2": "Theme, zoom, app and terminal appearance, sidebars, and status bar.",
         "93d88d20bf": "Appearance",
         "2d0659f6f0": "Global terminal, browser, and markdown tabs.",
         "65b19f5bde": "Floating Workspace",
@@ -2240,12 +2491,8 @@
         "c33bfd664c": "Shells, renderer, sessions, and terminal behavior.",
         "a9fb10afca": "Terminal",
         "85f4fd7710": "Task Sources",
-        "ab4b21b58e": "Branch naming, base refs, and Git AI Author.",
         "09607cb0fe": "Git & Source Control",
         "33a5e1d597": "Connect GitHub, GitLab, Linear, and source-hosting services.",
-        "2b043783ef": "Integrations",
-        "2cd4ea75da": "Workspace defaults, app setup, and maintenance.",
-        "13241992bd": "General",
         "724c440e72": "getting started",
         "0505d0df29": "get started with Markov",
         "ea0b1bc7b8": "setup guide",
@@ -2259,7 +2506,6 @@
         "cd50cec5d7": "Coordinate multiple coding agents through Markov.",
         "58a868e8e4": "Orchestration",
         "7c79d3b7bf": "Optional",
-        "b1c2f8b0ac": "Optional account switching and usage setup for Claude, Codex, Gemini, OpenCode Go, MiniMax, and Grok.",
         "f70ac54d38": "AI Provider Accounts",
         "4121f7a0a2": "Manage AI agents, set a default, and customize commands.",
         "b49abbd2f7": "Agents",
@@ -4608,20 +4854,10 @@
             "omniboxPlaceholderWithHistory": "Search open tabs, history, files, URLs, agents…"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "Command",
-            "20bbd75896": "No commands",
-            "b82e237a4b": "More quick commands",
-            "85482c57bc": "Run quick command",
-            "b775303755": "Run quick command: {{value0}}",
             "196593b6a9": "Remove {{value0}}",
             "15529ede69": "Edit {{value0}}",
-            "1d411fb6a5": "Save a quick command for this repo",
-            "8f1e971966": "Add quick command",
             "3220e2da27": "This quick command will be removed from your saved list.",
             "e8e1a52edb": "Delete \"{{value0}}\"?",
-            "37e1bb90ce": "Run: {{value0}}",
-            "77ac113df0": "Start {{value0}}: {{value1}}",
-            "7b1c9d6ae1": "Run",
             "be8f0ff166": "Delete",
             "f3a8c2d1e7": "Search quick commands...",
             "b4e7f9a2c1": "No commands match",
@@ -4691,15 +4927,11 @@
             "7ab2964bea": "Unread agent completion"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "Command",
             "b856c833ae": "Command on {{value0}}"
           },
           "TabBarQuickCommandHostLoadStatus": {
             "82e294f3ca": "Host unavailable",
             "7c129b08ff": "Loading host…"
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "This session cannot be opened in the CLI."
           },
           "tabCreateEntry": {
             "fileNotFound": "File not found: {{path}}",
@@ -6547,7 +6779,8 @@
           "fee535205b": "Tasks",
           "d599269755": "Hide from sidebar",
           "artifacts": "Artifacts",
-          "skills": "Skills"
+          "skills": "Skills",
+          "create": "Create"
         },
         "SidebarRepositoryFilterSection": {
           "d3a9c4cea1": "Clear",
@@ -7935,12 +8168,6 @@
             "tintOpacityDescription": "Controls how strongly the tint is mixed into the sidebar.",
             "tintDescription": "Keep the left sidebar default or tint it. To follow the terminal, pick Match Terminal as the Light or Dark theme."
           },
-          "interfaceDefaultFont": "Default font",
-          "terminalDefaultFont": "Default font",
-          "interfaceTitle": "Interface",
-          "terminalTitle": "Terminal",
-          "windowSidebarTitle": "Window & Sidebar",
-          "windowSidebarSummary": "Sidebar, status bar, and file explorer",
           "gitIgnoredGlossary": "Files matched by .gitignore.",
           "statusBarDescription": "Choose which indicators appear in the status bar.",
           "showPinnedWorktreesInGroups": {
@@ -8299,7 +8526,8 @@
           "5136813663": "Enable Floating Workspace",
           "37df688d6f": "Enable the floating workspace and choose where new tabs start.",
           "1f67f39384": "Floating Workspace",
-          "topBar": "Top Bar"
+          "topBar": "Top Bar",
+          "sidebar": "Sidebar"
         },
         "AgentCacheTimerSection": {
           "05de84a104": "1 hour",
@@ -8371,7 +8599,6 @@
           "editor_preview_tabs_description": "Single-clicking a file in the Explorer, or following a link in Markdown source, reuses one italic preview tab per group instead of opening a new one. Editing, double-clicking, or pinning keeps that tab open. Turn this off to give every file its own tab.",
           "confirm_running_work_close": "Confirm before closing active chats or terminals",
           "confirm_running_work_close_description": "Ask before stopping an active agent or command when closing its chat or terminal.",
-          "d58fccfd84": "Navigation",
           "5cb5475664": "Confirm before closing pinned tabs",
           "36b2a5dc6d": "Show a confirmation dialog before a pinned tab is closed.",
           "projectRuntime": "Project Runtime",
@@ -9211,7 +9438,6 @@
           "9907545fa3": "Notifications",
           "d0b7021d64": "Selection and editing behavior.",
           "d7a3e635b6": "Input & Editing",
-          "6d1a27e193": "Theme, zoom, app and terminal appearance, sidebars, and status bar.",
           "2b4474780a": "Appearance",
           "3d9adfe6a5": "Global terminal, browser, and markdown tabs.",
           "3eb22a3ada": "Floating Workspace",
@@ -9224,12 +9450,9 @@
           "b79b5b31e9": "Shells, renderer, sessions, and terminal behavior.",
           "3de4bbb841": "Terminal",
           "11faa2f7dd": "Task Sources",
-          "cfa34f4465": "Branch naming, base refs, and Git AI Author.",
           "70100f94c7": "Git & Source Control",
           "b07041697f": "Connect GitHub, GitLab, Linear, and source-hosting services.",
           "c9ca101a3b": "Integrations",
-          "f9b77539fd": "Workspace defaults, app setup, and maintenance.",
-          "7807c11c4d": "General",
           "6855b0f77d": "Finish the core workflows that make Markov useful for parallel agent work.",
           "6d119427ef": "Onboarding checklist",
           "eb1176a14e": "Local speech-to-text dictation with on-device models.",
@@ -9246,12 +9469,7 @@
           "acc7bbdefd": "Press ESC again to exit settings",
           "43b68e10f0": "You have unsaved AI settings. Leaving will discard them.",
           "17bdee4ff1": "Discard unsaved AI settings?",
-          "084d8fac5b": "Privacy & Security",
-          "23931df7e8": "Remote Hosts",
           "8bd117d669": "Interface",
-          "e1578cd4bc": "Workflows",
-          "9abb9be3bc": "Set Up",
-          "23c6874fdf": "AI Capabilities",
           "65358016ea": "Discard",
           "dev": "Dev Tools",
           "devDescription": "Dev-only tools for exercising UI states.",
@@ -9289,9 +9507,7 @@
           "dbceaa8840": "Search settings",
           "60f8a673a7": "Back to app",
           "6503182299": "Onboarding checklist",
-          "82db1b7de4": "Onboarding checklist, {{value0}} of {{value1}} done. Show setup guide.",
-          "df38d612b7": "No projects added yet.",
-          "3e483e256b": "No matching project settings."
+          "df38d612b7": "No projects added yet."
         },
         "ShortcutFilterRail": {
           "28b63545bf": "Status",
@@ -15356,6 +15572,28 @@
             "createInProgress": "Create PR in progress...",
             "workspaceHostUnresolved": "The workspace host is unresolved. Refresh the workspace and retry.",
             "branchDiscoveryFailed": "Branch discovery failed."
+          },
+          "bottomPanel": {
+            "open": "Open the bottom half",
+            "fold": "Fold the bottom half",
+            "tabs": "Commands and terminals",
+            "commands": "Commands",
+            "resize": "Resize the two halves"
+          },
+          "commands": {
+            "run": "Run {{value0}}",
+            "emptyTitle": "No commands yet",
+            "emptyBody": "Save a command you run often, like starting the dev server.",
+            "create": "Create a command",
+            "search": "Search commands",
+            "thisProject": "This project",
+            "everywhere": "Everywhere",
+            "new": "New command"
+          },
+          "terminal": {
+            "new": "New terminal",
+            "none": "No terminal open",
+            "close": "Close {{value0}}"
           }
         }
       },
@@ -15893,7 +16131,8 @@
             "8e7d775287": "Hide Floating Workspace",
             "763f5fa2c1": "Move to Floating Button",
             "0ee79e0674": "Move to Status Bar",
-            "moveToTopBar": "Move to Top Bar"
+            "moveToTopBar": "Move to Top Bar",
+            "moveToSidebar": "Move to Sidebar"
           },
           "FloatingTerminalOrchestrationDialog": {
             "f726054620": "Enables agents to hand off context and coordinate work through Markov.",
@@ -19410,6 +19649,11 @@
           "detail": "From its shortcut, the palette and menus. If the plugin fails, Markov’s own runs.",
           "switch": "Use {{value0}} instead of Markov’s {{value1}}"
         }
+      },
+      "createDialog": {
+        "kindSwitch": "What to create",
+        "workspace": "Workspace",
+        "project": "Project"
       }
     },
     "i18n": {
@@ -19708,7 +19952,14 @@
         "installTitle": "Install {{agent}}",
         "installAriaLabel": "{{agent}} install command",
         "installDescription": "Press Enter to run the official installer. Markov checks again when it finishes.",
-        "footnote": "Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. You pick your default agent, including others, in a moment."
+        "footnote": "Markov runs each agent’s official CLI. You sign in on claude.ai or chatgpt.com, and the sign-in stays with that CLI. You pick your default agent, including others, in a moment.",
+        "downloading": "Downloading… {{percent}}%",
+        "downloadingNoPercent": "Downloading…",
+        "runningInstaller": "Running the official installer…",
+        "finishing": "Installed. Checking…",
+        "installFailed": "Install failed: {{error}}",
+        "tryAgain": "Try again",
+        "installInTerminal": "Install in terminal"
       }
     },
     "jiraIssueAssigneeField": {
@@ -20120,7 +20371,10 @@
           "medium": "Med",
           "xhigh": "XHigh"
         },
-        "imageUnavailable": "Preview unavailable"
+        "imageUnavailable": "Preview unavailable",
+        "agentDefaultModel": "Default model",
+        "otherAgentAfterReply": "Another agent can take over once this reply finishes.",
+        "otherAgentContinuesBeside": "Another agent continues in a new chat beside this one, with this chat as context."
       },
       "tool": {
         "exitCode": "exit {{value0}}",
@@ -20744,7 +20998,7 @@
         "leadIn": "Continue this chat without waiting:",
         "switchAccount": "Switch Account",
         "addAccount": "Add Account…",
-        "accountUnavailable": "This chat cannot move to another account. Hand it off to another agent instead."
+        "accountCannotMove": "This chat cannot move to another account."
       },
       "usageLimitAutoContinue": {
         "cancelFailed": "Couldn't cancel automatic continuation. Try again.",
@@ -20753,7 +21007,6 @@
         "scheduled": "Markov will continue this chat at {{time}}.",
         "cancel": "Don't continue"
       },
-      "settings": "Chat settings",
       "composerWorkspace": {
         "copyFailed": "Failed to copy",
         "copyIdentity": "Copy {{value0}}",
@@ -20805,9 +21058,8 @@
         "many_other": "Opened {{count}} pull requests"
       },
       "header": {
-        "handOff": "Hand off",
         "split": "Split",
-        "continueInTerminal": "Continue in terminal"
+        "splitTerminalLeft": "Split Terminal Left"
       }
     },
     "tab": {
@@ -21127,28 +21379,7 @@
       }
     },
     "agentSessionContinuation": {
-      "preparingContext": "Preparing saved chat context…",
-      "handOffToAnotherAgent": "Hand Off to Another Agent",
-      "dialogTitle": "Hand Off to Another Agent",
-      "dialogDescription": "Start a fresh Agent session from this stopping point. The original session stays unchanged.",
-      "untitledSession": "Current session",
-      "originalAgent": "Original Agent: {{agent}}",
-      "agent": "Agent",
       "selectAgent": "Select an Agent",
-      "detectingAgents": "Detecting Agents on this workspace host…",
-      "detectionFailed": "Could not detect Agents on this workspace host.",
-      "noAgents": "No enabled Agents were detected on this workspace host.",
-      "onlySourceFamilyDetected": "Only Agents sharing the usage limit with {{agent}} are available on this workspace host. Enable or install a different Agent.",
-      "context": "Context",
-      "modeFocused": "Focused handoff (Recommended)",
-      "modeFocusedDescription": "Uses the latest status and current workspace, reading older transcript details only when needed.",
-      "modeLoadedDescription": "Uses recent messages currently loaded in this chat and the current workspace.",
-      "modeCapturedDescription": "Uses captured text and the current workspace.",
-      "modeFull": "Full session transcript",
-      "modeFullDescription": "Asks the new Agent to read the complete saved session before continuing. This can take longer and use significant context, plan usage, or API credits.",
-      "startsIn": "Starts in:",
-      "startSession": "Start New Session",
-      "starting": "Starting…",
       "noContext": "No session context is available to continue in a new session.",
       "agentDisabled": "{{agent}} is disabled in Agent settings.",
       "agentUnavailable": "{{agent}} was not detected on this workspace host.",
@@ -21445,8 +21676,7 @@
     "contextualTours": {
       "agentSessions": {
         "newTab": {
-          "title": "New agents start here",
-          "body": "Click + to start an agent, a terminal, or a browser tab."
+          "title": "New agents start here"
         },
         "splitChat": {
           "body": "Press {terminal.splitRight}, or click the split button at the top of the chat. Each side gets its own tabs.",
@@ -21454,6 +21684,9 @@
         },
         "split": {
           "bodyWithoutShortcut": "Right-click the pane for split options."
+        },
+        "newChat": {
+          "body": "Click + to start a chat. The arrow beside it opens a terminal, a browser tab, or another agent."
         }
       },
       "badgeNew": "New",
@@ -21465,6 +21698,10 @@
           "action": "Got it"
         }
       }
+    },
+    "tab-bar": {
+      "moreTabKinds": "New terminal, browser or other tab",
+      "newChat": "New chat"
     }
   },
   "dashboardPopout": {

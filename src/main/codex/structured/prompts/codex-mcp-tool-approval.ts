@@ -28,11 +28,15 @@ export function isCodexMcpToolApproval(params: unknown): boolean {
 
 export type CodexMcpToolApprovalDecision = 'accept' | 'acceptForSession' | 'cancel'
 
-/** Codex's TUI offers Allow and Cancel, plus Allow for this session only when the request allows it. */
-export function codexMcpToolApprovalDecisions(params: unknown): CodexMcpToolApprovalDecision[] {
+/** Whether Codex itself keeps "Allow for this session"; where it cannot, Markov keeps the answer. */
+export function codexMcpToolApprovalPersistsSession(params: unknown): boolean {
   const persist = readRecord(readRecord(params)._meta).persist
-  const persistsSession = Array.isArray(persist)
-    ? persist.includes('session')
-    : persist === 'session'
-  return persistsSession ? ['accept', 'acceptForSession', 'cancel'] : ['accept', 'cancel']
+  return Array.isArray(persist) ? persist.includes('session') : persist === 'session'
 }
+
+/** Allow, Allow for this session and Cancel: the same question is never forced on the user twice. */
+export const CODEX_MCP_TOOL_APPROVAL_DECISIONS: readonly CodexMcpToolApprovalDecision[] = [
+  'accept',
+  'acceptForSession',
+  'cancel'
+]

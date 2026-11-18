@@ -1,6 +1,6 @@
 import { ImeInput } from '@/lib/ime-text-field'
 import type { CSSProperties, RefObject } from 'react'
-import { MessageSquarePlus, SquareSplitVertical, SquareTerminal, X } from 'lucide-react'
+import { SquareSplitVertical, SquareTerminal, X } from 'lucide-react'
 import type { ManagedPane, PaneManager } from '@/lib/pane-manager/pane-manager'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -11,7 +11,6 @@ import type { PtyTransport } from './pty-transport-types'
 import { TerminalPaneHeaderDropSurface } from './input/file-drop/TerminalPaneHeaderDropSurface'
 import { TerminalPaneResumeInChatButton } from './TerminalPaneResumeInChatButton'
 import { makePaneKey } from '../../../../shared/workspace-layout/stable-pane-id'
-import { NativeChatSettingsButton } from '../native-chat/NativeChatSettingsButton'
 
 export type PaneTitleOverlayRect = {
   left: number
@@ -47,8 +46,6 @@ type TerminalPaneHeaderOverlayProps = {
   onShowTerminal?: () => void
   /** Offers the tab menu's "Switch to Chat" for the active pane's own conversation. */
   canResumeInNewNativeChat?: boolean
-  canContinueAgentSessionInNewSession?: boolean
-  onContinueAgentSessionInNewSession?: (pane: ManagedPane) => void
   onSplitPane: (pane: ManagedPane, direction: 'vertical' | 'horizontal') => void
   onBeginPaneDrag: (paneId: number, handle: HTMLElement, event: PointerEvent) => void
   onActivatePaneTitleInteraction: (paneId: number) => void
@@ -86,8 +83,6 @@ export default function TerminalPaneHeaderOverlay({
   canShowTerminal,
   onShowTerminal,
   canResumeInNewNativeChat,
-  canContinueAgentSessionInNewSession,
-  onContinueAgentSessionInNewSession,
   onSplitPane,
   onBeginPaneDrag,
   onActivatePaneTitleInteraction,
@@ -209,33 +204,6 @@ export default function TerminalPaneHeaderOverlay({
                   </button>
                 ) : null}
                 <div className="pane-title-actions ml-auto flex shrink-0 items-center gap-0">
-                  {canContinueAgentSessionInNewSession && isActivePane ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="pane-title"
-                          size="icon-xs"
-                          aria-label={translate(
-                            'components.agentSessionContinuation.handOffToAnotherAgent',
-                            'Hand Off to Another Agent'
-                          )}
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            onContinueAgentSessionInNewSession?.(pane)
-                          }}
-                        >
-                          <MessageSquarePlus className="size-3" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" sideOffset={4}>
-                        {translate(
-                          'components.agentSessionContinuation.handOffToAnotherAgent',
-                          'Hand Off to Another Agent'
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : null}
                   {canShowTerminal && isActivePane ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -339,7 +307,6 @@ export default function TerminalPaneHeaderOverlay({
                       </TooltipContent>
                     </Tooltip>
                   ) : null}
-                  {canShowTerminal && isActivePane ? <NativeChatSettingsButton /> : null}
                 </div>
               </>
             )}

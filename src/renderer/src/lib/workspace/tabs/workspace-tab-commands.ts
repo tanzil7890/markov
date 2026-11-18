@@ -19,6 +19,9 @@ import {
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '../../floating-terminal'
 import { closeWorkspaceBrowserTab } from '../../browser/workspace/workspace-browser-tab-close'
 import { resolveBrowserWorkspaceOwner } from '../../browser/workspace/browser-workspace-source-resolution'
+import { selectFocusedSettingsTabWorktreeId, settingsTabOf } from '../../settings-tab-placement'
+import { translate } from '@/i18n/i18n'
+import { requestSettingsClose } from '../../settings-close-request'
 
 export type WorkspaceTabTarget =
   | { kind: 'tab'; worktreeId: string; tabId: string }
@@ -114,6 +117,19 @@ export function dispatchWorkspaceTabCommand(command: WorkspaceTabCommand): boole
       }
       if (isFloatingWorkspacePanelFocused()) {
         return false
+      }
+      // Why: Settings open as a tab covers the group's active tab; close what is on screen, not what is under it.
+      const settingsWorktreeId = selectFocusedSettingsTabWorktreeId(state)
+      if (settingsWorktreeId) {
+        guardPinnedTabClose({
+          isPinned: settingsTabOf(state, settingsWorktreeId)?.isPinned === true,
+          tabLabel: translate(
+            'auto.components.sidebar.SidebarSettingsHelpMenu.a428c25998',
+            'Settings'
+          ),
+          onClose: requestSettingsClose
+        })
+        return true
       }
     }
     const target = resolveCloseTarget(state, command.target)

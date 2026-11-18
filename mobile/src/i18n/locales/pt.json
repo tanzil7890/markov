@@ -2223,9 +2223,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Recolher"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Retomar em nova CLI"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "Rolar até o conteúdo mais recente"
     },

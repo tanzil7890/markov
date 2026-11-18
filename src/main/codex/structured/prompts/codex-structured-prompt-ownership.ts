@@ -16,6 +16,7 @@ import {
   type CodexPreparedAnswer
 } from './codex-structured-prompt-replies'
 import type { CodexPendingPrompt } from './codex-prompt-registry'
+import { codexMcpApprovalChat, rememberCodexMcpApproval } from './codex-mcp-approval-memory'
 import {
   requireLiveCodexSession,
   type CodexSession
@@ -213,6 +214,13 @@ export async function answerCodexStructuredPrompt(input: {
     }
     session.translator?.resolvePrompt(request.itemId)
     answerCodexPrompt(session.prompts, session.connection, claim, prepared)
+    if (prepared.kind === 'decision' && claim.prompt.mcpApproval) {
+      rememberCodexMcpApproval(
+        codexMcpApprovalChat(request.sessionId, session),
+        claim.prompt.mcpApproval.question,
+        prepared.decision
+      )
+    }
   } catch (error) {
     session.prompts.releaseClaim(claim)
     throw error

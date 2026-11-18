@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext } from 'react'
 import type { WorkspaceAttachment } from '../../../../../../shared/worktree/types'
 import { getWorkspaceAttachmentKey } from '../../../../../../shared/workspace-attachments/workspace-attachment-normalization'
 import { buildWorkspaceAttachmentEdits } from '../metadata/worktree-attachment-editing'
@@ -13,6 +13,9 @@ import './WorktreeCardMeta'
 import { hasWorktreeCardDetails } from '../metadata/WorktreeCardMetaBadges'
 import { usePromptCacheCountdownStartedAt } from '../activity/CacheTimer'
 import { useWorktreeAgentRows } from '../activity/useWorktreeAgentRows'
+import { useWorktreeChatListOpen } from '../activity/worktree-card-agents-expansion-state'
+import { MergedIntoProjectHeaderContext } from '../controller/merged-into-project-header-context'
+import { useAppStore } from '@/store'
 import type { WorktreeCardSecondaryDetailsInputs } from './worktree-card-secondary-details-inputs'
 
 export function useWorktreeCardSecondaryDetails({
@@ -66,10 +69,18 @@ export function useWorktreeCardSecondaryDetails({
     worktree.id,
     showInlineAgentList && agentActivityDisplayMode === 'compact'
   )
+  const chatListToggledOpen = useWorktreeChatListOpen(worktree.id)
+  const mergedIntoHeader = useContext(MergedIntoProjectHeaderContext)
+  const pickingChatInWorkspace = useAppStore(
+    (s) => s.agentSendPopoverTargetMode?.worktreeId === worktree.id
+  )
+  // Why: a merged card has no title row to toggle from, and the send picker needs its rows as targets.
+  const chatListOpen = chatListToggledOpen || mergedIntoHeader || pickingChatInWorkspace
   const compactInlineAgentRowsVisible =
     showInlineAgentList &&
     agentActivityDisplayMode === 'compact' &&
-    compactInlineAgentRows.length > 0
+    compactInlineAgentRows.length > 0 &&
+    chatListOpen
   const showAggregateCacheTimer = !compactCards && !compactInlineAgentRowsVisible
   const handleOpenGitHubIssueInMarkov = useCallback(
     (e: React.MouseEvent) => {
@@ -258,6 +269,7 @@ export function useWorktreeCardSecondaryDetails({
     metaComment,
     showInlineAgentList,
     compactInlineAgentRows,
+    chatListOpen,
     handleOpenGitHubIssueInMarkov,
     handleOpenIssueInBrowser,
     handleOpenReviewInMarkov,

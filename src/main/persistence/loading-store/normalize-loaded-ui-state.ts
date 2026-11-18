@@ -42,13 +42,10 @@ export function normalizeLoadedUiState(
   const rawSort = parsed.ui?.sortBy
   const sort = normalizeSortBy(rawSort)
   const migrate = !parsed.ui?._sortBySmartMigrated && rawSort === 'recent'
-  const rightSidebarOpen =
-    typeof parsed.ui?.rightSidebarOpen === 'boolean'
-      ? parsed.ui.rightSidebarOpen
-      : typeof parsed.settings?.rightSidebarOpenByDefault === 'boolean'
-        ? parsed.settings.rightSidebarOpenByDefault
-        : defaults.ui.rightSidebarOpen
-  if (typeof parsed.ui?.rightSidebarOpen !== 'boolean') {
+  // Why not the saved value: the right sidebar opens with the app every time; closing it lasts for
+  // that run only. A paired web or phone window keeps its own, narrower default.
+  const rightSidebarOpen = defaults.ui.rightSidebarOpen
+  if (parsed.ui?.rightSidebarOpen !== rightSidebarOpen) {
     markNeedsSave()
   }
   const workspaceStatusesDefaultOrderMigrated =

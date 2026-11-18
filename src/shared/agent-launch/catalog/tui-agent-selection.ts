@@ -1,9 +1,9 @@
 import type { TuiAgent } from './tui-agent'
 import type { GlobalSettings } from '../../global-settings-types'
 import { isTuiAgent } from './tui-agent-config'
+import { isOfferedTuiAgent } from './offered-tui-agents'
 
-// Match desktop catalog order: this determines fallback priority without a selected default.
-export const TUI_AGENT_AUTO_PICK_ORDER = [
+const TUI_AGENT_CATALOG_ORDER = [
   'claude',
   'claude-agent-teams',
   'openclaude',
@@ -51,6 +51,10 @@ export const TUI_AGENT_AUTO_PICK_ORDER = [
   'jcode'
 ] as const satisfies readonly TuiAgent[]
 
+// Match desktop catalog order: this determines fallback priority without a selected default.
+export const TUI_AGENT_AUTO_PICK_ORDER: readonly TuiAgent[] =
+  TUI_AGENT_CATALOG_ORDER.filter(isOfferedTuiAgent)
+
 // Fresh installs show Agent Teams; the migration separately preserves legacy hidden defaults.
 export const DEFAULT_DISABLED_TUI_AGENTS = [] as const satisfies readonly TuiAgent[]
 
@@ -67,6 +71,7 @@ export function pickTuiAgent(
   const detectedSet = detected instanceof Set ? detected : new Set(detected)
   if (
     preferred &&
+    isOfferedTuiAgent(preferred) &&
     (detectedSet.has(preferred) || chosenUsable?.(preferred)) &&
     !disabledSet.has(preferred)
   ) {

@@ -5,6 +5,13 @@ import type { AppState } from '../../store/types'
 import { sanitizeRecentTabIds } from '../../store/slices/tab-group-state'
 import { getActiveTabNavOrder, type VisibleTabRef } from './group-tab-order'
 import { getActiveEntityIdForTabType, type TypeCyclableTab } from '../terminal/tab-type-cycle'
+import {
+  SETTINGS_TAB_ID,
+  isSettingsTabPrevious,
+  selectCyclableSettingsTab,
+  settingsTabInsertIndex
+} from '@/lib/settings-tab-placement'
+import { translate } from '@/i18n/i18n'
 
 export type RecentTabSwitcherItem = TypeCyclableTab & {
   key: string
@@ -145,7 +152,8 @@ export function buildRecentTabSwitcherModel(
   mode: CtrlTabOrderMode
 ): RecentTabSwitcherModel | null {
   const visibleEntries = getActiveTabNavOrder(state, worktreeId)
-  if (visibleEntries.length <= 1) {
+  const settings = selectCyclableSettingsTab(state, worktreeId)
+  if (visibleEntries.length + (settings ? 1 : 0) <= 1) {
     return null
   }
 
@@ -171,7 +179,32 @@ export function buildRecentTabSwitcherModel(
       ? orderByMru(visibleEntries, itemByKey, group, activeKey)
       : visibleEntries.map((entry) => itemByKey.get(getVisibleTabKey(entry))!).filter(Boolean)
 
-  const activeIndex = activeKey ? orderedItems.findIndex((item) => item.key === activeKey) : -1
+  if (settings) {
+    // Settings is not a layout tab: it joins at its strip position, or first, second (as the previous tab) or last.
+    const settingsItem: RecentTabSwitcherItem = {
+      type: 'settings',
+      id: SETTINGS_TAB_ID,
+      tabId: SETTINGS_TAB_ID,
+      key: SETTINGS_TAB_ID,
+      label: translate('auto.components.sidebar.SidebarSettingsHelpMenu.a428c25998', 'Settings'),
+      contentType: 'editor',
+      isDirty: false
+    }
+    const index =
+      mode !== 'mru'
+        ? settingsTabInsertIndex(
+            orderedItems.map((item) => item.tabId ?? item.id),
+            settings.tab.leftTabIds
+          )
+        : settings.shown
+          ? 0
+          : isSettingsTabPrevious(state, worktreeId)
+            ? Math.min(1, orderedItems.length)
+            : orderedItems.length
+    orderedItems.splice(index, 0, settingsItem)
+  }
+  const shownKey = settings?.shown ? SETTINGS_TAB_ID : activeKey
+  const activeIndex = shownKey ? orderedItems.findIndex((item) => item.key === shownKey) : -1
   return {
     items: orderedItems,
     activeIndex

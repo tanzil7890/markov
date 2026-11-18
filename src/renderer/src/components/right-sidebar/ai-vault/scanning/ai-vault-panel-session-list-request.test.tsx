@@ -65,7 +65,7 @@ vi.mock('./ai-vault-session-refresh', () => ({
   }
 }))
 vi.mock('../session-actions/ai-vault-session-launch-actions', () => ({
-  useAiVaultSessionLaunchActions: () => ({ continuationRequest: null })
+  useAiVaultSessionLaunchActions: () => ({})
 }))
 vi.mock('../session-actions/ai-vault-original-pane-actions', () => ({
   useAiVaultOriginalPaneActions: () => ({})

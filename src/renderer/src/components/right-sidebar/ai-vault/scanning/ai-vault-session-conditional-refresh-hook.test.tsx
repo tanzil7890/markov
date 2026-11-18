@@ -142,7 +142,6 @@ function Probe({
       onJumpToOriginalPane={unused}
       onJumpToWorktree={unused}
       onResume={resume}
-      onContinueInNewSession={unused}
       onResumeInNewChat={unused}
       onResumeInNewCli={unused}
       onCopyResume={unused}

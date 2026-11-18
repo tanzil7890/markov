@@ -50,8 +50,7 @@ export function buildRemoteSettingsSections(
               'Use existing machines over SSH for files, terminals, Git, and workspaces.'
             ),
             icon: Cable,
-            searchEntries: getSshPaneSearchEntries(),
-            group: 'remote'
+            searchEntries: getSshPaneSearchEntries()
           }
         ]
       : []),
@@ -65,8 +64,7 @@ export function buildRemoteSettingsSections(
         ? 'Connect this browser to a saved Markov server.'
         : 'Run Markov on another machine and work on it from here.',
       icon: Server,
-      searchEntries: [runtimeEnvironmentsSearchEntry],
-      group: 'remote'
+      searchEntries: [runtimeEnvironmentsSearchEntry]
     },
     ...(showDesktopOnlySettings && isMac
       ? [
@@ -81,8 +79,7 @@ export function buildRemoteSettingsSections(
               'macOS privacy access for terminal-launched developer tools.'
             ),
             icon: ShieldCheck,
-            searchEntries: getDeveloperPermissionsPaneSearchEntries(),
-            group: 'security'
+            searchEntries: getDeveloperPermissionsPaneSearchEntries()
           }
         ]
       : []),
@@ -97,8 +94,7 @@ export function buildRemoteSettingsSections(
         'Anonymous usage data and telemetry controls.'
       ),
       icon: Lock,
-      searchEntries: getPrivacyPaneSearchEntries(),
-      group: 'security'
+      searchEntries: getPrivacyPaneSearchEntries()
     },
     ...(showDesktopOnlySettings
       ? [
@@ -110,8 +106,7 @@ export function buildRemoteSettingsSections(
               'Low-level compatibility settings for troubleshooting.'
             ),
             icon: Wrench,
-            searchEntries: getAdvancedPaneSearchEntries(),
-            group: 'advanced'
+            searchEntries: getAdvancedPaneSearchEntries()
           }
         ]
       : []),
@@ -128,7 +123,6 @@ export function buildRemoteSettingsSections(
             // Use a distinct icon from sibling Advanced settings so adjacent rows remain distinguishable.
             icon: Bug,
             searchEntries: getDevToolsPaneSearchEntries(),
-            group: 'advanced',
             badge: translate('auto.hooks.useSettingsNavigationMetadata.devBadge', 'Dev')
           }
         ]
@@ -141,8 +135,7 @@ export function buildRemoteSettingsSections(
         'New features that are still taking shape. Give them a try.'
       ),
       icon: FlaskConical,
-      searchEntries: getExperimentalPaneSearchEntries(),
-      group: 'experimental'
+      searchEntries: getExperimentalPaneSearchEntries()
     },
     ...(showDesktopOnlySettings
       ? [
@@ -155,7 +148,6 @@ export function buildRemoteSettingsSections(
             ),
             icon: Blocks,
             searchEntries: getPluginsPaneSearchEntries(),
-            group: 'experimental',
             badge: getPluginsSectionPresentation().badge
           }
         ]
@@ -179,8 +171,7 @@ export function buildRemoteSettingsSections(
         icon: SlidersHorizontal,
         searchEntries: getRepositoryPaneSearchEntries(representativeRepo, {
           windowsRuntimeSupported: isWindowsTerminalHost
-        }),
-        group: 'repositories'
+        })
       }
     })
   ]

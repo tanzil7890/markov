@@ -15,6 +15,8 @@ import {
   selectHydratedActiveGroupId
 } from './tab-group-state'
 import { dedupeTabOrder } from '../../../../shared/workspace-layout/tab-order'
+import { layoutTabGroups } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
+import { workspaceRootGroupId } from '../../../../shared/workspace-layout/workspace-layout-minted-ids'
 import { restoresSavedContentTab } from '../../../../shared/workspace-layout/saved-editor-tab-restore'
 
 type HydratedTabState = {
@@ -204,20 +206,34 @@ export function buildHydratedTabState(
       continue
     }
 
+    // The sidebar's group is never laid out; with only it left, the main area gets an empty root.
+    let laidOutGroups = layoutTabGroups(hydratedGroups)
+    if (laidOutGroups.length === 0) {
+      laidOutGroups = [
+        {
+          id: workspaceRootGroupId(worktreeId),
+          worktreeId,
+          activeTabId: null,
+          tabOrder: [],
+          recentTabIds: []
+        }
+      ]
+      hydratedGroups.unshift(laidOutGroups[0])
+    }
     groupsByWorktree[worktreeId] = hydratedGroups
     const activeGroupId = selectHydratedActiveGroupId(
-      hydratedGroups,
+      laidOutGroups,
       session.activeGroupIdByWorktree?.[worktreeId]
     )
     if (activeGroupId) {
       activeGroupIdByWorktree[worktreeId] = activeGroupId
     }
-    const hydratedGroupIds = new Set(hydratedGroups.map((group) => group.id))
+    const hydratedGroupIds = new Set(laidOutGroups.map((group) => group.id))
     const hydratedLayout = session.tabGroupLayouts?.[worktreeId]
       ? pruneTabGroupLayoutForGroups(session.tabGroupLayouts[worktreeId], hydratedGroupIds)
       : null
     // A partial layout must still render every surviving group.
-    layoutByWorktree[worktreeId] = layoutSpanningGroups(hydratedGroups, hydratedLayout)
+    layoutByWorktree[worktreeId] = layoutSpanningGroups(laidOutGroups, hydratedLayout)
   }
 
   adoptGrouplessTabs(tabsByWorktree, groupsByWorktree, activeGroupIdByWorktree, layoutByWorktree)

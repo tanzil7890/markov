@@ -232,7 +232,8 @@ async function runActivityPortalPage(args: {
         if (!routed) {
           continue
         }
-        const isolatedLeafId = routed.paneKey.slice(routed.paneKey.indexOf(':') + 1)
+        const paneKey = routed.paneKey ?? ''
+        const isolatedLeafId = paneKey.slice(paneKey.indexOf(':') + 1)
         const leafIds = leafIdsByTabId[tabId]
         renderPortaledTerminalPane(routed.target, tabId, [
           isolatedLeafId,

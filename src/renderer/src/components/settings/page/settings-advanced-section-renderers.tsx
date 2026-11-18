@@ -25,6 +25,8 @@ export function renderAdvancedSettingsSection(
         'Low-level compatibility settings for troubleshooting.'
       )}
       searchEntries={navigation.getSectionSearchEntries('advanced')}
+      // Its Compatibility and Network blocks carry their own headings, on a page already named Advanced.
+      hideHeader
     >
       {view.isSectionMounted('advanced') ? (
         <AdvancedPane settings={model.settings} updateSettings={model.updateSettings} />

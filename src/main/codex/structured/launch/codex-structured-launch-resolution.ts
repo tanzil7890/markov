@@ -52,6 +52,8 @@ export type CodexStructuredInvocationDeps = Pick<
 export type CodexStructuredInvocation = {
   command: string
   prefixArgs: string[]
+  /** The copy found first, when it lacked its command helper and `command` runs in its place. */
+  replaced?: string
   environment: NodeJS.ProcessEnv | undefined
 }
 
@@ -105,7 +107,7 @@ export function codexStructuredLaunchPart(
   return async (basis) => {
     const { record } = basis
     const accountHome = requireLegacyAgentSessionAccountHome(record.accountHome)
-    const { command, prefixArgs } = await resolveCodexStructuredInvocation({
+    const { command, prefixArgs, replaced } = await resolveCodexStructuredInvocation({
       ...(deps.resolveCommand ? { resolveCommand: deps.resolveCommand } : {}),
       refreshEnvironmentAfterMiss: basis.refreshAfterMissingProgram,
       resolveWorkingDirectory: basis.launchDirectory,
@@ -133,7 +135,8 @@ export function codexStructuredLaunchPart(
           ? {}
           : { permissionPolicy: codexStructuredPermissionPolicy(basis.permissionMode ?? 'ask') }),
         ...(model ? { model } : {}),
-        ...(visuals ? { visuals } : {})
+        ...(visuals ? { visuals } : {}),
+        ...(replaced ? { replacedCommand: replaced } : {})
       },
       env: withNativeChatVisualsEnv(
         { ...environment, ...(accountHome.path ? { CODEX_HOME: accountHome.path } : {}) },

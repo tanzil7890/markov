@@ -2156,9 +2156,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Einklappen"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "In neuer CLI fortsetzen"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "Zur neuesten Nachricht scrollen"
     },

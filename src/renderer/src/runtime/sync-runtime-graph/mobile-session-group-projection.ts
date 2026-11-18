@@ -11,6 +11,7 @@ import {
 } from '../../components/tab-bar/group-tab-order'
 import type { MobileSessionWorktreeInputs } from './types'
 import { isEditorSurfaceTab } from './mobile-session-surfaces'
+import { isRightSidebarTabGroup } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 export function getEditorUnifiedTabsForWorktree(
   inputs: Pick<MobileSessionWorktreeInputs, 'unifiedTabs'>
@@ -121,14 +122,15 @@ function getOrderedTabGroups(
   const ordered: TabGroup[] = []
   for (const groupId of collectTabGroupLayoutIds(layout)) {
     const group = byId.get(groupId)
-    if (!group || seen.has(group.id)) {
+    if (!group || seen.has(group.id) || isRightSidebarTabGroup(group)) {
       continue
     }
     seen.add(group.id)
     ordered.push(group)
   }
   for (const group of groups) {
-    if (!seen.has(group.id)) {
+    // Paired clients lay out every group they receive; the desktop sidebar's terminals stay on the desktop.
+    if (!seen.has(group.id) && !isRightSidebarTabGroup(group)) {
       ordered.push(group)
     }
   }

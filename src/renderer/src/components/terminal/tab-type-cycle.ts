@@ -1,7 +1,8 @@
 import type { WorkspaceVisibleTabType } from '../../../../shared/tab-types'
 import { sanitizeRecentTabIds } from '../../store/slices/tab-group-state'
 
-export type TabCycleType = WorkspaceVisibleTabType
+/** 'settings' is the Settings tab, which is not a layout tab but cycles with them. */
+export type TabCycleType = WorkspaceVisibleTabType | 'settings'
 
 export type TypeCyclableTab = {
   type: TabCycleType

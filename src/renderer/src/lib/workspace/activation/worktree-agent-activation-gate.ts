@@ -26,6 +26,7 @@ import {
   readWorktreeStructuredActivationInventory,
   type StructuredActivationInventory
 } from './worktree-agent-structured-inventory'
+import { rightSidebarPtyIds } from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 type ActivationStore = LiveSurfaceAdoptionStore &
   Pick<
@@ -206,10 +207,13 @@ export async function runWorktreeAgentActivationGate(
   }
 
   // Union relay worktreeId and minted-prefix evidence: host MARKOV_WORKTREE_ID can be foreign, and preferring it would omit live sessions then fork writers.
+  // The sidebar's own terminals do not count as the main area's surface.
+  const sidebarPtyIds = rightSidebarPtyIds(deps.getState(), worktreeId)
   const liveWorkspaceSessions = sessions.filter(
     (session) =>
-      (session.worktreeId !== undefined && worktreeIdsEqual(session.worktreeId, worktreeId)) ||
-      sessionBelongsToWorkspace(session.id, worktreeId)
+      !sidebarPtyIds.has(session.id) &&
+      ((session.worktreeId !== undefined && worktreeIdsEqual(session.worktreeId, worktreeId)) ||
+        sessionBelongsToWorkspace(session.id, worktreeId))
   )
   // Killing sessions may be user-closed panes; never resurrect surfaces, but still count their live work.
   const adoptablePtyIds = liveWorkspaceSessions

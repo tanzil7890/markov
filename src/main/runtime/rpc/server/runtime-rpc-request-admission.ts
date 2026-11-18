@@ -12,7 +12,9 @@ import { LOCAL_CLI_RPC_CALLER } from '../rpc-caller-identity'
 const DISCONNECT_FORWARDED_METHODS = new Set([
   'browser.eval',
   'linear.commentEdit',
-  'linear.commentDelete'
+  'linear.commentDelete',
+  // A tool call the agent no longer waits for must stop running upstream.
+  'mcpGateway.message'
 ])
 
 export class RuntimeRpcRequestAdmission extends RuntimeRpcBinaryRouting {

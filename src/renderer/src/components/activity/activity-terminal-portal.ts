@@ -6,13 +6,24 @@ export type ActivityTerminalPortalTarget = {
   target: HTMLElement
   worktreeId: string
   tabId: string
-  // Carry the durable leaf paneKey; TerminalPane resolves its current numeric handle immediately before isolation.
-  paneKey: string
+  // Carry the durable leaf paneKey; TerminalPane resolves its current numeric handle immediately before isolation. Null shows the whole tab.
+  paneKey: string | null
   forceUnavailable?: boolean
   active: boolean
 }
 
-let currentTargets: ActivityTerminalPortalTarget[] = []
+/** Activity shows one agent's pane; the right sidebar shows its own terminal tabs. */
+export type TerminalPortalOwner = 'activity' | 'right-sidebar'
+
+const targetsByOwner: Record<TerminalPortalOwner, ActivityTerminalPortalTarget[]> = {
+  activity: [],
+  'right-sidebar': []
+}
+let publication = 0
+const combinedCache = new Map<
+  boolean,
+  { publication: number; targets: ActivityTerminalPortalTarget[] }
+>()
 const emptyTargets: ActivityTerminalPortalTarget[] = []
 const subscribers = new Set<() => void>()
 
@@ -50,16 +61,44 @@ function haveSameActivityTerminalPortals(
   )
 }
 
-// Publish worktree/tab routing with the target; deriving it from global active state briefly portaled the wrong terminal when activation writes arrived separately.
-export function setActivityTerminalPortals(targets: ActivityTerminalPortalTarget[]): void {
-  // Why: semantic no-ops must not synchronously bounce through Terminal and back into Activity.
-  if (currentTargets === targets || haveSameActivityTerminalPortals(currentTargets, targets)) {
+export function setTerminalPortalTargets(
+  owner: TerminalPortalOwner,
+  targets: ActivityTerminalPortalTarget[]
+): void {
+  const current = targetsByOwner[owner]
+  // Why: semantic no-ops must not synchronously bounce through Terminal and back into the publisher.
+  if (current === targets || haveSameActivityTerminalPortals(current, targets)) {
     return
   }
-  currentTargets = targets
+  targetsByOwner[owner] = targets
+  publication++
   for (const subscriber of subscribers) {
     subscriber()
   }
+}
+
+// Publish worktree/tab routing with the target; deriving it from global active state briefly portaled the wrong terminal when activation writes arrived separately.
+export function setActivityTerminalPortals(targets: ActivityTerminalPortalTarget[]): void {
+  setTerminalPortalTargets('activity', targets)
+}
+
+function combinedTargets(includeActivity: boolean): ActivityTerminalPortalTarget[] {
+  const cached = combinedCache.get(includeActivity)
+  if (cached?.publication === publication) {
+    return cached.targets
+  }
+  const activity = includeActivity ? targetsByOwner.activity : emptyTargets
+  // A tab Activity is showing stays there; two portals cannot hold one pane.
+  const sidebar = targetsByOwner['right-sidebar'].filter(
+    (target) =>
+      !activity.some(
+        (claimed) => claimed.worktreeId === target.worktreeId && claimed.tabId === target.tabId
+      )
+  )
+  const targets =
+    activity.length === 0 && sidebar.length === 0 ? emptyTargets : [...activity, ...sidebar]
+  combinedCache.set(includeActivity, { publication, targets })
+  return targets
 }
 
 function subscribeActivityTerminalPortals(onStoreChange: () => void): () => void {
@@ -69,17 +108,11 @@ function subscribeActivityTerminalPortals(onStoreChange: () => void): () => void
   }
 }
 
-export function useActivityTerminalPortals(enabled: boolean): ActivityTerminalPortalTarget[] {
+/** Activity's targets while its page is shown, plus the right sidebar's at all times. */
+export function useActivityTerminalPortals(activityShown: boolean): ActivityTerminalPortalTarget[] {
   // Subscribe directly to module state so Terminal can consume targets without app-store routing.
-  const subscribe = useCallback(
-    (onStoreChange: () => void): (() => void) =>
-      enabled ? subscribeActivityTerminalPortals(onStoreChange) : () => {},
-    [enabled]
-  )
-
-  const getSnapshot = useCallback(() => (enabled ? currentTargets : emptyTargets), [enabled])
-
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  const getSnapshot = useCallback(() => combinedTargets(activityShown), [activityShown])
+  return useSyncExternalStore(subscribeActivityTerminalPortals, getSnapshot, getSnapshot)
 }
 
 export function findActivityTerminalPortal(

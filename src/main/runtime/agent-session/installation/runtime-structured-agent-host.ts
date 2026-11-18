@@ -4,6 +4,7 @@ import { resolveStructuredCodexAccountKind } from '../environment/structured-age
 import { nativeChatShellEnvironmentPolicy } from '../../../../shared/native-chat/native-chat-shell-environment'
 import { claudeStructuredAuthPolicyForSettings } from '../../../claude-accounts/claude-structured-auth-policy'
 import { resolveStructuredAgentCommand } from '../../../native-chat/structured-agent-command-resolution'
+import { resolveCodexChatCommand } from '../../../codex/structured/launch/codex-chat-command'
 import { structuredAgentConfiguredArgs } from '../../../native-chat/structured-agent-configured-args'
 import { getProfileUserDataPath } from '../../../markov-profiles/profile-storage-paths'
 import { isTuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent-config'
@@ -40,7 +41,7 @@ export abstract class RuntimeStructuredAgentHost extends MarkovRuntimeWithStartT
       resolveClaudeCommand: (options) =>
         resolveStructuredAgentCommand('claude', this.requireStore().getSettings(), options),
       resolveCodexCommand: (options) =>
-        resolveStructuredAgentCommand('codex', this.requireStore().getSettings(), options),
+        resolveCodexChatCommand(this.requireStore().getSettings(), options),
       resolveLaunchArgs: (agent) =>
         structuredAgentConfiguredArgs(agent, this.requireStore().getSettings()),
       resolveShellEnvironmentPolicy: () =>

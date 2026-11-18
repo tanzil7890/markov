@@ -1,4 +1,5 @@
 import type { TabGroupLayoutNode } from '../tab-types'
+import { isRightSidebarTabGroupId } from './right-sidebar-tab-group'
 
 export function buildSplitNode(
   existingGroupId: string,
@@ -107,9 +108,11 @@ export function collapseGroupLayout(
   activeGroupIdByWorktree: Record<string, string>
 } {
   const currentLayout = layoutByWorktree[worktreeId]
-  if (!currentLayout) {
+  // The sidebar's group has no leaf, and focus never moves to it.
+  if (!currentLayout || isRightSidebarTabGroupId(worktreeId, groupId)) {
     return { layoutByWorktree, activeGroupIdByWorktree }
   }
+  const fallback = isRightSidebarTabGroupId(worktreeId, fallbackGroupId) ? null : fallbackGroupId
   const siblingId = findSiblingGroupId(currentLayout, groupId)
   const collapsed = removeGroupLayoutLeaf(currentLayout, groupId)
   const nextLayoutByWorktree = { ...layoutByWorktree }
@@ -122,7 +125,7 @@ export function collapseGroupLayout(
     layoutByWorktree: nextLayoutByWorktree,
     activeGroupIdByWorktree: {
       ...activeGroupIdByWorktree,
-      [worktreeId]: siblingId ?? fallbackGroupId ?? activeGroupIdByWorktree[worktreeId]
+      [worktreeId]: siblingId ?? fallback ?? activeGroupIdByWorktree[worktreeId]
     }
   }
 }

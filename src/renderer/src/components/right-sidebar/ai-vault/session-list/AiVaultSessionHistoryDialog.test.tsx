@@ -35,7 +35,6 @@ vi.mock('../scanning/ai-vault-session-refresh', () => ({
 }))
 vi.mock('../session-actions/ai-vault-session-launch-actions', () => ({
   useAiVaultSessionLaunchActions: () => ({
-    continuationRequest: null,
     handleResume: vi.fn(),
     handleResumeInNewChat: mocks.handleResumeInNewChat,
     handleResumeInNewCli: vi.fn()

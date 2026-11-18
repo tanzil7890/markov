@@ -68,7 +68,6 @@ function renderList(sessions: AiVaultSession[], loading = false) {
         onJumpToOriginalPane={vi.fn()}
         onJumpToWorktree={vi.fn()}
         onResume={vi.fn()}
-        onContinueInNewSession={vi.fn()}
         onResumeInNewChat={vi.fn()}
         onResumeInNewCli={vi.fn()}
         onCopyResume={vi.fn()}

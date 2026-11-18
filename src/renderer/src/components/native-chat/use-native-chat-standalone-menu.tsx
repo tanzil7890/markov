@@ -1,4 +1,3 @@
-import { NativeChatCliForkMenuItems } from '../tab-bar/NativeChatCliForkMenuItems'
 import { AgentSessionContextCopyMenuItem } from '../terminal-pane/AgentSessionContextCopyMenuItem'
 import { useNativeChatQuickCommandsMenu } from './use-native-chat-quick-commands-menu'
 import {
@@ -20,19 +19,8 @@ export function useNativeChatStandaloneMenu({
   return {
     quickCommands: quickCommands.menu,
     sessionItems:
-      pane && source ? (
-        <>
-          {context.available ? (
-            <AgentSessionContextCopyMenuItem disabled={context.pending} onSelect={context.onCopy} />
-          ) : null}
-          <NativeChatCliForkMenuItems
-            tab={{ id: pane.tabId, worktreeId: pane.worktreeId }}
-            nativeChat={{ sessionId: source.sessionId, agent: source.agent }}
-            leadingSeparator={false}
-            menuKind="dropdown"
-            onComplete={close}
-          />
-        </>
+      pane && source && context.available ? (
+        <AgentSessionContextCopyMenuItem disabled={context.pending} onSelect={context.onCopy} />
       ) : null,
     dialogs: quickCommands.dialog
   }

@@ -10,6 +10,8 @@ import type { AppState } from '../../types'
 import { MARKOV_LAYOUT_OWNER_IS_MAIN } from '../../../../../shared/layout-owner-switch'
 import { withPreviewEnded } from './tab-preview-flag'
 import { endsPreviewHere, promotePreviewTabsThroughLayoutOwner } from './preview-tab-promotion'
+import { settingsTabsAfterTabPick } from '../../../lib/settings-tab-placement'
+import { isRightSidebarTabGroupId } from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 /** Activation ends a preview unless it preserves it; main's frame ends one main owns. */
 function withPreviewOnActivation(tab: Tab, preservePreview: boolean, endsHere: boolean): Tab {
@@ -62,10 +64,13 @@ export function tabActivationPatch(
           : group
       )
     },
-    activeGroupIdByWorktree: {
-      ...state.activeGroupIdByWorktree,
-      [worktreeId]: tab.groupId
-    }
+    // A sidebar terminal becomes the sidebar's shown terminal; the main area keeps its focus.
+    activeGroupIdByWorktree: isRightSidebarTabGroupId(worktreeId, tab.groupId)
+      ? state.activeGroupIdByWorktree
+      : {
+          ...state.activeGroupIdByWorktree,
+          [worktreeId]: tab.groupId
+        }
   }
 }
 
@@ -123,7 +128,10 @@ export function createTabsFocusActions(
         if (MARKOV_LAYOUT_OWNER_IS_MAIN && tab.isPreview && !opts?.preservePreview) {
           promoted.push(tab)
         }
-        return tabActivationPatch(state, tab, worktreeId, opts, endsPreviewHere(state, worktreeId))
+        return {
+          ...tabActivationPatch(state, tab, worktreeId, opts, endsPreviewHere(state, worktreeId)),
+          ...settingsTabsAfterTabPick(state, worktreeId, tab.groupId, tab.id)
+        }
       })
       // Switch point: main makes the activated preview permanent; its frame clears the flag.
       if (MARKOV_LAYOUT_OWNER_IS_MAIN && promoted.length > 0) {

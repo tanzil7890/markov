@@ -11,6 +11,7 @@ import {
   codexGoalRowText,
   codexThreadGoalState
 } from '../../../codex/structured/journal/codex-goal-journal-rows'
+import { codexCodeModeHostMissingWords } from '../../../codex/structured/journal/codex-code-mode-host-missing'
 import { isProviderRecord } from '../../../provider-process/provider-json-record'
 import { classifyProviderFrame } from './provider-frame-disposition'
 import { hookOutcomeRowBody } from '../../../../shared/agent-session/journal/agent-session-hook-outcome'
@@ -194,6 +195,10 @@ export function unhandledProviderFrameJournalItem(
       [record.summary, record.details]
         .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
         .join('\n\n') || message
+  }
+  if (provider === 'codex') {
+    // The raw warning names a feature flag; say that commands cannot run and how to repair it.
+    message = codexCodeModeHostMissingWords(message) ?? message
   }
   if (provider === 'claude' && kind === CLAUDE_LOCAL_COMMAND_OUTPUT_FRAME_KIND) {
     const content =

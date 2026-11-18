@@ -21,6 +21,7 @@ import {
   type GeminiCliOAuthEnabledResolver,
   type InactiveCodexAccountInfo,
   type InactiveClaudeAccountInfo,
+  type ProviderRateLimits,
   type RateLimitState,
   normalizeCodexAccountSelectionTarget,
   normalizeClaudeAccountSelectionTarget,
@@ -66,6 +67,12 @@ export abstract class RateLimitServiceConfiguration extends RateLimitServiceAcco
 
   setGeminiCliOAuthEnabledResolver(resolver: GeminiCliOAuthEnabledResolver): void {
     this.geminiCliOAuthEnabledResolver = resolver
+  }
+
+  setProviderOfferedResolver(
+    resolver: (provider: ProviderRateLimits['provider']) => boolean
+  ): void {
+    this.providerOfferedResolver = resolver
   }
 
   setAntigravityUsageEnabledResolver(resolver: AntigravityUsageEnabledResolver): void {

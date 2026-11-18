@@ -2,7 +2,16 @@ import { LinearIcon } from '@/components/icons/LinearIcon'
 import { getAccountsPaneSearchEntries } from '@/components/settings/accounts/accounts-search'
 import { getAgentsPaneSearchEntries } from '@/components/settings/agents/agents-search'
 import { getComputerUsePaneSearchEntries } from '@/components/settings/computer-use/computer-use-search'
-import { getGeneralPaneSearchEntries } from '@/components/settings/general/general-search'
+import { getConnectionsPaneSearchEntries } from '@/components/settings/connections/connections-search'
+import {
+  getGeneralCliSearchEntries,
+  getGeneralNavigationSearchEntries,
+  getGeneralUpdateSearchEntries,
+  getGeneralWorkspaceSearchEntries
+} from '@/components/settings/general/general-search'
+import { getGeneralSupportSearchEntries } from '@/components/settings/general/general-support-search'
+import { getGeneralProjectRuntimeSearchEntries } from '@/components/settings/general/project-runtime/general-project-runtime-search'
+import { getGeneralEditorSearchEntries } from '@/components/settings/editor/general-editor-search'
 import { getIntegrationsPaneSearchEntries } from '@/components/settings/integrations/integrations-search'
 import { getLinearAgentSkillPaneSearchEntries } from '@/components/settings/skills/linear/linear-agent-skill-search'
 import { getMobileSettingsPaneSearchEntries } from '@/components/settings/mobile/mobile-settings-search'
@@ -15,12 +24,18 @@ import type { SettingsNavSection } from '@/lib/settings-navigation-types'
 import {
   Blocks,
   Bot,
+  Cable,
   CircleUserRound,
+  Download,
+  FilePenLine,
+  LayoutDashboard,
   Mic,
   MousePointerClick,
   Network,
+  PanelTop,
   SlidersHorizontal,
   Smartphone,
+  Terminal,
   UserCog
 } from 'lucide-react'
 import type { SettingsNavigationBuildOptions } from './settings-navigation-build-options'
@@ -32,6 +47,16 @@ export function buildCapabilitySettingsSections({
 }: SettingsNavigationBuildOptions): SettingsNavSection[] {
   const showDesktopOnlySettings = !isWebClient
   return [
+    {
+      id: 'overview',
+      title: translate('settings.destinations.overview.title', 'Overview'),
+      description: translate(
+        'settings.sections.overview.description',
+        'What needs your attention, and the settings people change most.'
+      ),
+      icon: LayoutDashboard,
+      searchEntries: []
+    },
     {
       id: 'agents',
       title: translate('auto.hooks.useSettingsNavigationMetadata.b49abbd2f7', 'Agents'),
@@ -46,8 +71,7 @@ export function buildCapabilitySettingsSections({
         includeAgentRuntime: isLocalWindowsHost,
         includeAgentWorkspaceTrust: !isWebClient,
         includeCodexTerminalServerIsolation: !isWebClient
-      }),
-      group: 'capabilities'
+      })
     },
     {
       id: 'accounts',
@@ -56,12 +80,11 @@ export function buildCapabilitySettingsSections({
         'AI Provider Accounts'
       ),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.b1c2f8b0ac',
-        'Optional account switching and usage setup for Claude, Codex, Gemini, OpenCode Go, MiniMax, and Grok.'
+        'settings.accounts.navDescription',
+        'Optional account switching and usage setup for Claude, Codex, Gemini, and Grok.'
       ),
       icon: UserCog,
       searchEntries: getAccountsPaneSearchEntries(),
-      group: 'capabilities',
       badge: translate('auto.hooks.useSettingsNavigationMetadata.7c79d3b7bf', 'Optional')
     },
     {
@@ -74,8 +97,7 @@ export function buildCapabilitySettingsSections({
       icon: Network,
       searchEntries: getOrchestrationPaneSearchEntries({
         includeLocalRuntimeSettings: !isWebClient
-      }),
-      group: 'capabilities'
+      })
     },
     // Expose only with connected Linear; its skill needs linked provider capability.
     ...(isLinearConnected
@@ -88,13 +110,22 @@ export function buildCapabilitySettingsSections({
               'How Linear works in Markov, setup checklist, agent skill, and example prompts.'
             ),
             icon: LinearIcon,
-            searchEntries: getLinearAgentSkillPaneSearchEntries(),
-            group: 'capabilities'
+            searchEntries: getLinearAgentSkillPaneSearchEntries()
           }
         ]
       : []),
     ...(showDesktopOnlySettings
       ? [
+          {
+            id: 'connections',
+            title: translate('settings.connections.mcpTitle', 'MCP servers'),
+            description: translate(
+              'settings.connections.description',
+              'Connect MCP servers once and use their tools from every agent.'
+            ),
+            icon: Cable,
+            searchEntries: getConnectionsPaneSearchEntries()
+          },
           {
             id: 'computer-use',
             title: translate('auto.hooks.useSettingsNavigationMetadata.b35e92364b', 'Computer Use'),
@@ -103,8 +134,7 @@ export function buildCapabilitySettingsSections({
               'Enable agents to control any app on your computer.'
             ),
             icon: MousePointerClick,
-            searchEntries: getComputerUsePaneSearchEntries(),
-            group: 'capabilities'
+            searchEntries: getComputerUsePaneSearchEntries()
           },
           {
             id: 'voice',
@@ -114,8 +144,7 @@ export function buildCapabilitySettingsSections({
               'Local speech-to-text dictation with on-device models.'
             ),
             icon: Mic,
-            searchEntries: getVoicePaneSearchEntries(),
-            group: 'capabilities'
+            searchEntries: getVoicePaneSearchEntries()
           }
         ]
       : [])
@@ -138,8 +167,7 @@ export function buildSetupSettingsSections({
               'Share work instantly and reach your desktop from Markov Mobile wherever you are.'
             ),
             icon: CircleUserRound,
-            searchEntries: getMarkovAccountSettingsSearchEntries(),
-            group: 'setup'
+            searchEntries: getMarkovAccountSettingsSearchEntries()
           }
         ]
       : []),
@@ -173,30 +201,76 @@ export function buildSetupSettingsSections({
             translate('auto.hooks.useSettingsNavigationMetadata.724c440e72', 'getting started')
           ]
         }
-      ],
-      group: 'setup'
+      ]
     },
     {
       id: 'general',
-      title: translate('auto.hooks.useSettingsNavigationMetadata.13241992bd', 'General'),
+      title: translate('settings.sections.workspaces.title', 'Workspaces'),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.2cd4ea75da',
-        'Workspace defaults, app setup, and maintenance.'
+        'settings.sections.workspaces.description',
+        'Where workspaces are created and which ones the sidebar lists.'
       ),
       icon: SlidersHorizontal,
-      searchEntries: getGeneralPaneSearchEntries({ includeProjectRuntime: isLocalWindowsHost }),
-      group: 'setup'
+      searchEntries: [
+        ...getGeneralWorkspaceSearchEntries(),
+        ...(isLocalWindowsHost ? getGeneralProjectRuntimeSearchEntries() : [])
+      ]
+    },
+    {
+      id: 'tabs',
+      title: translate('settings.sections.tabs.title', 'Tabs'),
+      description: translate(
+        'settings.sections.tabs.description',
+        'Tab order, preview tabs, and what to confirm before a tab closes.'
+      ),
+      icon: PanelTop,
+      searchEntries: getGeneralNavigationSearchEntries()
+    },
+    {
+      id: 'editor',
+      title: translate(
+        'auto.components.settings.GeneralEditorSettingsSection.45c6e85c4d',
+        'Editor'
+      ),
+      description: translate(
+        'settings.sections.editor.description',
+        'Saving, fonts, diffs, and Markdown.'
+      ),
+      icon: FilePenLine,
+      searchEntries: getGeneralEditorSearchEntries()
+    },
+    {
+      id: 'cli',
+      title: translate('settings.sections.cli.title', 'Markov CLI'),
+      description: translate(
+        'settings.sections.cli.description',
+        'The markov command, and the skill that teaches agents to use it.'
+      ),
+      icon: Terminal,
+      searchEntries: getGeneralCliSearchEntries()
+    },
+    {
+      id: 'updates',
+      title: translate(
+        'auto.components.settings.GeneralUpdateSettingsSection.f2b1ccc12a',
+        'Updates'
+      ),
+      description: translate(
+        'settings.sections.updates.description',
+        'The installed version, update checks, and ways to support Markov.'
+      ),
+      icon: Download,
+      searchEntries: [...getGeneralUpdateSearchEntries(), ...getGeneralSupportSearchEntries()]
     },
     {
       id: 'integrations',
-      title: translate('auto.hooks.useSettingsNavigationMetadata.2b043783ef', 'Integrations'),
+      title: translate('settings.integrations.servicesTitle', 'Services'),
       description: translate(
         'auto.hooks.useSettingsNavigationMetadata.33a5e1d597',
         'Connect GitHub, GitLab, Linear, and source-hosting services.'
       ),
       icon: Blocks,
-      searchEntries: getIntegrationsPaneSearchEntries(),
-      group: 'setup'
+      searchEntries: getIntegrationsPaneSearchEntries()
     },
     ...(showDesktopOnlySettings
       ? [
@@ -208,8 +282,7 @@ export function buildSetupSettingsSections({
               'Control terminals and agents from your phone.'
             ),
             icon: Smartphone,
-            searchEntries: getMobileSettingsPaneSearchEntries(),
-            group: 'setup'
+            searchEntries: getMobileSettingsPaneSearchEntries()
           }
         ]
       : [])

@@ -1747,7 +1747,6 @@
         "2eece16ad1": "Notifications",
         "1f452cbd4c": "Comportement de sélection et d'édition.",
         "0c6ee88a5f": "Saisie & édition",
-        "b11a5a48a2": "Thème, zoom, apparence de l'app et du terminal, barres latérales et barre d'état.",
         "93d88d20bf": "Apparence",
         "2d0659f6f0": "Onglets globaux de terminal, de navigateur et de markdown.",
         "65b19f5bde": "Espace de travail flottant",
@@ -1760,12 +1759,8 @@
         "c33bfd664c": "Shells, moteur de rendu, sessions et comportement du terminal.",
         "a9fb10afca": "Terminal",
         "85f4fd7710": "Sources de tâches",
-        "ab4b21b58e": "Nommage des branches, refs de base et Git AI Author.",
         "09607cb0fe": "Git & gestion de code source",
         "33a5e1d597": "Connectez GitHub, GitLab, Linear et les services d'hébergement de sources.",
-        "2b043783ef": "Intégrations",
-        "2cd4ea75da": "Valeurs par défaut des espaces de travail, configuration de l'app et maintenance.",
-        "13241992bd": "Général",
         "724c440e72": "prise en main",
         "0505d0df29": "démarrer avec Markov",
         "ea0b1bc7b8": "guide de configuration",
@@ -1779,7 +1774,6 @@
         "cd50cec5d7": "Coordonnez plusieurs agents de codage via Markov.",
         "58a868e8e4": "Orchestration",
         "7c79d3b7bf": "Facultatif",
-        "b1c2f8b0ac": "Configuration facultative de changement de compte et d'utilisation pour Claude, Codex, Gemini, OpenCode Go, MiniMax et Grok.",
         "f70ac54d38": "Comptes de fournisseurs d'IA",
         "4121f7a0a2": "Gérez les agents IA, définissez-en un par défaut et personnalisez les commandes.",
         "b49abbd2f7": "Agents",
@@ -4082,20 +4076,10 @@
             "omniboxPlaceholderWithHistory": "Recherchez les onglets ouverts, l’historique, les fichiers, les URL, les agents…"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "Commande",
-            "20bbd75896": "Aucune commande",
-            "b82e237a4b": "Plus de commandes rapides",
-            "85482c57bc": "Exécuter la commande rapide",
-            "b775303755": "Exécuter la commande rapide : {{value0}}",
             "196593b6a9": "Supprimer {{value0}}",
             "15529ede69": "Modifier {{value0}}",
-            "1d411fb6a5": "Enregistrer une commande rapide pour ce dépôt",
-            "8f1e971966": "Ajouter une commande rapide",
             "3220e2da27": "Cette commande rapide sera retirée de votre liste enregistrée.",
             "e8e1a52edb": "Supprimer « {{value0}} » ?",
-            "37e1bb90ce": "Exécuter : {{value0}}",
-            "77ac113df0": "Démarrer {{value0}} : {{value1}}",
-            "7b1c9d6ae1": "Exécution",
             "be8f0ff166": "Supprimer",
             "f3a8c2d1e7": "Rechercher des commandes rapides...",
             "b4e7f9a2c1": "Aucune commande ne correspond",
@@ -4165,15 +4149,11 @@
             "7ab2964bea": "Achèvement d'agent non lu"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "Commande",
             "b856c833ae": "Commande sur {{value0}}"
           },
           "TabBarQuickCommandHostLoadStatus": {
             "82e294f3ca": "Hôte indisponible",
             "7c129b08ff": "Chargement de l'hôte…"
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "Cette session ne peut pas être ouverte dans la CLI."
           },
           "tabCreateEntry": {
             "fileNotFound": "Fichier introuvable : {{path}}",
@@ -7465,12 +7445,6 @@
             "tintOpacityDescription": "Contrôle l'intensité avec laquelle la teinte est mélangée à la barre latérale.",
             "tintDescription": "Gardez la barre latérale gauche par défaut ou teintez-la. Pour suivre le terminal, choisissez Comme le terminal comme thème clair ou sombre."
           },
-          "interfaceDefaultFont": "Police par défaut",
-          "terminalDefaultFont": "Police par défaut",
-          "interfaceTitle": "Interface",
-          "terminalTitle": "Terminal",
-          "windowSidebarTitle": "Fenêtre & barre latérale",
-          "windowSidebarSummary": "Barre latérale, barre d'état et explorateur de fichiers",
           "gitIgnoredGlossary": "Fichiers correspondant à .gitignore.",
           "statusBarDescription": "Choisissez les indicateurs affichés dans la barre d'état.",
           "showPinnedWorktreesInGroups": {
@@ -7894,7 +7868,6 @@
           "nodeDistMirrorDescription": "Facultatif. Un miroir de nodejs.org/dist qu’Markov utilise en priorité pour installer Node sur les serveurs SSH et WSL. Chaque fichier reste vérifié par rapport à la version attendue par Markov."
         },
         "GeneralPane": {
-          "d58fccfd84": "Navigation",
           "5cb5475664": "Confirmer avant de fermer les onglets épinglés",
           "36b2a5dc6d": "Afficher une boîte de dialogue de confirmation avant de fermer un onglet épinglé.",
           "projectRuntime": "Runtime des projets",
@@ -8733,7 +8706,6 @@
           "9907545fa3": "Notifications",
           "d0b7021d64": "Comportement de sélection et d'édition.",
           "d7a3e635b6": "Saisie & édition",
-          "6d1a27e193": "Thème, zoom, apparence de l'app et du terminal, barres latérales et barre d'état.",
           "2b4474780a": "Apparence",
           "3d9adfe6a5": "Onglets globaux de terminal, de navigateur et de markdown.",
           "3eb22a3ada": "Espace de travail flottant",
@@ -8746,12 +8718,9 @@
           "b79b5b31e9": "Shells, moteur de rendu, sessions et comportement du terminal.",
           "3de4bbb841": "Terminal",
           "11faa2f7dd": "Sources de tâches",
-          "cfa34f4465": "Nommage des branches, refs de base et Git AI Author.",
           "70100f94c7": "Git & gestion de code source",
           "b07041697f": "Connectez GitHub, GitLab, Linear et les services d'hébergement de sources.",
           "c9ca101a3b": "Intégrations",
-          "f9b77539fd": "Valeurs par défaut des espaces de travail, configuration de l'app et maintenance.",
-          "7807c11c4d": "Général",
           "6855b0f77d": "Terminez les workflows essentiels qui rendent Markov utile au travail parallèle avec des agents.",
           "6d119427ef": "Checklist d'intégration",
           "eb1176a14e": "Dictée vocale locale avec modèles embarqués sur l'appareil.",
@@ -8768,12 +8737,7 @@
           "acc7bbdefd": "Appuyez à nouveau sur ESC pour quitter les paramètres",
           "43b68e10f0": "Des paramètres IA ne sont pas enregistrés. Ils seront abandonnés en quittant.",
           "17bdee4ff1": "Abandonner les paramètres IA non enregistrés ?",
-          "084d8fac5b": "Confidentialité et sécurité",
-          "23931df7e8": "Hôtes distants",
           "8bd117d669": "Interface",
-          "e1578cd4bc": "Workflows",
-          "9abb9be3bc": "Configurer",
-          "23c6874fdf": "Capacités IA",
           "65358016ea": "Abandonner",
           "dev": "Outils dev",
           "devDescription": "Outils réservés au développement pour exercer les états de l'UI.",
@@ -8809,9 +8773,7 @@
           "dbceaa8840": "Rechercher dans les paramètres",
           "60f8a673a7": "Retour à l'application",
           "6503182299": "Checklist d'intégration",
-          "82db1b7de4": "Checklist d'intégration, {{value0}} sur {{value1}} terminés. Afficher le guide de configuration.",
-          "df38d612b7": "Aucun projet ajouté pour le moment.",
-          "3e483e256b": "Aucun paramètre de projet correspondant."
+          "df38d612b7": "Aucun projet ajouté pour le moment."
         },
         "ShortcutFilterRail": {
           "28b63545bf": "Statut",
@@ -20068,8 +20030,7 @@
         "continueNow": "Continuer maintenant",
         "leadIn": "Continuez cette conversation sans attendre :",
         "switchAccount": "Changer de compte",
-        "addAccount": "Ajouter un compte…",
-        "accountUnavailable": "Cette conversation ne peut pas passer à un autre compte. Transférez-la à un autre agent."
+        "addAccount": "Ajouter un compte…"
       },
       "usageLimitAutoContinue": {
         "cancelFailed": "Impossible d’annuler la reprise automatique. Réessayez.",
@@ -20078,7 +20039,6 @@
         "scheduled": "Markov reprendra ce chat à {{time}}.",
         "cancel": "Ne pas reprendre"
       },
-      "settings": "Paramètres du chat",
       "textAttachmentPreview": {
         "copiedContents": "Contenu copié",
         "textAttachment": "Pièce jointe texte",
@@ -20414,28 +20374,7 @@
       }
     },
     "agentSessionContinuation": {
-      "preparingContext": "Préparation du contexte enregistré du chat…",
-      "handOffToAnotherAgent": "Transférer à un autre Agent",
-      "dialogTitle": "Transférer à un autre Agent",
-      "dialogDescription": "Démarrez une nouvelle session d'Agent depuis ce point d'arrêt. La session d'origine reste inchangée.",
-      "untitledSession": "Session actuelle",
-      "originalAgent": "Agent d'origine : {{agent}}",
-      "agent": "Agent",
       "selectAgent": "Sélectionner un Agent",
-      "detectingAgents": "Détection des Agents sur cet hôte d'espace de travail…",
-      "detectionFailed": "Impossible de détecter des Agents sur cet hôte d'espace de travail.",
-      "noAgents": "Aucun Agent activé n'a été détecté sur cet hôte d'espace de travail.",
-      "onlySourceFamilyDetected": "Seuls des Agents partageant la limite d'utilisation de {{agent}} sont disponibles sur cet hôte d'espace de travail. Activez ou installez un autre Agent.",
-      "context": "Contexte",
-      "modeFocused": "Transfert ciblé (recommandé)",
-      "modeFocusedDescription": "Utilise le statut le plus récent et l'espace de travail actuel, en ne lisant les détails anciens de la transcription qu'en cas de besoin.",
-      "modeLoadedDescription": "Utilise les messages récents chargés dans cette conversation et l’espace de travail actuel.",
-      "modeCapturedDescription": "Utilise le texte capturé et l’espace de travail actuel.",
-      "modeFull": "Transcription complète de la session",
-      "modeFullDescription": "Demande au nouvel Agent de lire la session sauvegardée complète avant de continuer. Cela peut prendre plus de temps et consommer beaucoup de contexte, d'utilisation du plan ou de crédits API.",
-      "startsIn": "Démarre dans :",
-      "startSession": "Démarrer une nouvelle session",
-      "starting": "Démarrage…",
       "noContext": "Aucun contexte de session disponible pour continuer dans une nouvelle session.",
       "agentDisabled": "{{agent}} est désactivé dans les paramètres des Agents.",
       "agentUnavailable": "{{agent}} n'a pas été détecté sur cet hôte d'espace de travail.",

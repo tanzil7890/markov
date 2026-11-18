@@ -56,6 +56,8 @@ export type CodexStructuredLaunch = {
   /** Command values that must survive the user's shell environment policy. */
   commandEnv?: Record<string, string>
   visuals?: NativeChatVisualsLaunch
+  /** The Codex found first, passed over for `command` because it lacked its command helper. */
+  replacedCommand?: string
 }
 
 /** Boundaries retain host receipt time through buffering and retries. */

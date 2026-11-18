@@ -8,6 +8,7 @@ import {
   createKeptWorktreeSurfacePruners,
   type KeptWorktreeSurfaceRemoval
 } from './kept-worktree-surface-pruning'
+import { layoutTabGroups } from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 // Pure lifecycle patches let repo/worktree/SSH callers clear layout and other state in one atomic update.
 
@@ -55,7 +56,7 @@ function collapseEmptiedKeptGroups(
         (before.find((prior) => prior.id === group.id)?.tabOrder.length ?? 0) > 0
     )
     for (const group of emptied) {
-      if (groups.length <= 1 || !layoutOut[worktreeId]) {
+      if (layoutTabGroups(groups).length <= 1 || !layoutOut[worktreeId]) {
         break
       }
       groups = groups.filter((candidate) => candidate.id !== group.id)
@@ -64,7 +65,7 @@ function collapseEmptiedKeptGroups(
         activeOut,
         worktreeId,
         group.id,
-        groups[0]?.id ?? null
+        layoutTabGroups(groups)[0]?.id ?? null
       )
       layoutOut = collapsed.layoutByWorktree
       // Why: only the collapsed group's own focus moves; an untouched active group keeps it.

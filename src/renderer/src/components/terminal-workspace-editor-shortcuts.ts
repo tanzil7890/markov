@@ -1,3 +1,4 @@
+import { selectFocusedSettingsTabWorktreeId } from '@/lib/settings-tab-placement'
 import type { KeybindingActionId } from '../../../shared/keybindings'
 import { useAppStore } from '../store'
 import {
@@ -27,7 +28,8 @@ export function handleTerminalWorkspaceEditorShortcut({
     const inEditor =
       target?.closest('.monaco-editor, [contenteditable]') !== null ||
       target?.closest('textarea:not(.xterm-helper-textarea), input') !== null
-    if (!inEditor) {
+    // Why not on the Settings tab: the file to save is under it, out of sight.
+    if (!inEditor && !selectFocusedSettingsTabWorktreeId(useAppStore.getState())) {
       const state = useAppStore.getState()
       const floatingPanelOwnsEvent =
         isEventTargetInsideFloatingWorkspacePanel(event.target) || floatingWorkspaceFocused

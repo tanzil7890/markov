@@ -1,5 +1,6 @@
 import { StatsPane } from '../../stats/StatsPane'
 import { AppearancePane } from '../appearance/AppearancePane'
+import type { AppearancePart } from '../appearance/appearance-part-search'
 import { ChatSettingsSection } from '../chat/ChatSettingsSection'
 import { InputPane } from '../input/InputPane'
 import { NotificationsPane } from '../notifications/NotificationsPane'
@@ -8,33 +9,45 @@ import { SettingsSection } from '../section-layout/SettingsSection'
 import { translate } from '@/i18n/i18n'
 import type { SettingsRenderContext } from './settings-render-context'
 
-export function renderAppearanceSettingsSection(context: SettingsRenderContext): React.JSX.Element {
+const APPEARANCE_SECTIONS: readonly { id: string; part: AppearancePart }[] = [
+  { id: 'appearance', part: 'interface' },
+  { id: 'appearance-terminal', part: 'terminal' },
+  { id: 'appearance-window', part: 'window' }
+]
+
+export function renderAppearanceSettingsSections(
+  context: SettingsRenderContext
+): React.JSX.Element[] {
   const { model, interactions, navigation, view } = context
-  return (
-    <SettingsSection
-      id="appearance"
-      title={translate('auto.components.settings.Settings.2b4474780a', 'Appearance')}
-      description={translate(
-        'auto.components.settings.Settings.6d1a27e193',
-        'Theme, zoom, app and terminal appearance, sidebars, and status bar.'
-      )}
-      searchEntries={navigation.getSectionSearchEntries('appearance')}
-    >
-      {view.isSectionMounted('appearance') ? (
-        <AppearancePane
-          settings={model.settings}
-          updateSettings={model.updateSettings}
-          applyTheme={navigation.applyTheme}
-          fontSuggestions={model.fontSuggestions}
-          terminalFontSuggestions={model.terminalFontSuggestions}
-          onRequestFontSuggestions={interactions.requestFontSuggestions}
-          systemPrefersDark={model.systemPrefersDark}
-          terminalConfigImport={model.terminalConfigImport}
-          warpThemes={model.warpThemes}
-        />
-      ) : null}
-    </SettingsSection>
-  )
+  return APPEARANCE_SECTIONS.map(({ id, part }) => {
+    const section = navigation.navSectionById.get(id)
+    return (
+      <SettingsSection
+        key={id}
+        id={id}
+        title={section?.title ?? ''}
+        description={section?.description ?? ''}
+        searchEntries={navigation.getSectionSearchEntries(id)}
+        // Each one fills a tab that already names it.
+        hideHeader
+      >
+        {view.isSectionMounted(id) ? (
+          <AppearancePane
+            part={part}
+            settings={model.settings}
+            updateSettings={model.updateSettings}
+            applyTheme={navigation.applyTheme}
+            fontSuggestions={model.fontSuggestions}
+            terminalFontSuggestions={model.terminalFontSuggestions}
+            onRequestFontSuggestions={interactions.requestFontSuggestions}
+            systemPrefersDark={model.systemPrefersDark}
+            terminalConfigImport={model.terminalConfigImport}
+            warpThemes={model.warpThemes}
+          />
+        ) : null}
+      </SettingsSection>
+    )
+  })
 }
 
 export type ChatSettingsRenderContext = {

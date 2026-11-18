@@ -2,7 +2,7 @@
 title: Usage & rate-limit tracking
 ---
 
-Markov fetches usage for Claude Code, Codex, Gemini, OpenCode Go, Kimi Code, MiniMax, Grok, Antigravity, Cursor, and GLM Coding Plan and surfaces it in the status bar, so you know how close you are to a rate limit before an agent stalls.
+Markov fetches usage for Claude Code, Codex, Gemini, OpenCode Go, Kimi Code, Grok, Antigravity, Cursor, and GLM Coding Plan and surfaces it in the status bar, so you know how close you are to a rate limit before an agent stalls.
 
 ## What's shown
 
@@ -19,7 +19,7 @@ For Claude, Markov requests `https://api.anthropic.com/api/oauth/usage` with the
 - Once the Markov window is active after startup, then about every 15 minutes while it stays visible and focused.
 - Bringing the window back to the front when the last check is more than 5 minutes old (sooner after a failed check).
 - Switching the active Claude account or the runtime it runs in.
-- Refreshing usage from the **Usage** popover or a Settings control that refreshes all usage, or changing OpenCode Go, MiniMax, or GLM Coding Plan usage credentials or settings. These refresh every provider, Claude included.
+- Refreshing usage from the **Usage** popover or a Settings control that refreshes all usage, or changing OpenCode Go or GLM Coding Plan usage credentials or settings. These refresh every provider, Claude included.
 - Expanding the account list in the status bar's Claude account switcher, which fetches your other saved Claude accounts. The list opens expanded when an account needs sign-in.
 - Markov Mobile or the web client connecting to this host or refreshing usage, which also fetches your other saved Claude accounts.
 

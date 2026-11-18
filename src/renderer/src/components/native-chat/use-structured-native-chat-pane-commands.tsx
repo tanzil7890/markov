@@ -5,7 +5,6 @@ import { getShortcutPlatform } from '@/lib/shortcut-platform'
 import { isMarkovSessionId } from '../../../../shared/markov-session-address'
 import { resolveStructuredSessionMarkovSessionId } from '../../runtime/structured-session-markov-session-id'
 import type { NativeChatStructuredViewProps } from './native-chat-view-types'
-import type { NativeChatHandOff } from './use-native-chat-hand-off'
 import type { NativeChatComposerHandle } from './NativeChatComposer'
 import { useNativeChatPasteBridge } from './use-native-chat-paste-bridge'
 import {
@@ -22,7 +21,6 @@ import type { NativeChatMessage } from '../../../../shared/native-chat/native-ch
 
 export function useStructuredNativeChatPaneCommands({
   pane,
-  handOff,
   ownerWorktreeId,
   rootRef,
   composerRef,
@@ -31,7 +29,6 @@ export function useStructuredNativeChatPaneCommands({
   ...menuTargets
 }: {
   pane: Omit<NativeChatStructuredViewProps, 'mode'>
-  handOff: NativeChatHandOff
   sessionContext: { messages: readonly NativeChatMessage[]; epoch: string | null }
   ownerWorktreeId: string | null
   rootRef: RefObject<HTMLDivElement | null>
@@ -56,9 +53,6 @@ export function useStructuredNativeChatPaneCommands({
   })
   const contextMenu = useNativeChatContextMenu({
     ...menuTargets,
-    // A chat in a terminal pane already hands off through that pane's own menu row.
-    handOffDisabled: handOff.preparing || handOff.dialog !== null,
-    onHandOff: terminalPaneActions === undefined && handOff.available ? handOff.open : undefined,
     rootRef,
     actions: {
       ...emptyNativeChatContextMenuActions,

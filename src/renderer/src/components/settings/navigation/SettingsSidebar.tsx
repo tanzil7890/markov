@@ -2,7 +2,6 @@ import type { RefObject } from 'react'
 import { useMemo } from 'react'
 import { ArrowLeft, Search, Server } from 'lucide-react'
 import type { RepoIcon } from '../../../../../shared/repo-icon'
-import type { SettingsNavIcon, SettingsNavInstallStatus } from '@/lib/settings-navigation-types'
 import type { GitHubRepositoryIdentity } from '../../../../../shared/github/pull-request-types'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
 import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
@@ -12,28 +11,28 @@ import { RepoIconGlyph } from '../../repo/repo-icon'
 import { RepoForkIndicator } from '../../repo/repo-fork-indicator'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
-import { SetupGuideProgressRing } from '../../setup-guide/SetupGuideProgressRing'
-import { useSettingsSetupGuideProgress } from '../setup-guide/settings-setup-guide-progress'
-import type { SettingsSetupGuideProgress } from '../setup-guide/settings-setup-guide-progress'
 import { translate } from '@/i18n/i18n'
 import { resolveLeftSidebarStyleVariables } from '@/lib/left-sidebar-appearance'
 import { useAppStore } from '@/store/index'
+import type { SettingsPresentation } from '../page/settings-render-context'
 
-type NavSection = {
+/** One sidebar entry: a destination, or a project. */
+export type SettingsRailItem = {
   id: string
   title: string
-  icon: SettingsNavIcon
-  badge?: string
-  installStatus?: SettingsNavInstallStatus
+  /** Section the entry opens. */
+  sectionId: string
+  isActive: boolean
+  needsAttention: boolean
 }
 
-type NavGroup = {
+export type SettingsRailGroup = {
   id: string
   title: string
-  sections: NavSection[]
+  items: SettingsRailItem[]
 }
 
-type RepoNavSection = NavSection & {
+export type SettingsRailProject = SettingsRailItem & {
   badgeColor?: string
   isRemote?: boolean
   repoIcon?: RepoIcon | null
@@ -41,11 +40,12 @@ type RepoNavSection = NavSection & {
 }
 
 type SettingsSidebarProps = {
-  activeSectionId: string
+  presentation: SettingsPresentation
   settings: GlobalSettings | null
-  generalGroups: NavGroup[]
-  repoSections: RepoNavSection[]
-  hasRepos: boolean
+  /** Entries above the first group, such as Overview. */
+  leadingItems: SettingsRailItem[]
+  groups: SettingsRailGroup[]
+  projects: SettingsRailProject[]
   searchInputRef?: RefObject<HTMLInputElement | null>
   searchAutoFocus?: boolean
   onBack: () => void
@@ -61,11 +61,12 @@ function SettingsSearchField({
   const searchShortcutCombos = useShortcutKeyComboDetails('settings.search')
 
   return (
-    <div className="border-b border-worktree-sidebar-border px-3 py-3">
+    <div className="px-3 pt-3 pb-1">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           ref={searchInputRef}
+          data-settings-search-input=""
           autoFocus={searchAutoFocus}
           value={searchQuery}
           onChange={(event) => onSearchChange(event.target.value)}
@@ -83,7 +84,7 @@ function SettingsSearchField({
                 keys={combo.keys}
                 doubleTap={combo.doubleTap}
                 className="inline-flex gap-0.5"
-                separatorClassName="text-[10px] text-muted-foreground"
+                separatorClassName="text-3xs text-muted-foreground"
               />
             ))}
           </span>
@@ -93,222 +94,171 @@ function SettingsSearchField({
   )
 }
 
-type VisibleInstallStatus = Extract<
-  SettingsNavInstallStatus,
-  'update-available' | 'needs-attention'
->
-
-function isVisibleInstallStatus(
-  status: SettingsNavInstallStatus | undefined
-): status is VisibleInstallStatus {
-  return status === 'update-available' || status === 'needs-attention'
+function railItemClassName(isActive: boolean): string {
+  return cn(
+    'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-[13px] outline-none transition-colors duration-150 focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50',
+    isActive
+      ? 'bg-worktree-sidebar-accent font-medium text-worktree-sidebar-accent-foreground'
+      : 'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-accent/60 hover:text-worktree-sidebar-foreground'
+  )
 }
 
-type SettingsSetupGuideRowProps = {
-  progress: SettingsSetupGuideProgress
-  setupActive: boolean
-  onSelect: () => void
+/** Says a destination has something waiting, in words for screen readers and a dot for the eye. */
+export function SettingsAttentionDot({ className }: { className?: string }): React.JSX.Element {
+  return (
+    <span className={cn('inline-flex shrink-0 items-center', className)}>
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-status-warning" />
+      <span className="sr-only">
+        {translate('settings.destinations.needsAttention', 'Needs attention')}
+      </span>
+    </span>
+  )
 }
 
-function SettingsSetupGuideNavRow({
-  progress,
-  setupActive,
-  onSelect
-}: SettingsSetupGuideRowProps): React.JSX.Element {
+function SettingsRailButton({
+  item,
+  onSelectSection,
+  leading,
+  trailing
+}: {
+  item: SettingsRailItem
+  onSelectSection: (sectionId: string) => void
+  leading?: React.ReactNode
+  trailing?: React.ReactNode
+}): React.JSX.Element {
   return (
     <button
       type="button"
-      aria-current={setupActive ? 'page' : undefined}
-      aria-label={translate(
-        'auto.components.settings.SettingsSidebar.82db1b7de4',
-        'Onboarding checklist, {{value0}} of {{value1}} done. Show setup guide.',
-        { value0: progress.doneCount, value1: progress.total }
-      )}
-      onClick={() => onSelect()}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50',
-        setupActive
-          ? 'bg-worktree-sidebar-accent font-medium text-worktree-sidebar-accent-foreground'
-          : 'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-foreground/8 hover:text-worktree-sidebar-foreground'
-      )}
+      aria-current={item.isActive ? 'page' : undefined}
+      data-current={item.isActive ? 'true' : undefined}
+      data-settings-destination={item.id}
+      onClick={() => onSelectSection(item.sectionId)}
+      className={railItemClassName(item.isActive)}
     >
-      <SetupGuideProgressRing
-        done={progress.doneCount}
-        total={progress.total}
-        sizeClassName="size-4"
-        tooltipLabel={`${progress.doneCount}/${progress.total} complete`}
-      />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] font-medium leading-4">
-          {translate('auto.components.settings.SettingsSidebar.6503182299', 'Onboarding checklist')}
-        </span>
-      </span>
+      {leading}
+      <span className="truncate">{item.title}</span>
+      {trailing}
+      {item.needsAttention ? <SettingsAttentionDot className="ml-auto" /> : null}
     </button>
   )
 }
 
+const GROUP_LABEL_CLASS_NAME =
+  'px-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground'
+
 export function SettingsSidebar({
-  activeSectionId,
+  presentation,
   settings,
-  generalGroups,
-  repoSections,
-  hasRepos,
+  leadingItems,
+  groups,
+  projects,
   searchInputRef,
   searchAutoFocus = false,
   onBack,
   onSelectSection
 }: SettingsSidebarProps): React.JSX.Element {
-  const setupGuideProgress = useSettingsSetupGuideProgress(true)
   const leftSidebarStyle = useMemo(() => resolveLeftSidebarStyleVariables(settings), [settings])
-  const setupActive = activeSectionId === 'setup-guide'
-  // Hiding the app-sidebar prompt must not remove Settings’ stable checklist entry.
-  const showSetupGuideTopRow =
-    setupGuideProgress.ready && setupGuideProgress.doneCount < setupGuideProgress.total
-  const navItemClassName = (isActive: boolean): string =>
-    cn(
-      'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] outline-none transition-colors duration-150 focus-visible:ring-[3px] focus-visible:ring-worktree-sidebar-ring/50',
-      isActive
-        ? 'bg-worktree-sidebar-accent font-medium text-worktree-sidebar-accent-foreground ring-1 ring-worktree-sidebar-ring/25'
-        : 'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-accent/60 hover:text-worktree-sidebar-foreground'
-    )
-  const installStatusLabel = (status: VisibleInstallStatus): string => {
-    switch (status) {
-      case 'update-available':
-        return translate(
-          'auto.components.skills.SkillFreshnessStatusPill.updateAvailable',
-          'Update available'
-        )
-      case 'needs-attention':
-        return translate(
-          'auto.components.skills.SkillFreshnessStatusPill.needsAttention',
-          'Review skill'
-        )
-    }
-  }
-  const installStatusClassName =
-    'ml-auto shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-700 dark:text-amber-300'
 
   return (
     <aside
-      className="flex w-[280px] shrink-0 flex-col border-r border-worktree-sidebar-border bg-worktree-sidebar"
-      style={leftSidebarStyle}
+      className={cn(
+        'flex shrink-0 flex-col border-r',
+        // Why: beside the app sidebar a second sidebar-colored column reads as one wide sidebar, so a tab's list sits on the tab's own surface.
+        presentation === 'tab'
+          ? 'w-[232px] border-border bg-background @max-[760px]/settings:w-[176px]'
+          : 'w-[280px] border-worktree-sidebar-border bg-worktree-sidebar'
+      )}
+      style={presentation === 'tab' ? undefined : leftSidebarStyle}
     >
-      <div className="border-b border-worktree-sidebar-border px-3 py-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="w-full justify-start gap-2 text-[13px] text-muted-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          {translate('auto.components.settings.SettingsSidebar.60f8a673a7', 'Back to app')}
-        </Button>
-      </div>
-
-      <SettingsSearchField searchInputRef={searchInputRef} searchAutoFocus={searchAutoFocus} />
-
-      {showSetupGuideTopRow ? (
+      {/* A tab closes from its own strip, so only the page needs a way back. */}
+      {presentation === 'page' ? (
         <div className="border-b border-worktree-sidebar-border px-3 py-3">
-          <SettingsSetupGuideNavRow
-            progress={setupGuideProgress}
-            setupActive={setupActive}
-            onSelect={() => onSelectSection('setup-guide')}
-          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="w-full justify-start gap-2 text-[13px] text-muted-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            {translate('auto.components.settings.SettingsSidebar.60f8a673a7', 'Back to app')}
+          </Button>
         </div>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-sleek px-3 py-4">
-        <div className="space-y-5">
-          {generalGroups.map((group) => (
-            <div key={group.id} className="space-y-2">
-              <p className="px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                {group.title}
-              </p>
-              <div className="space-y-1">
-                {group.sections
-                  .filter((section) => section.id !== 'setup-guide')
-                  .map((section) => {
-                    const Icon = section.icon
-                    const isActive = activeSectionId === section.id
+      <SettingsSearchField searchInputRef={searchInputRef} searchAutoFocus={searchAutoFocus} />
 
-                    return (
-                      <button
-                        key={section.id}
-                        aria-current={isActive ? 'page' : undefined}
-                        data-current={isActive ? 'true' : undefined}
-                        onClick={() => onSelectSection(section.id)}
-                        className={navItemClassName(isActive)}
-                      >
-                        <Icon className="size-4 shrink-0" />
-                        <span className="truncate">{section.title}</span>
-                        {isVisibleInstallStatus(section.installStatus) ? (
-                          <span className={installStatusClassName}>
-                            {installStatusLabel(section.installStatus)}
-                          </span>
-                        ) : section.badge ? (
-                          <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
-                            {section.badge}
-                          </span>
-                        ) : null}
-                      </button>
-                    )
-                  })}
+      <nav
+        aria-label={translate('settings.destinations.navLabel', 'Settings sections')}
+        className="min-h-0 flex-1 overflow-y-auto scrollbar-sleek px-3 py-3"
+      >
+        <div className="space-y-4">
+          {leadingItems.length > 0 ? (
+            <div className="space-y-0.5">
+              {leadingItems.map((item) => (
+                <SettingsRailButton key={item.id} item={item} onSelectSection={onSelectSection} />
+              ))}
+            </div>
+          ) : null}
+
+          {groups.map((group) => (
+            <div key={group.id} className="space-y-1.5">
+              <p className={GROUP_LABEL_CLASS_NAME}>{group.title}</p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <SettingsRailButton key={item.id} item={item} onSelectSection={onSelectSection} />
+                ))}
               </div>
             </div>
           ))}
 
-          <div className="space-y-2">
-            <p className="px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="space-y-1.5">
+            <p className={GROUP_LABEL_CLASS_NAME}>
               {translate('auto.components.settings.SettingsSidebar.5c9669ff9c', 'Projects')}
             </p>
 
-            {repoSections.length > 0 ? (
-              <div className="space-y-1">
-                {repoSections.map((section) => {
-                  const isActive = activeSectionId === section.id
-
-                  return (
-                    <button
-                      key={section.id}
-                      aria-current={isActive ? 'page' : undefined}
-                      data-current={isActive ? 'true' : undefined}
-                      onClick={() => onSelectSection(section.id)}
-                      className={navItemClassName(isActive)}
-                    >
+            {projects.length > 0 ? (
+              <div className="space-y-0.5">
+                {projects.map((project) => (
+                  <SettingsRailButton
+                    key={project.id}
+                    item={project}
+                    onSelectSection={onSelectSection}
+                    leading={
                       <RepoIconGlyph
-                        repoIcon={section.repoIcon}
-                        color={section.badgeColor}
+                        repoIcon={project.repoIcon}
+                        color={project.badgeColor}
                         className="size-4 shrink-0 text-muted-foreground"
                         iconClassName="size-3.5"
                       />
-                      <span className="truncate">{section.title}</span>
-                      <RepoForkIndicator upstream={section.upstream} />
-                      {section.isRemote && (
-                        <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground">
-                          <Server className="size-3" />
-                          {translate('auto.components.settings.SettingsSidebar.e0900f83e7', 'SSH')}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
+                    }
+                    trailing={
+                      <>
+                        <RepoForkIndicator upstream={project.upstream} />
+                        {project.isRemote ? (
+                          <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-3xs text-muted-foreground">
+                            <Server className="size-3" />
+                            {translate(
+                              'auto.components.settings.SettingsSidebar.e0900f83e7',
+                              'SSH'
+                            )}
+                          </span>
+                        ) : null}
+                      </>
+                    }
+                  />
+                ))}
               </div>
             ) : (
               <p className="px-3 text-xs text-muted-foreground">
-                {hasRepos
-                  ? translate(
-                      'auto.components.settings.SettingsSidebar.3e483e256b',
-                      'No matching project settings.'
-                    )
-                  : translate(
-                      'auto.components.settings.SettingsSidebar.df38d612b7',
-                      'No projects added yet.'
-                    )}
+                {translate(
+                  'auto.components.settings.SettingsSidebar.df38d612b7',
+                  'No projects added yet.'
+                )}
               </p>
             )}
           </div>
         </div>
-      </div>
+      </nav>
     </aside>
   )
 }

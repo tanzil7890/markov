@@ -43,9 +43,6 @@ const StatusBar = lazy(() =>
 const SetupGuideModal = lazy(() => import('../components/setup-guide/SetupGuideModal'))
 const FeatureWallModal = lazy(() => import('../components/feature-wall/FeatureWallModal'))
 const FeatureTipsModal = lazy(() => import('../components/feature-tips/FeatureTipsModal'))
-const AddRepoDialog = lazy(
-  () => import('../components/sidebar/project-admission/dialog/AddRepoDialog')
-)
 const NonGitFolderDialog = lazy(
   () => import('../components/sidebar/project-admission/dialog/NonGitFolderDialog')
 )
@@ -123,7 +120,7 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
   // Memoized: subscribe so a language change still repaints its labels.
   useTranslation()
   const languageReady = useLanguageReadiness((state) => state.ready)
-  const { mountedLazyModalIds, shouldMountAddRepoDialog } = useLazyModalMounts()
+  const { mountedLazyModalIds } = useLazyModalMounts()
   usePreloadWorktreeJumpPalette()
   const activeView = useAppStore((s) => s.activeView)
   const activeModal = useAppStore((s) => s.activeModal)
@@ -184,18 +181,13 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
           </OverlayBoundary>
         </Suspense>
       ) : null}
-      {/* Keep Create in the entry bundle so a stale lazy chunk cannot strand users. */}
-      {activeModal === 'new-workspace-composer' ? (
+      {/* Keep Create in the entry bundle so a stale lazy chunk cannot strand users. New workspace and Add project share it. */}
+      {activeModal === 'new-workspace-composer' || activeModal === 'add-repo' ? (
         <ModalBoundary boundaryId="modal.new-workspace-composer" resetKey>
           <NewWorkspaceComposerModal />
         </ModalBoundary>
       ) : null}
       <Suspense fallback={null}>
-        {shouldMountAddRepoDialog ? (
-          <ModalBoundary boundaryId="modal.add-repo" resetKey={activeModal === 'add-repo'}>
-            <AddRepoDialog />
-          </ModalBoundary>
-        ) : null}
         {/* Settings can add projects without Sidebar; host its handoff dialogs here too. */}
         {activeModal === 'confirm-non-git-folder' ? (
           <ModalBoundary boundaryId="modal.confirm-non-git-folder" resetKey>

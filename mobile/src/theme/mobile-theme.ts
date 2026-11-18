@@ -47,6 +47,8 @@ const darkColors = {
   onStatusRed: '#450a0a',
   // Match desktop’s merge CTA fill and text.
   mergeGreen: '#16a34a',
+  // Markie, the Markov mark, keeps the logo's red on both themes (desktop --markov-mark).
+  markovMark: '#d52b1e',
   onMergeGreen: '#ffffff',
   // Desktop's merged-PR purple (`dark:text-purple-300`).
   statusPurple: '#d8b4fe',
@@ -113,6 +115,7 @@ const lightColors: MobilePalette = {
   onStatusRed: '#ffffff',
   mergeGreen: '#16a34a',
   onMergeGreen: '#ffffff',
+  markovMark: '#d52b1e',
   statusPurple: '#9333ea',
   gitDecorationAdded: '#587c0c',
   gitDecorationDeleted: '#ad0707',

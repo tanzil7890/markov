@@ -29,6 +29,8 @@ type LaunchAgentSessionContinuationArgs = {
   prompt: string
   worktreeId: string
   groupId?: string | null
+  /** The new chat opens right after this tab. */
+  afterTabId?: string
   initialCwd?: string | null
   launchChoice?: AgentLaunchChoice
   launchSource: LaunchSource
@@ -39,7 +41,7 @@ type LaunchAgentSessionContinuationArgs = {
 }
 
 /** Detected agents, then those that open as a chat on the workspace's host without their CLI. */
-export function detectAgentSessionContinuationAgents(worktreeId: string, signal?: AbortSignal) {
+function detectAgentSessionContinuationAgents(worktreeId: string, signal?: AbortSignal) {
   return acquireAgentLaunchChoices(
     worktreeLaunchWorkspace(worktreeId),
     () => ensureDetectedAgentsForWorktree(useAppStore.getState(), worktreeId),
@@ -101,6 +103,7 @@ export async function launchAgentSessionContinuation({
   prompt,
   worktreeId,
   groupId,
+  afterTabId,
   initialCwd,
   launchChoice,
   launchSource,
@@ -119,6 +122,7 @@ export async function launchAgentSessionContinuation({
     ...(chatSessionOptions !== undefined ? { chatSessionOptions: { ...chatSessionOptions } } : {}),
     ...(agentArgs !== undefined ? { agentArgs } : {}),
     ...(groupId ? { groupId } : {}),
+    ...(afterTabId ? { afterTabId } : {}),
     prompt,
     promptDelivery: agent === 'claude' ? ('draft' as const) : ('submit-after-ready' as const),
     launchSource,

@@ -22,6 +22,8 @@ import {
   codexModelCatalogDiscovery
 } from '../model-catalog/structured-agent-model-catalog-discovery'
 import { resolveStructuredAgentCommand } from '../../../native-chat/structured-agent-command-resolution'
+import { resolveCodexChatCommand } from '../../../codex/structured/launch/codex-chat-command'
+import { CODEX_MANAGED_RUNTIME } from '../../../codex-cli/codex-managed-runtime'
 import { getProfileUserDataPath } from '../../../markov-profiles/profile-storage-paths'
 import type {
   StructuredAgentAccountHomeRequest,
@@ -53,8 +55,14 @@ function cliChatProgram(agent: 'claude' | 'codex'): StructuredAgentChatProgram {
       const homePath = env.HOME ?? env.USERPROFILE
       const pathEnv = env.PATH ?? env.Path ?? null
       const options = { pathEnv, ...(homePath ? { homePath } : {}) }
-      return { ...resolveStructuredAgentCommand(agent, commandSettings, options), env }
-    }
+      // Codex answers as a chat start does: its own copy while whole, else Markov's.
+      const command =
+        agent === 'codex'
+          ? resolveCodexChatCommand(commandSettings, options)
+          : resolveStructuredAgentCommand(agent, commandSettings, options)
+      return { ...command, env }
+    },
+    ...(agent === 'codex' ? { installable: () => CODEX_MANAGED_RUNTIME.pin() !== null } : {})
   }
 }
 

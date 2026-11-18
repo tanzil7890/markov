@@ -9,10 +9,19 @@ import type { ContextualTourId } from '../../../../../shared/contextual-tours'
 import type { MarkovHookScriptKind } from '../../../lib/markov-hook-trust'
 import type { SettingsNavigationTarget } from '../../../lib/settings-navigation-types'
 import type { ExecutionHostId } from '../../../../../shared/execution-host'
+import type { SettingsTabsByWorktree } from '../../../lib/settings-tab-placement'
 
 export type UISliceContextual = {
+  /** Opens Settings as a tab of the workspace on screen, or as a page when no workspace can hold one. */
   openSettingsPage: () => void
   closeSettingsPage: () => void
+  /** Each workspace's Settings tab. Renderer-only: kept out of the workspace layout and its sync. */
+  settingsTabsByWorktree: SettingsTabsByWorktree
+  /** Brings a workspace's open Settings tab back over its group's active tab. */
+  showSettingsTab: (worktreeId: string) => void
+  /** Places the tab after a drop; `visualOrder` is the target group's order with the Settings tab id in it. */
+  placeSettingsTab: (worktreeId: string, groupId: string, visualOrder: readonly string[]) => void
+  setSettingsTabPinned: (worktreeId: string, isPinned: boolean) => void
   settingsNavigationTarget: SettingsNavigationTarget | null
   openSettingsTarget: (target: NonNullable<UISliceContextual['settingsNavigationTarget']>) => void
   clearSettingsTarget: () => void
@@ -24,12 +33,6 @@ export type UISliceContextual = {
     hostId: ExecutionHostId,
     setupId?: string
   ) => void
-  /** One-shot nested Settings accordion deep link; Appearance clears it on consumption. */
-  appearanceAccordionDeepLink: 'interface' | 'terminal' | 'window' | null
-  setAppearanceAccordionDeepLink: (
-    section: NonNullable<UISliceContextual['appearanceAccordionDeepLink']>
-  ) => void
-  clearAppearanceAccordionDeepLink: () => void
   activeModal:
     | 'none'
     | 'create-worktree'

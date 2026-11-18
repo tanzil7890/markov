@@ -19,7 +19,7 @@ import {
   codexJournalPromptIdPart,
   encodeCodexJournalQuestionOptionId
 } from './codex-prompt-registry-bounds'
-import { codexMcpToolApprovalDecisions } from './codex-mcp-tool-approval'
+import { CODEX_MCP_TOOL_APPROVAL_DECISIONS } from './codex-mcp-tool-approval'
 import { codexFileChangeApprovalDetail } from './codex-file-change-approval-detail'
 
 const APPROVAL_DECISION_LABELS: Record<CodexApprovalDecision, string> = {
@@ -110,7 +110,7 @@ function codexMcpToolApprovalItem(params: Record<string, unknown>): AgentJournal
     kind: 'approval',
     title: boundJournalPromptText(readString(params, 'message') ?? 'Allow this tool call?'),
     detail: toolParams === undefined ? null : boundJournalPromptText(JSON.stringify(toolParams)),
-    options: codexMcpToolApprovalDecisions(params).map((decision) => ({
+    options: CODEX_MCP_TOOL_APPROVAL_DECISIONS.map((decision) => ({
       id: decision,
       // MCP cancel skips only this call and the turn continues, so it reads as Deny, not Stop.
       label: APPROVAL_DECISION_LABELS[decision === 'cancel' ? 'decline' : decision]

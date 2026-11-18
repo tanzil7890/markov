@@ -33,6 +33,7 @@ import {
   validatePrecomputedTerminalCloseState,
   type PrecomputedTerminalCloseState
 } from './terminal-close-target'
+import { isRightSidebarTabGroupId } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 export type { PrecomputedTerminalCloseState } from './terminal-close-target'
 export { closeOtherTerminalTabs, closeTerminalTabsToRight } from './terminal-tab-bulk-actions'
 
@@ -229,9 +230,19 @@ export function closeTerminalTab(tabId: string, options: CloseTerminalTabOptions
       ? { precomputedRetirementPlan: options.precomputedRetirementPlan }
       : {})
   })
+  // Sidebar terminals never decide whether the main area emptied.
+  const sidebarTerminalIds = new Set(
+    (state.unifiedTabsByWorktree?.[owningWorktreeId] ?? [])
+      .filter(
+        (tab) =>
+          tab.contentType === 'terminal' && isRightSidebarTabGroupId(owningWorktreeId, tab.groupId)
+      )
+      .map((tab) => tab.entityId)
+  )
   if (
     !options?.preserveWorktreeSelection &&
-    terminalCountBeforeClose <= 1 &&
+    !sidebarTerminalIds.has(terminalTabId) &&
+    terminalCountBeforeClose - sidebarTerminalIds.size <= 1 &&
     state.activeWorktreeId === owningWorktreeId
   ) {
     // Re-read after closeUnifiedTab repairs/deactivates the surface; stale state must not clobber it.

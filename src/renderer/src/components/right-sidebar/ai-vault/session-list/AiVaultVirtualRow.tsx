@@ -26,7 +26,6 @@ import {
   canOpenAiVaultSessionLogInMarkov,
   canUseLocalAiVaultSessionPathActions
 } from '../session-actions/ai-vault-session-path-actions'
-import { canContinueAiVaultSessionInNewSession } from '../session-actions/ai-vault-session-continuation'
 import { resolveAiVaultSessionRowChatActions } from '../session-actions/ai-vault-session-chat-action'
 import type { AiVaultResumeInChatEligibility } from '../session-actions/ai-vault-session-resume-in-chat'
 import type { AiVaultSearchHit } from '../../../../../../shared/ai-vault/search/ai-vault-search-types'
@@ -61,7 +60,6 @@ export function AiVaultVirtualRow({
   onJumpToOriginalPane,
   onJumpToWorktree,
   onResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   onCopyResume,
@@ -98,7 +96,6 @@ export function AiVaultVirtualRow({
   onJumpToOriginalPane: (session: AiVaultSession) => void
   onJumpToWorktree: (worktreeId: string) => void
   onResume: (session: AiVaultSession, worktreeId: string) => void
-  onContinueInNewSession: (session: AiVaultSession, worktreeId: string) => void
   onResumeInNewChat: (session: AiVaultSession, worktreeId: string) => void
   onResumeInNewCli: (session: AiVaultSession, worktreeId: string) => void
   onCopyResume: (session: AiVaultSession, worktreeId?: string | null) => void
@@ -133,11 +130,6 @@ export function AiVaultVirtualRow({
   const resumeState = row.type === 'session' ? getSessionResumeState(row.session) : null
   const resumeActions = row.type === 'session' ? getSessionResumeActions(row.session) : null
   const resumeInChat = row.type === 'session' ? getSessionResumeInChat(row.session) : null
-  const continuationWorktreeId =
-    row.type === 'session' &&
-    canContinueAiVaultSessionInNewSession(row.session, resumeState?.worktreeId)
-      ? resumeState?.worktreeId
-      : null
   // Zero-turn transcripts cannot resume meaningful conversation content.
   const resumeGating =
     row.type === 'session'
@@ -251,11 +243,6 @@ export function AiVaultVirtualRow({
               onResume(row.session, resumeWorktreeId)
             }
           }}
-          onContinueInNewSession={
-            searchResumeAllowed && continuationWorktreeId
-              ? () => onContinueInNewSession(row.session, continuationWorktreeId)
-              : undefined
-          }
           onResumeInNewChat={
             resumeInNewChatWorkspaceId
               ? () => onResumeInNewChat(row.session, resumeInNewChatWorkspaceId)

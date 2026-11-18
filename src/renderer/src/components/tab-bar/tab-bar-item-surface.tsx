@@ -43,7 +43,8 @@ export function renderTabBarItems({
   actions,
   dropIndicatorByVisibleId,
   includeTopTabBorder,
-  activeClientHostedBrowserRowId
+  activeClientHostedBrowserRowId,
+  settingsTabShown = false
 }: {
   items: TabBarItem[]
   props: TabBarItemSurfaceProps
@@ -52,6 +53,7 @@ export function renderTabBarItems({
   dropIndicatorByVisibleId: Map<string, DropIndicator>
   includeTopTabBorder: boolean
   activeClientHostedBrowserRowId: string | null
+  settingsTabShown?: boolean
 }): React.ReactNode[] {
   const {
     worktreeId,
@@ -73,8 +75,8 @@ export function renderTabBarItems({
     statusByRelativePath
   } = runtime
 
-  // Client-hosted selection leaves group activeTabId intact; suppress the covered tab’s underline to avoid two active slots.
-  const clientHostedRowOwnsActiveState = activeClientHostedBrowserRowId !== null
+  // Client-hosted rows and the Settings tab leave group activeTabId intact; suppress the covered tab’s underline to avoid two active slots.
+  const clientHostedRowOwnsActiveState = activeClientHostedBrowserRowId !== null || settingsTabShown
 
   function isActiveItem(item: TabBarItem): boolean {
     if (clientHostedRowOwnsActiveState) {

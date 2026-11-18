@@ -1,15 +1,15 @@
 ---
 title: Agent session history
-description: Browse and resume past Claude, Codex, Cursor, Gemini, and other agent sessions from Markov's right sidebar.
+description: Browse and resume past Claude, Codex, Cursor, Gemini, and other agent sessions from any Markov chat.
 ---
 
 import { Callout } from '@/components/docs/prose'
 
-Markov scans the on-disk session transcripts that supported agent CLIs leave behind and lists them in a right-sidebar panel called **Agent Session History**. Pick a past session, click **Resume**, and Markov runs the agent's resume command in a fresh terminal — same `cwd`, same session ID, no manual `--resume` flag wrangling.
+Markov scans the on-disk session transcripts that supported agent CLIs leave behind and lists them in a panel called **Agent Session History**. Pick a past session, click **Resume**, and Markov runs the agent's resume command in a fresh terminal — same `cwd`, same session ID, no manual `--resume` flag wrangling.
 
 ## Open the panel
 
-Open the right sidebar and switch to the **Agents** tab. The panel header reads "Agent Session History".
+Type `/resume` in a chat. The window that opens is titled "Agent Session History".
 
 The header shows a count like `12 shown · 47 recent` and a search box. Type to filter by session title, working directory, branch, model, or preview text from the conversation.
 

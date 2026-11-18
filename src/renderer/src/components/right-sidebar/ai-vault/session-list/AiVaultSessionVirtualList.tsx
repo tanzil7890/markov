@@ -64,7 +64,6 @@ export function AiVaultSessionVirtualList({
   onJumpToOriginalPane,
   onJumpToWorktree,
   onResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   onCopyResume,
@@ -103,7 +102,6 @@ export function AiVaultSessionVirtualList({
   onJumpToOriginalPane: (session: AiVaultSession) => void
   onJumpToWorktree: (worktreeId: string) => void
   onResume: (session: AiVaultSession, worktreeId: string) => void
-  onContinueInNewSession: (session: AiVaultSession, worktreeId: string) => void
   onResumeInNewChat: (session: AiVaultSession, worktreeId: string) => void
   onResumeInNewCli: (session: AiVaultSession, worktreeId: string) => void
   onCopyResume: (session: AiVaultSession, worktreeId?: string | null) => void
@@ -312,7 +310,6 @@ export function AiVaultSessionVirtualList({
                 onJumpToOriginalPane={onJumpToOriginalPane}
                 onJumpToWorktree={onJumpToWorktree}
                 onResume={onResume}
-                onContinueInNewSession={onContinueInNewSession}
                 onResumeInNewChat={onResumeInNewChat}
                 onResumeInNewCli={onResumeInNewCli}
                 onCopyResume={onCopyResume}

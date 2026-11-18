@@ -15,6 +15,8 @@ export type LaunchAgentInNewTabArgs = LaunchAgentInNewTabRequest & {
   focusIntent?: NativeChatComposerFocusIntent
   /** Tab group the user launched from; keeps split-group launches in that pane instead of the active group. */
   groupId?: string
+  /** A chat opens right after this tab rather than at the end of the strip. */
+  afterTabId?: string
   /** Optional initial prompt; delivery depends on `promptDelivery` and the agent's prompt mode. */
   prompt?: string
   /** Optional CLI arguments appended to the selected agent command; a chat has no command line. */

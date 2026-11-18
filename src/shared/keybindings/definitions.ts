@@ -9,6 +9,7 @@ import type {
   PluginKeybindingActionId
 } from './types'
 import type { TuiAgent } from '../agent-launch/catalog/tui-agent'
+import { isOfferedTuiAgent } from '../agent-launch/catalog/offered-tui-agents'
 import { KEYBINDING_DEFINITION_CORE_1 } from './definitions-core-1'
 import { KEYBINDING_DEFINITION_CORE_2 } from './definitions-core-2'
 import { KEYBINDING_DEFINITION_CORE_3 } from './definitions-core-3'
@@ -19,7 +20,7 @@ export function agentTabActionId(agent: TuiAgent): AgentTabActionId {
 }
 
 function buildAgentTabKeybindingDefinitions(): KeybindingDefinition[] {
-  return ALL_TUI_AGENTS.map((agent) => ({
+  return ALL_TUI_AGENTS.filter(isOfferedTuiAgent).map((agent) => ({
     id: agentTabActionId(agent),
     title: `New ${TUI_AGENT_DISPLAY_NAMES[agent]} tab`,
     group: 'Agents',

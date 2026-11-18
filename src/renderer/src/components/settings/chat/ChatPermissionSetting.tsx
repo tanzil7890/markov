@@ -6,6 +6,7 @@ import {
 } from '../../../../../shared/agent-launch/permissions/agent-chat-permission-mode'
 import { agentChatPermissionModes } from '../../../../../shared/agent-launch/permissions/agent-chat-permission-support'
 import { TUI_AGENT_DISPLAY_NAMES } from '../../../../../shared/agent-launch/catalog/tui-agent-display-names'
+import { isOfferedTuiAgent } from '../../../../../shared/agent-launch/catalog/offered-tui-agents'
 import { PERMISSION_CHOICE_AGENTS } from '../../../../../shared/agent-launch/permissions/tui-agent-permission-choice'
 import { useAppStore } from '@/store/index'
 import { Button } from '../../ui/button'
@@ -64,28 +65,28 @@ export function ChatPermissionSetting({
         }
       />
       {modern
-        ? PERMISSION_CHOICE_AGENTS.filter((agent) => agentChatPermissionModes(agent)).map(
-            (agent) => {
-              const mode = newChatPermissionModeForSettings(agent, permissionSettings)
-              const label =
-                mode === 'own'
-                  ? translate('settings.agents.permissionOwnShort', 'Own settings')
-                  : mode
-                    ? nativeChatPermissionModeLabel(mode)
-                    : ''
-              return (
-                <SettingsRow
-                  key={agent}
-                  label={TUI_AGENT_DISPLAY_NAMES[agent]}
-                  control={
-                    <span className="text-xs text-muted-foreground">
-                      {supported && permissionSettings ? label : '—'}
-                    </span>
-                  }
-                />
-              )
-            }
-          )
+        ? PERMISSION_CHOICE_AGENTS.filter(
+            (agent) => isOfferedTuiAgent(agent) && agentChatPermissionModes(agent)
+          ).map((agent) => {
+            const mode = newChatPermissionModeForSettings(agent, permissionSettings)
+            const label =
+              mode === 'own'
+                ? translate('settings.agents.permissionOwnShort', 'Own settings')
+                : mode
+                  ? nativeChatPermissionModeLabel(mode)
+                  : ''
+            return (
+              <SettingsRow
+                key={agent}
+                label={TUI_AGENT_DISPLAY_NAMES[agent]}
+                control={
+                  <span className="text-xs text-muted-foreground">
+                    {supported && permissionSettings ? label : '—'}
+                  </span>
+                }
+              />
+            )
+          })
         : null}
     </SearchableSetting>
   )

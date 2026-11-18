@@ -130,8 +130,8 @@ export function ClaudeSwitcherForOwner({
       if (chatAction && !(await chatAction.canSwitch())) {
         toast.error(
           translate(
-            'components.native-chat.usageLimitActions.accountUnavailable',
-            'This chat cannot move to another account. Hand it off to another agent instead.'
+            'components.native-chat.usageLimitActions.accountCannotMove',
+            'This chat cannot move to another account.'
           )
         )
         return

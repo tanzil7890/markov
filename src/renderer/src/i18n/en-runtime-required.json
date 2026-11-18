@@ -685,14 +685,6 @@
           "dailyWarning": "Daily builds ship straight from main with no test gate, and the Windows ones are unsigned. Keep a stable build handy.",
           "hourlyWarning": "Hourly builds ship straight from main with no test gate, and the Windows ones are unsigned. Keep a stable build handy."
         },
-        "Settings": {
-          "084d8fac5b": "Privacy & Security",
-          "23931df7e8": "Remote Hosts",
-          "23c6874fdf": "AI Capabilities",
-          "8bd117d669": "Interface",
-          "9abb9be3bc": "Set Up",
-          "e1578cd4bc": "Workflows"
-        },
         "SshPane": {
           "syncedServerPlural": "Synced {{count}} servers",
           "syncedServerSingular": "Synced {{count}} server"
@@ -2159,6 +2151,12 @@
       "permissionOverridesFollow_other": "{{count}} agents now follow {{mode}}",
       "permissionOverridesKept_one": "{{count}} agent still uses their own permission setting:",
       "permissionOverridesKept_other": "{{count}} agents still use their own permission setting:"
+    },
+    "connections": {
+      "status": {
+        "toolCount_one": "{{count}} tool",
+        "toolCount_other": "{{count}} tools"
+      }
     },
     "diagnostics": {
       "errors": {

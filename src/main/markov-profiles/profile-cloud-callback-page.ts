@@ -8,13 +8,14 @@ export const MARKOV_CLOUD_CALLBACK_RESPONSE_HEADERS = {
 } as const
 
 // The standalone loopback callback mirrors renderer tokens without loading external assets.
-export const MARKOV_CLOUD_CALLBACK_SUCCESS_PAGE = `<!doctype html>
+export function loopbackCallbackSuccessPage(title: string, message: string): string {
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <title>Signed in to Markov</title>
+    <title>${title}</title>
     <style>
       :root {
         --background: #fff;
@@ -81,8 +82,14 @@ export const MARKOV_CLOUD_CALLBACK_SUCCESS_PAGE = `<!doctype html>
           <path d="m5 12 4 4L19 6"></path>
         </svg>
       </div>
-      <h1>Signed in to Markov</h1>
-      <p>You can close this tab and return to the app.</p>
+      <h1>${title}</h1>
+      <p>${message}</p>
     </main>
   </body>
 </html>`
+}
+
+export const MARKOV_CLOUD_CALLBACK_SUCCESS_PAGE = loopbackCallbackSuccessPage(
+  'Signed in to Markov',
+  'You can close this tab and return to the app.'
+)

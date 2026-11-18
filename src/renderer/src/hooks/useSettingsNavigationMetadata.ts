@@ -97,7 +97,7 @@ export function buildSettingsNavigationMetadata({
     projectGrouping
   }
 
-  // Match SETTINGS_NAV_GROUPS order so Settings and Cmd+J keep siblings together.
+  // Cmd+J lists settings in this order, so related sections stay next to each other.
   return [
     ...buildCapabilitySettingsSections(options),
     ...buildSetupSettingsSections(options),

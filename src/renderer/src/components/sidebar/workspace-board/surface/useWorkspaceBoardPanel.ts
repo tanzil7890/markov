@@ -2,9 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { isEditableTarget } from '@/lib/editable-target'
 import { useAppStore } from '@/store'
 import { closeFullPageViews, isFullPageView } from '@/lib/full-page-view-exit'
+import { settingsTabOf } from '@/lib/settings-tab-placement'
 import { isXtermHelperTextarea } from '../../../terminal-pane/regular-terminal-focus-ownership'
 
 const WORKSPACE_BOARD_SHEET_SELECTOR = '[data-workspace-board-sheet]'
+const FLOATING_WORKSPACE_PANEL_SELECTOR = '[data-floating-terminal-panel]'
 
 // Document capture precedes React; let board text fields own Escape before dismissing the panel.
 function isWorkspaceBoardEditableTarget(target: EventTarget | null): boolean {
@@ -60,7 +62,7 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       return
     }
     // Why: the board replaces the page it opens over, so Tasks and its title-bar controls leave first.
-    closeFullPageViews()
+    closeFullPageViews(useAppStore.getState)
     workspaceBoardOpenRef.current = true
     workspaceBoardDragPreviewOpenRef.current = false
     // Record the opening action here rather than in a post-render drawer effect.
@@ -112,7 +114,7 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       }
       return
     }
-    closeFullPageViews()
+    closeFullPageViews(useAppStore.getState)
     workspaceBoardOpenRef.current = true
     workspaceBoardDragPreviewOpenRef.current = false
     useAppStore.getState().recordFeatureInteraction('workspace-board')
@@ -143,6 +145,13 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
       if (isWorkspaceBoardEditableTarget(event.target)) {
         return
       }
+      // Why: the floating workspace floats over the board, and its terminal or chat needs its own Escape.
+      if (
+        event.target instanceof Element &&
+        event.target.closest(FLOATING_WORKSPACE_PANEL_SELECTOR)
+      ) {
+        return
+      }
       // Dismiss interactive nested overlays first; tooltips must not trap Escape.
       if (document.querySelector(WORKSPACE_BOARD_ESCAPE_BLOCKING_OVERLAY_SELECTOR)) {
         return
@@ -164,11 +173,19 @@ export function useWorkspaceBoardPanel(): WorkspaceBoardPanelState {
   useEffect(
     () =>
       useAppStore.subscribe((state, previous) => {
-        if (
-          state.activeView !== previous.activeView &&
-          isFullPageView(state.activeView) &&
-          (workspaceBoardOpenRef.current || workspaceBoardDragPreviewOpenRef.current)
-        ) {
+        if (!workspaceBoardOpenRef.current && !workspaceBoardDragPreviewOpenRef.current) {
+          return
+        }
+        const openedPage =
+          state.activeView !== previous.activeView && isFullPageView(state.activeView)
+        // Settings open as a tab sits under the board, so showing it has to leave the board too.
+        const worktreeId = state.activeWorktreeId
+        const shownSettingsTab =
+          worktreeId !== null &&
+          settingsTabOf(state, worktreeId) !== null &&
+          settingsTabOf(state, worktreeId)?.lastShownAt !==
+            settingsTabOf(previous, worktreeId)?.lastShownAt
+        if (openedPage || shownSettingsTab) {
           closeWorkspaceBoard()
         }
       }),

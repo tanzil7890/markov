@@ -14,6 +14,7 @@ import { createFloatingWorkspaceTourInteractionSnapshot } from '@/lib/floating-w
 import { persistFloatingTerminalPanelOpen } from '../components/floating-terminal/floating-terminal-panel-view-state'
 import { useAppStore } from '../store'
 import { selectFloatingVisibleTabCount } from '../store/selectors'
+import { resolveFloatingTerminalTriggerLocation } from '../../../shared/floating-terminal-trigger-location'
 
 export type FloatingWorkspacePanelState = ReturnType<typeof useFloatingWorkspacePanel>
 
@@ -30,9 +31,7 @@ export function useFloatingWorkspacePanel() {
   const enabled = useAppStore((s) => s.settings?.floatingTerminalEnabled === true)
   // Unhydrated null settings are not a user disable; wait for the atomic settings replacement.
   const settingsHydrated = useAppStore((s) => s.settings != null)
-  const triggerLocation = useAppStore(
-    (s) => s.settings?.floatingTerminalTriggerLocation ?? 'top-bar'
-  )
+  const triggerLocation = useAppStore((s) => resolveFloatingTerminalTriggerLocation(s.settings))
   const statusBarVisible = useAppStore((s) => s.statusBarVisible)
   const visibleTabCount = useAppStore(selectFloatingVisibleTabCount)
 

@@ -1,6 +1,7 @@
 import type { ProviderRateLimits } from '../../../../shared/rate-limit-types'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import { hasUsageData } from '../../../../shared/usage-provider-windows'
+import { isOfferedUsageProvider } from '../../../../shared/agent-launch/catalog/offered-usage-trackers'
 
 export type UsageProviderSettings = Pick<
   GlobalSettings,
@@ -55,21 +56,27 @@ export function isProviderConfigured(
   return true
 }
 
+const USAGE_PROVIDER_IDS: readonly UsageProviderId[] = [
+  'claude',
+  'codex',
+  'gemini',
+  'opencode-go',
+  'kimi',
+  'antigravity',
+  'minimax',
+  'grok',
+  'cursor',
+  'zcode'
+]
+
+// Why offered only: sign-in saved for a withheld provider must not read as usage being set up.
 export function hasUsageProviderSettings(
   settings: Partial<UsageProviderSettings> | null | undefined
 ): boolean {
-  return Boolean(
-    (settings?.codexManagedAccounts?.length ?? 0) > 0 ||
-    (settings?.claudeManagedAccounts?.length ?? 0) > 0 ||
-    settings?.geminiCliOAuthEnabled === true ||
-    Boolean(settings?.opencodeSessionCookie?.trim()) ||
-    settings?.opencodeGoApiKeyConfigured === true ||
-    settings?.antigravityUsageConfigured === true ||
-    settings?.minimaxCookieConfigured === true ||
-    settings?.minimaxApiKeyConfigured === true ||
-    settings?.grokAuthConfigured === true ||
-    settings?.cursorAuthConfigured === true ||
-    settings?.zcodePlanApiKeyConfigured === true
+  return USAGE_PROVIDER_IDS.some(
+    (providerId) =>
+      isOfferedUsageProvider(providerId) &&
+      hasUsageProviderSettingsForProvider(providerId, settings)
   )
 }
 
@@ -135,6 +142,9 @@ export function getVisibleUsageProvider(
   provider: ProviderRateLimits | null | undefined,
   settings: Partial<UsageProviderSettings> | null | undefined
 ): ProviderRateLimits | null {
+  if (!isOfferedUsageProvider(providerId)) {
+    return null
+  }
   if (isProviderConfigured(provider)) {
     return provider
   }
@@ -152,35 +162,39 @@ export function isUsageEmptyState(
   if (!settings) {
     return false
   }
+  // A withheld provider is neither awaited nor counted; its snapshot never becomes a meter.
+  const snapshots: [UsageProviderId, ProviderRateLimits | null | undefined][] = [
+    ['claude', providers.claude],
+    ['codex', providers.codex],
+    ['gemini', providers.gemini],
+    ['opencode-go', providers.opencodeGo],
+    ['kimi', providers.kimi],
+    ['antigravity', providers.antigravity],
+    ['minimax', providers.minimax],
+    ['grok', providers.grok],
+    ['cursor', providers.cursor],
+    ['zcode', providers.zcode]
+  ]
+  const offered = snapshots.filter(([providerId]) => isOfferedUsageProvider(providerId))
   // System-default Claude/Codex have no saved account row; wait for snapshots before proposing setup.
-  const antigravitySnapshotPending =
-    hasUsageProviderSettingsForProvider('antigravity', settings) &&
-    isProviderSnapshotPending(providers.antigravity)
-  if (
-    isProviderSnapshotPending(providers.claude) ||
-    isProviderSnapshotPending(providers.codex) ||
-    isProviderSnapshotPending(providers.gemini) ||
-    isProviderSnapshotPending(providers.opencodeGo) ||
-    isProviderSnapshotPending(providers.kimi) ||
-    antigravitySnapshotPending ||
-    isProviderSnapshotPending(providers.minimax) ||
-    isProviderSnapshotPending(providers.grok) ||
-    isProviderSnapshotPending(providers.cursor) ||
-    (providers.zcode !== undefined && isProviderSnapshotPending(providers.zcode))
-  ) {
+  const awaitingSnapshot = offered.some(([providerId, provider]) => {
+    if (providerId === 'antigravity') {
+      return (
+        hasUsageProviderSettingsForProvider('antigravity', settings) &&
+        isProviderSnapshotPending(provider)
+      )
+    }
+    // Older main processes omit ZCode entirely; only a present snapshot can be pending.
+    if (providerId === 'zcode') {
+      return providers.zcode !== undefined && isProviderSnapshotPending(provider)
+    }
+    return isProviderSnapshotPending(provider)
+  })
+  if (awaitingSnapshot) {
     return false
   }
   return (
     !hasUsageProviderSettings(settings) &&
-    !isProviderConfigured(providers.claude) &&
-    !isProviderConfigured(providers.codex) &&
-    !isProviderConfigured(providers.gemini) &&
-    !isProviderConfigured(providers.opencodeGo) &&
-    !isProviderConfigured(providers.kimi) &&
-    !isProviderConfigured(providers.antigravity) &&
-    !isProviderConfigured(providers.minimax) &&
-    !isProviderConfigured(providers.grok) &&
-    !isProviderConfigured(providers.cursor) &&
-    !isProviderConfigured(providers.zcode)
+    !offered.some(([, provider]) => isProviderConfigured(provider))
   )
 }

@@ -1,11 +1,13 @@
-import { ActiveSettingsSectionProvider } from '../section-layout/SettingsSection'
+import { SettingsSectionLayoutProvider } from '../section-layout/SettingsSection'
 import { SettingsContentScrollElementProvider } from './settings-content-scroll-element'
 import { SettingsSidebar } from '../navigation/SettingsSidebar'
+import { SettingsDestinationHeader } from '../navigation/SettingsDestinationHeader'
+import { SettingsSearchResults } from '../search/SettingsSearchResults'
 import { PluginInstallTrustDialogHost } from '../../plugins/dialogs/PluginInstallTrustDialog'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { SettingsInteractionController } from './use-settings-interaction-controller'
-import type { SettingsRenderContext } from './settings-render-context'
+import type { SettingsPresentation, SettingsRenderContext } from './settings-render-context'
 import {
   renderAccountsSettingsSection,
   renderAgentsSettingsSection,
@@ -25,9 +27,17 @@ import {
   renderShareSkillsSettingsSection
 } from './settings-setup-workflow-section-renderers'
 import {
+  renderGitAiSettingsSection,
   renderGitSettingsSection,
   renderTasksSettingsSection
 } from './settings-git-task-section-renderers'
+import {
+  renderCliSettingsSection,
+  renderEditorSettingsSection,
+  renderOverviewSettingsSection,
+  renderTabsSettingsSection,
+  renderUpdatesSettingsSection
+} from './settings-workspace-section-renderers'
 import {
   renderBrowserSettingsSection,
   renderFloatingWorkspaceSettingsSection,
@@ -36,7 +46,7 @@ import {
   renderTerminalSettingsSection
 } from './settings-interface-primary-section-renderers'
 import {
-  renderAppearanceSettingsSection,
+  renderAppearanceSettingsSections,
   renderChatSettingsSection,
   renderInputSettingsSection,
   renderNotificationsSettingsSection,
@@ -61,14 +71,18 @@ import {
   shouldShowSettingsHostScopePicker
 } from '../host-scope/SettingsHostScopePicker'
 
+// A tab's pane can be a narrow split, so its layout answers to the pane's width, not the window's.
+const SETTINGS_ROOT_CLASS_NAME: Record<SettingsPresentation, string> = {
+  page: 'page-surface flex min-h-0 flex-1 overflow-hidden bg-background',
+  tab: 'page-surface @container/settings flex min-h-0 min-w-0 flex-1 overflow-hidden bg-background'
+}
+
 export function renderSettingsLoading(
-  interactions: SettingsInteractionController
+  interactions: SettingsInteractionController,
+  presentation: SettingsPresentation
 ): React.JSX.Element {
   return (
-    <div
-      ref={interactions.setSettingsRootNode}
-      className="settings-view-shell flex min-h-0 flex-1 overflow-hidden bg-background"
-    >
+    <div ref={interactions.setSettingsRootNode} className={SETTINGS_ROOT_CLASS_NAME[presentation]}>
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
         {translate('auto.components.settings.Settings.c7ad095d96', 'Loading settings...')}
       </div>
@@ -77,23 +91,21 @@ export function renderSettingsLoading(
 }
 
 export function renderSettingsPage(context: SettingsRenderContext): React.JSX.Element {
-  const { model, interactions, navigation, actions, view } = context
+  const { presentation, model, interactions, actions, view } = context
+  const { pageDestination } = view
   return (
-    <div
-      ref={interactions.setSettingsRootNode}
-      className="settings-view-shell flex min-h-0 flex-1 overflow-hidden bg-background"
-    >
+    <div ref={interactions.setSettingsRootNode} className={SETTINGS_ROOT_CLASS_NAME[presentation]}>
       <SettingsSidebar
+        presentation={presentation}
         settings={model.settings}
-        activeSectionId={model.activeSectionId}
-        generalGroups={view.generalNavGroups}
-        repoSections={view.repoNavSections}
-        hasRepos={model.repos.length > 0}
+        leadingItems={view.leadingRailItems}
+        groups={view.railGroups}
+        projects={view.railProjects}
         searchInputRef={interactions.searchInputRef}
         // Deep-linked panes/modals own focus; plain entry focuses search.
         searchAutoFocus={model.settingsNavigationTarget == null}
         onBack={interactions.closeSettingsPageWithPromptGuard}
-        onSelectSection={actions.scrollToSection}
+        onSelectSection={(sectionId) => void actions.scrollToSection(sectionId)}
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -117,30 +129,55 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
         >
           <div
             className={cn(
-              'mx-auto flex w-full flex-col gap-10 px-8 pt-10',
+              'mx-auto flex w-full flex-col gap-8 px-8 pt-8',
+              presentation === 'tab' && '@max-[760px]/settings:px-4 @max-[760px]/settings:pt-6',
               view.isFocusedShortcutsPane ? 'h-full pb-6' : 'pb-24',
-              view.isFocusedSetupGuidePane || view.isWidePluginsPane ? 'max-w-6xl' : 'max-w-4xl'
+              view.isWidePane ? 'max-w-6xl' : 'max-w-4xl'
             )}
           >
-            {navigation.visibleNavSections.length === 0 ? (
-              <div className="flex min-h-[24rem] items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/30 text-sm text-muted-foreground">
-                {translate(
-                  'auto.components.settings.Settings.noSettingsFoundForQuery',
-                  'No settings found for "{{value0}}"',
-                  { value0: model.settingsSearchQuery.trim() }
-                )}
-              </div>
-            ) : (
-              <SettingsContentScrollElementProvider value={interactions.contentScrollElement}>
-                <ActiveSettingsSectionProvider value={model.activeSectionId}>
+            {view.isSearching ? (
+              <SettingsSearchResults
+                query={model.settingsSearchQuery.trim()}
+                results={view.searchResults}
+                onOpen={(result) => void actions.openSearchResult(result)}
+              />
+            ) : null}
+            {pageDestination ? (
+              <SettingsDestinationHeader
+                destination={pageDestination}
+                activeTabId={view.activeTabId}
+                tabIdsNeedingAttention={view.tabIdsNeedingAttention}
+                onSelectTab={(tabId) => {
+                  const tab = pageDestination.tabs.find((candidate) => candidate.id === tabId)
+                  if (tab) {
+                    void actions.scrollToSection(tab.sectionIds[0])
+                  }
+                }}
+              />
+            ) : null}
+            <SettingsContentScrollElementProvider value={interactions.contentScrollElement}>
+              <SettingsSectionLayoutProvider value={view.sectionLayout}>
+                {/* Why stay mounted while searching: a section with unsaved edits keeps them. */}
+                <div
+                  className={
+                    view.isSearching
+                      ? 'hidden'
+                      : 'contents [&>section+section]:border-t [&>section+section]:border-border/60 [&>section+section]:pt-8'
+                  }
+                >
+                  {renderOverviewSettingsSection(context)}
+                  {renderSetupGuideSettingsSection(context)}
                   {renderAgentsSettingsSection(context)}
                   {renderAccountsSettingsSection(context)}
                   {renderOrchestrationSettingsSection(context)}
                   {renderLinearSettingsSection(context)}
                   {renderDesktopCapabilitySettingsSections(context)}
+                  {renderPluginsSettingsSection(context)}
+                  {renderCliSettingsSection(context)}
                   {renderMarkovAccountSettingsSection(context)}
-                  {renderSetupGuideSettingsSection(context)}
                   {renderGeneralSettingsSection(context)}
+                  {renderTabsSettingsSection(context)}
+                  {renderEditorSettingsSection(context)}
                   {renderIntegrationsSettingsSection(context)}
                   {renderMobileSettingsSection(context)}
                   {renderAutomationsSettingsSection(context)}
@@ -148,13 +185,14 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
                   {renderShareSkillsSettingsSection(context)}
                   {renderSessionHistorySettingsSection(context)}
                   {renderGitSettingsSection(context)}
+                  {renderGitAiSettingsSection(context)}
                   {renderTasksSettingsSection(context)}
                   {renderTerminalSettingsSection(context)}
                   {renderQuickCommandsSettingsSection(context)}
                   {renderBrowserSettingsSection(context)}
                   {renderMobileEmulatorSettingsSection(context)}
                   {renderFloatingWorkspaceSettingsSection(context)}
-                  {renderAppearanceSettingsSection(context)}
+                  {renderAppearanceSettingsSections(context)}
                   {renderChatSettingsSection(context)}
                   {renderInputSettingsSection(context)}
                   {renderNotificationsSettingsSection(context)}
@@ -164,14 +202,14 @@ export function renderSettingsPage(context: SettingsRenderContext): React.JSX.El
                   {renderSshSettingsSection(context)}
                   {renderDeveloperPermissionsSettingsSection(context)}
                   {renderPrivacySettingsSection(context)}
+                  {renderUpdatesSettingsSection(context)}
                   {renderAdvancedSettingsSection(context)}
                   {renderDevSettingsSection(context)}
                   {renderExperimentalSettingsSection(context)}
-                  {renderPluginsSettingsSection(context)}
                   {renderProjectSettingsSections(context)}
-                </ActiveSettingsSectionProvider>
-              </SettingsContentScrollElementProvider>
-            )}
+                </div>
+              </SettingsSectionLayoutProvider>
+            </SettingsContentScrollElementProvider>
           </div>
         </div>
       </div>

@@ -34,7 +34,6 @@ import {
 } from '@/hooks/useShortcutLabel'
 import type { KeybindingOverrides } from '../../../../shared/keybindings'
 import { translate } from '@/i18n/i18n'
-import { AgentSessionContinuationMenuItem } from './AgentSessionContinuationMenuItem'
 import { AgentSessionContextCopyMenuItem } from './AgentSessionContextCopyMenuItem'
 import { ClearPaneTitleMenuItem } from './ClearPaneTitleMenuItem'
 import type { TerminalQuickCommandMenuHost } from '@/hooks/use-terminal-quick-command-hosts'
@@ -63,8 +62,6 @@ type TerminalContextMenuProps = {
   onClosePane: () => void
   onClearScreen: () => void
   onResetTerminal: () => void
-  canContinueAgentSessionInNewSession: boolean
-  onContinueAgentSessionInNewSession: () => void
   onForkAgentSession: () => void
   /** True when this pane may switch between the terminal and native chat views.
    *  Structured sessions are excluded — they have no terminal underneath. */
@@ -157,8 +154,6 @@ function TerminalContextMenuItems({
   onClosePane,
   onClearScreen,
   onResetTerminal,
-  canContinueAgentSessionInNewSession,
-  onContinueAgentSessionInNewSession,
   onForkAgentSession,
   canToggleNativeChat,
   isNativeChatView,
@@ -233,9 +228,6 @@ function TerminalContextMenuItems({
         onClose={() => onOpenChange(false)}
         onAdd={onAddQuickCommand}
       />
-      {canContinueAgentSessionInNewSession ? (
-        <AgentSessionContinuationMenuItem onSelect={onContinueAgentSessionInNewSession} />
-      ) : null}
       <DropdownMenuItem onSelect={onForkAgentSession}>
         <GitFork />
         {translate(

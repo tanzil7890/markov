@@ -13,8 +13,8 @@
     "hostBadge": "vars.hostLabel != null && (!vars.compact || place.showProjectName)",
     "metaRow": "!vars.compact",
     "detachedInMeta": "vars.metaRow && !vars.folder && ws.detachedHead",
-    "branch": "!vars.folder && len(ws.branch) > 0 && !vars.newStyle && (!vars.compact || ws.branch != ws.name)",
-    "identityInMeta": "vars.newStyle && options.show.branch && ws.identity != null",
+    "branch": "!vars.folder && len(ws.branch) > 0 && !vars.newStyle && ws.branch != ws.name",
+    "identityInMeta": "vars.newStyle && options.show.branch && ws.identity != null && ws.identity != trim(ws.title)",
     "folderInMeta": "vars.newStyle ? options.show.branch && vars.folder && ws.identity != null : vars.folder && ws.folderName != ws.name",
     "conflict": "git.conflictOperation != null && git.conflictOperation != 'unknown' && git.conflictOperation != 'rebase'",
     "hasComment": "len(trim(ws.comment)) > 0",
@@ -27,11 +27,13 @@
     "star": "vars.compact && ws.isMain && !vars.folder",
     "headerActions": "vars.star || place.deleteQuickAction",
     "inlineAgents": "options.show.inlineAgents && !vars.compact",
+    "chatsToggle": "vars.inlineAgents && options.agentRows == 'compact' && agents.count > 0",
+    "agentsBelow": "vars.inlineAgents && (vars.chatsToggle ? agents.listOpen : options.agentRows != 'compact')",
     "title": "trim(ws.title)",
     "hoverBranch": "vars.newStyle ? ws.identity : vars.compact && vars.branch ? ws.branch : null",
     "hoverTitle": "len(vars.title) > 0 && vars.title != vars.hoverBranch ? vars.title : null",
     "hoverDetails": "!vars.classic && (links.count > 0 || links.issue || links.linearIssue || links.jiraIssue || review != null || vars.hasComment || (options.show.automation && provenance.automation) || (options.show.cli && provenance.cli) || ports.count > 0 || vars.hoverTitle != null || vars.hoverBranch != null)",
-    "singleLine": "!(vars.hasMetaRow || git.remoteBranchConflict != null || vars.inlineAgents || lineage.toggleable)"
+    "singleLine": "!(vars.hasMetaRow || git.remoteBranchConflict != null || vars.agentsBelow || lineage.toggleable)"
   },
   "frame": {
     "singleLine": "=vars.singleLine",
@@ -84,7 +86,8 @@
                     "inset": "end"
                   },
                   "children": [{ "el": "Indicators" }]
-                }
+                },
+                { "el": "ChatsToggle", "when": "vars.chatsToggle" }
               ]
             },
             {
@@ -193,7 +196,7 @@
           { "el": "LinearSetupPrompt", "when": "place.isActive && links.linearIssue" },
           {
             "el": "Agents",
-            "when": "vars.inlineAgents",
+            "when": "vars.agentsBelow",
             "props": { "tight": "=!(vars.hasMetaRow || git.remoteBranchConflict != null)" }
           },
           { "el": "ChildToggle", "when": "lineage.toggleable" }

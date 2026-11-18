@@ -6,51 +6,10 @@
     {
       "layers": [
         {
-          "image-name": "vowels.svg",
-          "name": "vowels",
+          "image-name": "markie.svg",
+          "name": "markie",
           "position": {
-            "scale": 4.8,
-            "translation-in-points": [0, 0]
-          }
-        }
-      ],
-      "shadow": {
-        "kind": "neutral",
-        "opacity": 0.5
-      },
-      "translucency": {
-        "enabled": false,
-        "value": 0
-      }
-    },
-    {
-      "layers": [
-        {
-          "fill-specializations": [
-            {
-              "appearance": "dark",
-              "value": {
-                "linear-gradient": [
-                  "extended-gray:1.00000,1.00000",
-                  "extended-gray:1.00000,1.00000"
-                ],
-                "orientation": {
-                  "start": {
-                    "x": 0.5,
-                    "y": 0
-                  },
-                  "stop": {
-                    "x": 0.5,
-                    "y": 0.7
-                  }
-                }
-              }
-            }
-          ],
-          "image-name": "consonants.svg",
-          "name": "consonants",
-          "position": {
-            "scale": 4.8,
+            "scale": 7.2,
             "translation-in-points": [0, 0]
           }
         }

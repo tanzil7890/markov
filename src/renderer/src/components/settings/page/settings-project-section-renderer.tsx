@@ -79,6 +79,9 @@ export function renderProjectSettingsSections(context: SettingsRenderContext): R
               model.updateProject(projectId, updates, getRepoExecutionHostId(repo))
             }
             writeSourceControlAiSettings={interactions.writeSourceControlAiSettings}
+            settingRequest={
+              model.settingRequest?.sectionId === repoSectionId ? model.settingRequest : null
+            }
           />
         ) : null}
       </SettingsSection>

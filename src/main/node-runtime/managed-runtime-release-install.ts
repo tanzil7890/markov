@@ -14,7 +14,7 @@ import {
   type ManagedRuntimePin
 } from './managed-runtime-release'
 import { verifyFileSha256 } from './pinned-runtime-materializer'
-import { extractPinnedZipMembers } from './pinned-zip-members'
+import { extractPinnedArchiveMembers } from './pinned-archive-members'
 import {
   downloadFailureMessage,
   downloadVerifiedArchive,
@@ -103,7 +103,7 @@ export async function installRuntimeRelease(input: RuntimeReleaseInstall): Promi
       throw new Error(downloadFailureMessage(label, error), { cause: error })
     })
     publish({ phase: 'extracting', downloadedBytes: pin.archiveBytes })
-    await extractPinnedZipMembers(archive, release, pin.members, label, signal)
+    await extractPinnedArchiveMembers(archive, release, pin, label, signal)
     publish({ phase: 'verifying' })
     await verifyMembers(release, pin, label, signal)
     await validate(input, release)

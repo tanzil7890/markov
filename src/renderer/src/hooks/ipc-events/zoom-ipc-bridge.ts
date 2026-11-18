@@ -1,3 +1,4 @@
+import { selectFocusedSettingsTabWorktreeId } from '@/lib/settings-tab-placement'
 import { writeNativeChatFontSize } from '@/components/native-chat/native-chat-font-size-write'
 import { applyUIZoom } from '@/lib/ui-zoom'
 import { computeEditorFontSize, nextEditorFontZoomLevel } from '@/lib/editor-font-zoom'
@@ -20,7 +21,8 @@ export function registerZoomIpcBridge(unsubs: (() => void)[]): void {
       const { activeView, activeTabType, editorFontZoomLevel, setEditorFontZoomLevel, settings } =
         store
       const target = resolveZoomTarget({
-        activeView,
+        // Why: on the Settings tab the zoom is Markov's own, as on the Settings page, not the tab under it.
+        activeView: selectFocusedSettingsTabWorktreeId(store) ? 'settings' : activeView,
         activeTabType,
         activeElement: document.activeElement
       })

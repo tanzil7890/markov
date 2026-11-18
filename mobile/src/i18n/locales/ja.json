@@ -2160,9 +2160,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "折りたたむ"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "新しい CLI で再開"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "最新の内容にスクロール"
     },

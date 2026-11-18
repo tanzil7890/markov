@@ -40,6 +40,8 @@ import type { LinearApi } from './api/linear-api'
 import type { MobileApi } from './api/mobile-api'
 import type { NativeChatApi } from './api/native-chat-api'
 import type { OnboardingApi, StarNagApi } from './api/onboarding-api'
+import type { AgentCliInstallApi } from './api/agent-cli-install-api'
+import type { McpConnectionsApi } from './api/mcp-connections-api'
 import type { MarkovProfileApi } from './api/markov-profile-api'
 import type {
   ComputerUsePermissionsApi,
@@ -118,6 +120,8 @@ export type PreloadApi = {
   preflight: PreflightApi
   notifications: NotificationsApi
   onboarding: OnboardingApi
+  agentCliInstall: AgentCliInstallApi
+  mcpConnections: McpConnectionsApi
   dashboard: DashboardApi
   terminalPreview: TerminalPreviewApi
   macosTccPrompts: MacosTccPromptsApi

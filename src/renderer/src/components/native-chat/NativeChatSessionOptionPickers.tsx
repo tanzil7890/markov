@@ -9,6 +9,7 @@ import { sortNativeChatSessionOptions } from '../../../../shared/native-chat/inp
 import {
   sessionOptionDispatchUnconfirmed,
   type SessionOptionDescriptor,
+  type SessionOptionOtherAgents,
   type SessionOptionsSurface,
   type SessionOptionValue
 } from '../../../../shared/native-chat/input/native-chat-session-options'
@@ -128,6 +129,7 @@ function PickerTrigger(props: {
 
 function SessionOptionPopover(props: {
   demandModelCatalog?: () => void
+  otherAgents?: SessionOptionOtherAgents
   model: SessionOptionDescriptor
   options: readonly SessionOptionDescriptor[]
   isWorking: boolean
@@ -138,7 +140,7 @@ function SessionOptionPopover(props: {
   onAction: (descriptor: SessionOptionDescriptor) => void
   focusComposer?: () => void
 }): React.JSX.Element {
-  const { model, options, pendingIds, demandModelCatalog } = props
+  const { model, options, pendingIds, demandModelCatalog, otherAgents } = props
   const canOpen = [model, ...options].some(
     (descriptor) =>
       descriptor.settable &&
@@ -161,9 +163,10 @@ function SessionOptionPopover(props: {
   useEffect(() => {
     if (open && !wasOpen.current) {
       demandModelCatalog?.()
+      otherAgents?.demand()
     }
     wasOpen.current = open
-  }, [open, demandModelCatalog])
+  }, [open, demandModelCatalog, otherAgents])
   const focusReturn = useNativeChatPickerFocusReturn(props.focusComposer)
   const modelTitle = translate('components.native-chat.composer.model', 'Model')
   const modelLabel = nativeChatModelPillLabel(model, say)
@@ -194,6 +197,8 @@ function SessionOptionPopover(props: {
       props.onSet(descriptor, value)
     }
   }
+  // Read on open only: the list comes from store and host state the picker does not subscribe to.
+  const others = open && props.otherAgents ? props.otherAgents.list() : null
   const act = (descriptor: SessionOptionDescriptor): void => {
     if (pendingIds.has(descriptor.id)) {
       return
@@ -269,6 +274,30 @@ function SessionOptionPopover(props: {
             readOnlyReason={modelReason}
             busy={pendingIds.has(model.id)}
             onSelect={(value) => set(model, value)}
+            otherAgents={
+              others && props.otherAgents
+                ? {
+                    ownLabel: props.otherAgents.ownLabel,
+                    agents: others.agents,
+                    held: props.isWorking,
+                    note: props.isWorking
+                      ? translate(
+                          'components.native-chat.composer.otherAgentAfterReply',
+                          'Another agent can take over once this reply finishes.'
+                        )
+                      : others.continuesBeside
+                        ? translate(
+                            'components.native-chat.composer.otherAgentContinuesBeside',
+                            'Another agent continues in a new chat beside this one, with this chat as context.'
+                          )
+                        : null,
+                    onSelect: (agent, value) => {
+                      setOpen(false)
+                      props.otherAgents?.pick(agent, value)
+                    }
+                  }
+                : undefined
+            }
           />
         ) : (
           <NativeChatSessionOptionWriteGroup
@@ -338,6 +367,7 @@ function NativeChatSessionOptionPickersInner({
     <div className="flex min-w-0 items-center text-chat-foreground-faint">
       <SessionOptionPopover
         demandModelCatalog={surface.demandModelCatalog}
+        otherAgents={surface.otherAgents}
         model={model}
         options={options}
         isWorking={isWorking}

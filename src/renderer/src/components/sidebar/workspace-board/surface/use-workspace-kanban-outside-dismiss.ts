@@ -4,6 +4,8 @@ import type React from 'react'
 const WORKSPACE_BOARD_KEEP_OPEN_SELECTOR = [
   '[data-workspace-board-trigger]',
   '[data-workspace-board-preserve-open]',
+  // The floating workspace floats over every page; using it leaves the page under it alone.
+  '[data-floating-terminal-panel]',
   '[data-workspace-status-appearance-popover]',
   '[data-contextual-tour-overlay]',
   '[data-contextual-tour-panel]',

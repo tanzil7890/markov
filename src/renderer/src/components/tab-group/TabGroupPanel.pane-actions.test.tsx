@@ -16,9 +16,6 @@ const mocks = vi.hoisted(() => {
 vi.mock('@/store', () => ({ useAppStore: mocks.useAppStore }))
 vi.mock('../../store', () => ({ useAppStore: mocks.useAppStore }))
 vi.mock('../tab-bar/TabBar', () => ({ default: () => null }))
-vi.mock('../tab-bar/TabBarQuickCommandsButton', () => ({
-  TabBarQuickCommandsButton: () => null
-}))
 vi.mock('@/lib/pane-manager/client-hosted-browser-row-state', () => ({
   useClientHostedBrowserRows: () => []
 }))

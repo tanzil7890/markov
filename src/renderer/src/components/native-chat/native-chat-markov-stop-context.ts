@@ -12,7 +12,6 @@ export type NativeChatMarkovStopView = {
   continueNow: () => void
   usageLimitTurnItemId: string | null
   usageLimitAutoContinue?: NativeChatUsageLimitAutoContinueState | null
-  onUsageLimitHandOffStarted?: () => void
   usageLimitContinueDisabled?: boolean
   continueUsageLimit: (hadFocus?: boolean) => void
 }

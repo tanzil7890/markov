@@ -21,6 +21,7 @@ import {
   type AgentStartupShell
 } from './tui-agent-startup-shell'
 import type { TuiAgent } from '../catalog/tui-agent'
+import { isCodexExecutableToken } from './agent-resume-launch-command'
 
 // Why: Enter on Codex's "Update available" screen picks "Update now", which installs and exits.
 const STARTUP_UPDATE_PROMPT_SUPPRESSION_ARGS: Partial<Record<TuiAgent, readonly string[]>> = {
@@ -53,11 +54,6 @@ function agentTerminalInputArgs(
     : []
 }
 
-function isCodexExecutable(token: string | undefined): boolean {
-  const basename = token?.split(/[\\/]/).pop()?.toLowerCase()
-  return basename !== undefined && /^codex(?:\.(?:exe|cmd|bat|ps1))?$/.test(basename)
-}
-
 /** Appends the per-launch terminal input flags to a recorded agent command. */
 export function withAgentTerminalInputArgs(
   command: string,
@@ -73,7 +69,7 @@ export function withAgentTerminalInputArgs(
   return inputArgs.length &&
     !/[;&|<>`$()\n]/.test(command) &&
     tokens.ok &&
-    isCodexExecutable(tokens.tokens[0]) &&
+    isCodexExecutableToken(tokens.tokens[0]) &&
     !command.includes('disable_paste_burst') &&
     !tokens.tokens.includes('--')
     ? `${command} ${inputArgs.map((arg) => quoteStartupArg(arg, shell)).join(' ')}`

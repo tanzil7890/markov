@@ -1,4 +1,3 @@
-import { useAppStore } from '@/store'
 import type { AppState } from '@/store/types'
 import type { TopLevelView } from '../../../shared/ui-chrome-types'
 
@@ -20,17 +19,18 @@ export function isFullPageView(view: TopLevelView): view is FullPageView {
   return view !== 'terminal' && view in CLOSE_FULL_PAGE
 }
 
-/** Leaves every full page (Tasks, Settings, …) so a surface that replaces them, like the board, shows alone. */
-export function closeFullPageViews(): void {
+/** Leaves every full page (Tasks, Settings, …) so a surface that replaces them, like the board, shows alone.
+ *  Takes the store's getState so the store's own actions can call it. */
+export function closeFullPageViews(getState: () => AppState): void {
   // Why: a page can return to the page it was opened from, so unwind until the workspace view shows.
   for (let step = 0; step < Object.keys(CLOSE_FULL_PAGE).length; step += 1) {
-    const state = useAppStore.getState()
+    const state = getState()
     const view = state.activeView
     if (!isFullPageView(view)) {
       return
     }
     CLOSE_FULL_PAGE[view](state)
-    if (useAppStore.getState().activeView === view) {
+    if (getState().activeView === view) {
       return
     }
   }

@@ -9,6 +9,7 @@ import WorkspaceKanbanSettingsMenu from './WorkspaceKanbanSettingsMenu'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import { hasCustomTitleBar } from '@/app-shell/app-window-chrome'
+import { FloatingWorkspaceTopBarToggle } from '@/app-shell/FloatingWorkspaceTopBarToggle'
 
 type WorkspaceKanbanDrawerHeaderProps = {
   selectedCount: number
@@ -112,6 +113,8 @@ export default function WorkspaceKanbanDrawerHeader({
           onRemoveStatus={onRemoveStatus}
           onAddStatus={onAddStatus}
         />
+        {/* Why: the board covers the workspace top bar, which holds this toggle on every other page. */}
+        <FloatingWorkspaceTopBarToggle />
       </div>
     </div>
   )

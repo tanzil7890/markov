@@ -108,8 +108,30 @@ export type NativeChatSessionOptionSettingsMutation =
     }
   | { type: 'clear-model-if-missing'; agent: AgentType; availableModelIds: readonly string[] }
 
+/** Another agent this chat can move to, with the models a new chat of it lists. */
+export type SessionOptionOtherAgent = {
+  agent: string
+  label: string
+  /** Empty until the host has listed this agent's models; it then offers its own default. */
+  choices: readonly SessionOptionSelectChoice[]
+}
+
+export type SessionOptionOtherAgents = {
+  /** This chat's own agent, the heading over its models. */
+  ownLabel: string
+  /** Read when the picker opens. `continuesBeside`: the chat has messages, so a pick opens a chat
+   *  beside it with this chat's context; an unused chat simply changes agent. */
+  list(): { agents: SessionOptionOtherAgent[]; continuesBeside: boolean }
+  /** Asks the host for the lists it has not given yet; called as the picker opens. */
+  demand(): void
+  /** `model` null starts the agent on its own default. */
+  pick(agent: string, model: string | null): void
+}
+
 export type SessionOptionsSurface = {
   demandModelCatalog?: () => void
+  /** Absent where a chat cannot move to another agent, e.g. a terminal agent's chat view. */
+  otherAgents?: SessionOptionOtherAgents
   getSnapshot(): SessionOptionDescriptor[]
   /** Apply an absolute target; known flip-only options use their tracked baseline. */
   setOption(id: string, value: SessionOptionValue): Promise<SessionOptionSetResult>

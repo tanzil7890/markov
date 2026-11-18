@@ -5,6 +5,7 @@ import {
   type KeybindingOverrides
 } from '../../../shared/keybindings'
 import { ALL_TUI_AGENTS } from '../../../shared/agent-launch/catalog/tui-agent-display-names'
+import { isOfferedTuiAgent } from '../../../shared/agent-launch/catalog/offered-tui-agents'
 import {
   normalizeDisabledTuiAgents,
   pickTuiAgent
@@ -36,7 +37,7 @@ export function listBoundAgentTabActions(
   const disabled = new Set(normalizeDisabledTuiAgents(disabledTuiAgents))
   const bound: BoundAgentTabAction[] = []
   for (const agent of ALL_TUI_AGENTS) {
-    if (disabled.has(agent)) {
+    if (disabled.has(agent) || !isOfferedTuiAgent(agent)) {
       continue
     }
     const actionId = agentTabActionId(agent)

@@ -1517,7 +1517,6 @@
         "2eece16ad1": "알림",
         "1f452cbd4c": "선택 및 편집 동작.",
         "0c6ee88a5f": "입력 및 편집",
-        "b11a5a48a2": "테마, 확대/축소, 앱 및 terminal 모양, 사이드바, 상태 표시줄.",
         "93d88d20bf": "모양",
         "2d0659f6f0": "전역 terminal, 브라우저 및 markdown 탭.",
         "65b19f5bde": "플로팅 워크스페이스",
@@ -1530,12 +1529,8 @@
         "c33bfd664c": "셸, 렌더러, 세션 및 terminal 동작.",
         "a9fb10afca": "터미널",
         "85f4fd7710": "작업 소스",
-        "ab4b21b58e": "브랜치 이름 지정, 기본 참조 및 Git AI Author.",
         "09607cb0fe": "Git 및 소스 제어",
         "33a5e1d597": "GitHub, GitLab, Linear 및 소스 호스팅 서비스를 연결하세요.",
-        "2b043783ef": "연동",
-        "2cd4ea75da": "워크스페이스 기본값, 앱 설정 및 유지 관리.",
-        "13241992bd": "일반",
         "724c440e72": "시작하기",
         "0505d0df29": "Markov 시작하기",
         "ea0b1bc7b8": "설정 가이드",
@@ -1549,7 +1544,6 @@
         "cd50cec5d7": "Markov를 통해 여러 코딩 에이전트를 조율합니다.",
         "58a868e8e4": "오케스트레이션",
         "7c79d3b7bf": "선택 사항",
-        "b1c2f8b0ac": "Claude, Codex, Gemini, OpenCode Go, MiniMax, Grok의 선택적 계정 전환 및 사용량 설정.",
         "f70ac54d38": "AI 제공자 계정",
         "4121f7a0a2": "AI agents를 관리하고, 기본값을 설정하고, 명령을 사용자 정의하세요.",
         "b49abbd2f7": "에이전트",
@@ -3790,20 +3784,10 @@
             "searchProvider": "{{value0}}에서 검색"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "명령",
-            "20bbd75896": "명령 없음",
-            "b82e237a4b": "빠른 명령 더 보기",
-            "85482c57bc": "빠른 명령 실행",
-            "b775303755": "빠른 명령 실행: {{value0}}",
             "196593b6a9": "{{value0}} 제거",
             "15529ede69": "{{value0}} 편집",
-            "1d411fb6a5": "이 repo에 대한 빠른 명령 저장",
-            "8f1e971966": "빠른 명령 추가",
             "3220e2da27": "이 빠른 명령은 저장된 목록에서 제거됩니다.",
             "e8e1a52edb": "'{{value0}}'을 삭제하시겠습니까?",
-            "37e1bb90ce": "실행: {{value0}}",
-            "77ac113df0": "{{value0}} 시작: {{value1}}",
-            "7b1c9d6ae1": "실행",
             "be8f0ff166": "삭제",
             "f3a8c2d1e7": "빠른 명령 검색...",
             "b4e7f9a2c1": "일치하는 명령 없음",
@@ -3873,15 +3857,11 @@
             "7ab2964bea": "읽지 않은 에이전트 완료"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "명령",
             "b856c833ae": "{{value0}}에 대한 명령"
           },
           "TabBarQuickCommandHostLoadStatus": {
             "82e294f3ca": "호스트를 사용할 수 없음",
             "7c129b08ff": "호스트 로드 중…"
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "이 세션은 CLI에서 열 수 없습니다."
           },
           "tabCreateEntry": {
             "fileNotFound": "파일을 찾을 수 없음: {{path}}",
@@ -6949,12 +6929,6 @@
             "tintOpacityDescription": "사이드바에 색조를 얼마나 강하게 섞을지 조절합니다.",
             "tintDescription": "왼쪽 사이드바를 기본값으로 두거나 색조를 적용합니다. 터미널을 따르려면 라이트 또는 다크 테마로 Terminal에 맞춤을 선택하세요."
           },
-          "interfaceDefaultFont": "기본 글꼴",
-          "terminalDefaultFont": "기본 글꼴",
-          "interfaceTitle": "인터페이스",
-          "terminalTitle": "터미널",
-          "windowSidebarTitle": "창 및 사이드바",
-          "windowSidebarSummary": "사이드바, 상태 표시줄 및 파일 탐색기",
           "gitIgnoredGlossary": ".gitignore와 일치하는 파일.",
           "statusBarDescription": "상태 표시줄에 표시할 항목을 선택합니다.",
           "showPinnedWorktreesInGroups": {
@@ -7378,7 +7352,6 @@
           "nodeDistMirrorLabel": "Node.js 다운로드 미러"
         },
         "GeneralPane": {
-          "d58fccfd84": "탐색",
           "5cb5475664": "고정된 탭을 닫기 전에 확인",
           "36b2a5dc6d": "고정된 탭을 닫기 전에 확인 대화상자를 표시합니다.",
           "projectRuntime": "프로젝트 런타임",
@@ -8173,7 +8146,6 @@
           "9907545fa3": "알림",
           "d0b7021d64": "선택 및 편집 동작.",
           "d7a3e635b6": "입력 및 편집",
-          "6d1a27e193": "테마, 확대/축소, 앱 및 터미널 모양, 사이드바, 상태 표시줄.",
           "2b4474780a": "모양",
           "3d9adfe6a5": "전역 터미널, 브라우저, Markdown 탭.",
           "3eb22a3ada": "플로팅 워크스페이스",
@@ -8186,12 +8158,9 @@
           "b79b5b31e9": "셸, 렌더러, 세션, 터미널 동작.",
           "3de4bbb841": "터미널",
           "11faa2f7dd": "작업 소스",
-          "cfa34f4465": "브랜치 이름 지정, 기본 참조 및 Git AI Author.",
           "70100f94c7": "Git 및 소스 제어",
           "b07041697f": "GitHub, GitLab, Linear 및 소스 호스팅 서비스를 연결하세요.",
           "c9ca101a3b": "연동",
-          "f9b77539fd": "워크스페이스 기본값, 앱 설정 및 유지 관리.",
-          "7807c11c4d": "일반",
           "6855b0f77d": "Markov를 병렬 에이전트 작업에 유용하게 만드는 핵심 워크플로를 완료합니다.",
           "6d119427ef": "온보딩 체크리스트",
           "eb1176a14e": "온디바이스 모델을 사용한 로컬 음성-텍스트 받아쓰기.",
@@ -8208,12 +8177,7 @@
           "acc7bbdefd": "설정을 종료하려면 ESC를 다시 누르세요.",
           "43b68e10f0": "저장하지 않은 AI 설정이 있습니다. 나가면 해당 설정이 버려집니다.",
           "17bdee4ff1": "저장하지 않은 AI 설정을 버리시겠습니까?",
-          "084d8fac5b": "개인 정보 보호 및 보안",
-          "23931df7e8": "원격 호스트",
           "8bd117d669": "인터페이스",
-          "e1578cd4bc": "워크플로",
-          "9abb9be3bc": "설정 시작",
-          "23c6874fdf": "AI 기능",
           "65358016ea": "버리기",
           "dev": "개발자 도구",
           "devDescription": "UI 상태를 시험해 보기 위한 개발 전용 도구입니다.",
@@ -8249,9 +8213,7 @@
           "dbceaa8840": "설정 검색",
           "60f8a673a7": "앱으로 돌아가기",
           "6503182299": "온보딩 체크리스트",
-          "82db1b7de4": "온보딩 체크리스트, {{value0}}/{{value1}} 완료. 설정 가이드 보기.",
-          "df38d612b7": "아직 추가된 프로젝트가 없습니다.",
-          "3e483e256b": "일치하는 프로젝트 설정이 없습니다."
+          "df38d612b7": "아직 추가된 프로젝트가 없습니다."
         },
         "ShortcutFilterRail": {
           "28b63545bf": "상태",
@@ -19339,8 +19301,7 @@
         "continueNow": "지금 계속",
         "leadIn": "기다리지 않고 이 채팅을 계속하세요:",
         "switchAccount": "계정 전환",
-        "addAccount": "계정 추가…",
-        "accountUnavailable": "이 채팅을 다른 계정으로 옮길 수 없습니다. 다른 에이전트에게 인계하세요."
+        "addAccount": "계정 추가…"
       },
       "usageLimitAutoContinue": {
         "cancelFailed": "자동 계속을 취소하지 못했습니다. 다시 시도하세요.",
@@ -19349,7 +19310,6 @@
         "scheduled": "Markov가 {{time}}에 이 채팅을 계속합니다.",
         "cancel": "계속하지 않기"
       },
-      "settings": "채팅 설정",
       "textAttachmentPreview": {
         "copiedContents": "내용을 복사했습니다",
         "textAttachment": "텍스트 첨부 파일",
@@ -19668,28 +19628,7 @@
       }
     },
     "agentSessionContinuation": {
-      "preparingContext": "저장된 채팅 컨텍스트 준비 중…",
-      "handOffToAnotherAgent": "다른 에이전트에게 인계",
-      "dialogTitle": "다른 에이전트에게 인계",
-      "dialogDescription": "이 지점부터 새 에이전트 세션을 시작합니다. 원래 세션은 변경되지 않습니다.",
-      "untitledSession": "현재 세션",
-      "originalAgent": "원래 에이전트: {{agent}}",
-      "agent": "에이전트",
       "selectAgent": "에이전트 선택",
-      "detectingAgents": "이 워크스페이스 호스트에서 에이전트를 찾는 중…",
-      "detectionFailed": "이 워크스페이스 호스트에서 에이전트를 찾을 수 없습니다.",
-      "noAgents": "이 워크스페이스 호스트에서 활성화된 에이전트를 찾지 못했습니다.",
-      "onlySourceFamilyDetected": "이 워크스페이스 호스트에서 사용할 수 있는 에이전트는 {{agent}}와 사용 한도를 공유하는 에이전트뿐입니다. 다른 에이전트를 활성화하거나 설치하세요.",
-      "context": "컨텍스트",
-      "modeFocused": "핵심 컨텍스트 전달(권장)",
-      "modeFocusedDescription": "최신 상태와 현재 워크스페이스를 사용하고 필요한 경우에만 이전 세부 정보를 읽습니다.",
-      "modeLoadedDescription": "이 채팅에 현재 로드된 최근 메시지와 현재 워크스페이스를 사용합니다.",
-      "modeCapturedDescription": "캡처한 텍스트와 현재 워크스페이스를 사용합니다.",
-      "modeFull": "전체 세션 기록",
-      "modeFullDescription": "계속하기 전에 새 에이전트가 저장된 전체 세션을 읽도록 합니다. 시간이 더 오래 걸리고 상당한 컨텍스트, 요금제 사용량 또는 API 크레딧을 소모할 수 있습니다.",
-      "startsIn": "시작 위치:",
-      "startSession": "새 세션 시작",
-      "starting": "시작 중…",
       "noContext": "새 세션에서 계속할 세션 컨텍스트가 없습니다.",
       "agentDisabled": "에이전트 설정에서 {{agent}}이(가) 비활성화되어 있습니다.",
       "agentUnavailable": "이 워크스페이스 호스트에서 {{agent}}을(를) 찾지 못했습니다.",

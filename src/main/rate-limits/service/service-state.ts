@@ -115,6 +115,10 @@ export abstract class RateLimitServiceState {
   protected zcodePlanConfigResolver: (() => ZcodePlanRateLimitConfig) | null = null
   protected geminiCliOAuthEnabledResolver: GeminiCliOAuthEnabledResolver | null = null
   protected antigravityUsageEnabledResolver: AntigravityUsageEnabledResolver | null = null
+  /** Says whether a provider is offered; a withheld one is never read or fetched. */
+  protected providerOfferedResolver:
+    | ((provider: ProviderRateLimits['provider']) => boolean)
+    | null = null
   protected antigravityFetchTarget: LocalAccountRuntimeTarget = { runtime: 'host', wslDistro: null }
   protected antigravityAccountUsageRecorder: AntigravityAccountUsageRecorder | null = null
   protected antigravityAccounts: AntigravityAccountUsage[] = []

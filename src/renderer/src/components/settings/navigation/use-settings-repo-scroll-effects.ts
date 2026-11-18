@@ -9,10 +9,10 @@ import type { SettingsInteractionController } from '../page/use-settings-interac
 import type { SettingsNavigationModel } from './use-settings-navigation-model'
 import type { SettingsTerminalModel } from '../page/use-settings-terminal-model'
 import { watchForSettingsDeepLinkTarget } from './settings-deep-link-target-watcher'
+import { locateSettingsSection } from './settings-destinations'
 import {
   cancelPendingSettingsDeepLinkTargetWatch,
   cancelPendingSettingsSubsectionScrollFrame,
-  getFallbackVisibleSection,
   getSettingsScrollTarget,
   scrollSubsectionIntoView
 } from './settings-navigation-foundations'
@@ -64,7 +64,7 @@ export function useSettingsRepoScrollEffects(
     pendingSubsectionScrollFrameRef,
     repoHooksRequestSeqRef
   } = interactions
-  const { visibleNavSections, visibleSectionIds } = navigation
+  const { destinations, navSections, navSectionIds } = navigation
   const { neededRepos } = terminal
   const [unreadHooksRetryTick, setUnreadHooksRetryTick] = useState(0)
   // On a retry, only repos whose distro refused the last check are asked again.
@@ -168,18 +168,13 @@ export function useSettingsRepoScrollEffects(
     // This pass re-evaluates the pending target; cancel the previous watch first.
     cancelPendingSettingsDeepLinkTargetWatch(pendingScrollTargetWatchRef)
 
-    // Subsection links clear filters that could hide their rows; pane links retain filtering to force the pane open.
-    if (
-      scrollTargetId &&
-      pendingNavSectionId &&
-      scrollTargetId !== pendingNavSectionId &&
-      settingsSearchQuery.trim() !== ''
-    ) {
+    // Search results stand in for the page, so a link ends the search first.
+    if (scrollTargetId && pendingNavSectionId && settingsSearchQuery.trim() !== '') {
       setSettingsSearchQuery('')
       return
     }
 
-    if (scrollTargetId && pendingNavSectionId && visibleSectionIds.has(pendingNavSectionId)) {
+    if (scrollTargetId && pendingNavSectionId && navSectionIds.has(pendingNavSectionId)) {
       // Inactive panes have no DOM; activate before locating the subsection next render.
       if (activeSectionId !== pendingNavSectionId) {
         setActiveSectionId(pendingNavSectionId)
@@ -189,7 +184,12 @@ export function useSettingsRepoScrollEffects(
       if (container) {
         container.scrollTo({ top: 0 })
       }
-      if (scrollTargetId !== pendingNavSectionId) {
+      // A section stacked below another on its page is scrolled to like a row inside one.
+      const stackedBelow =
+        (locateSettingsSection(destinations, pendingNavSectionId)?.tab.sectionIds.indexOf(
+          pendingNavSectionId
+        ) ?? 0) > 0
+      if (scrollTargetId !== pendingNavSectionId || stackedBelow) {
         // Retain pending refs until the lazy subsection mounts.
         if (!getSettingsScrollTarget(scrollTargetId, container)) {
           // Async rows may mount without another effect pass; observe their arrival.
@@ -225,8 +225,9 @@ export function useSettingsRepoScrollEffects(
       return
     }
 
-    if (!visibleSectionIds.has(activeSectionId) && visibleNavSections.length > 0) {
-      setActiveSectionId(getFallbackVisibleSection(visibleNavSections)?.id ?? activeSectionId)
+    // The section on screen can go away: a project is removed, a provider disconnects.
+    if (!navSectionIds.has(activeSectionId) && navSections.length > 0) {
+      setActiveSectionId(navSections[0].id)
     }
   }, [
     activeSectionId,
@@ -240,7 +241,8 @@ export function useSettingsRepoScrollEffects(
     setPendingNavRequestTick,
     setSettingsSearchQuery,
     settingsSearchQuery,
-    visibleSectionIds,
-    visibleNavSections
+    destinations,
+    navSectionIds,
+    navSections
   ])
 }

@@ -13,11 +13,11 @@ export function renderGitSettingsSection(context: SettingsRenderContext): React.
       id="git"
       title={translate('auto.components.settings.Settings.70100f94c7', 'Git & Source Control')}
       description={translate(
-        'auto.components.settings.Settings.cfa34f4465',
-        'Branch naming, base refs, and Git AI Author.'
+        'settings.sections.git.description',
+        'Branch naming, base refs, and pull request defaults.'
       )}
       searchEntries={navigation.getSectionSearchEntries('git')}
-      forceVisible={model.hasUnsavedCommitPromptChanges || model.hasUnsavedBranchPromptChanges}
+      forceVisible={model.hasUnsavedBranchPromptChanges}
     >
       {view.isSectionMounted('git') ? (
         <>
@@ -31,19 +31,38 @@ export function renderGitSettingsSection(context: SettingsRenderContext): React.
             branchPromptDiscardSignal={model.sourceControlAiPromptDiscardSignal}
             settingsSearchQuery={model.settingsSearchQuery}
           />
-          <CommitMessageAiPane
-            settings={model.settings}
-            updateSettings={model.updateSettings}
-            writeSourceControlAiSettings={interactions.writeSourceControlAiSettingsOrThrow}
-            onCustomPromptDirtyChange={model.setHasUnsavedCommitPromptChanges}
-            customPromptDiscardSignal={model.sourceControlAiPromptDiscardSignal}
-            settingsSearchQuery={model.settingsSearchQuery}
-          />
           <GitProviderApiBudgetPane
             settingsSearchQuery={model.settingsSearchQuery}
             target={model.settingsHostScope.target}
           />
         </>
+      ) : null}
+    </SettingsSection>
+  )
+}
+
+export function renderGitAiSettingsSection(context: SettingsRenderContext): React.JSX.Element {
+  const { model, interactions, navigation, view } = context
+  return (
+    <SettingsSection
+      id="git-ai"
+      title={translate('settings.sections.gitAi.title', 'Source Control AI')}
+      description={translate(
+        'settings.sections.gitAi.description',
+        'Which agent writes commit messages, pull request details, and fixes, and with what prompt.'
+      )}
+      searchEntries={navigation.getSectionSearchEntries('git-ai')}
+      forceVisible={model.hasUnsavedCommitPromptChanges}
+    >
+      {view.isSectionMounted('git-ai') ? (
+        <CommitMessageAiPane
+          settings={model.settings}
+          updateSettings={model.updateSettings}
+          writeSourceControlAiSettings={interactions.writeSourceControlAiSettingsOrThrow}
+          onCustomPromptDirtyChange={model.setHasUnsavedCommitPromptChanges}
+          customPromptDiscardSignal={model.sourceControlAiPromptDiscardSignal}
+          settingsSearchQuery={model.settingsSearchQuery}
+        />
       ) : null}
     </SettingsSection>
   )

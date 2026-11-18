@@ -1,3 +1,4 @@
+import { SETTINGS_TAB_ID } from '@/lib/settings-tab-placement'
 import type { DragEndEvent, DragMoveEvent, DragOverEvent } from '@dnd-kit/core'
 import type { TabGroup, TabGroupLayoutNode } from '../../../../shared/tab-types'
 import { isPaneColumnSplitDropNoOp } from '../../../../shared/workspace-layout/pane-column-split-drop-no-op'
@@ -230,6 +231,10 @@ export function resolveActivePaneColumnSplitTarget({
   const activeData = event.active.data.current
   const pointer = getDragPointer(event)
   if (!isTabDragData(activeData) || !pointer) {
+    return null
+  }
+  // Why: a split makes a new group, which needs a layout tab to hold; the Settings tab is not one.
+  if (activeData.unifiedTabId === SETTINGS_TAB_ID) {
     return null
   }
 

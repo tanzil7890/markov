@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import type { AgentSessionPromptResponse } from '../../../../shared/agent-session/agent-session-question-answer'
 import { applyCodexPromptAnswer, prepareCodexPromptAnswer } from './codex-structured-prompt-replies'
 import { CodexPromptRegistry, type CodexPendingPrompt } from './codex-prompt-registry'
 import { MAX_CODEX_PROMPT_REGISTRY_ENTRIES } from './codex-prompt-registry-bounds'
+import { disposeCodexServerRequest } from './codex-server-request-disposition'
+import {
+  codexMcpApprovalQuestion,
+  rememberCodexMcpApproval,
+  resetCodexMcpApprovalMemoryForTests
+} from './codex-mcp-approval-memory'
 
 function picked(optionId: string): AgentSessionPromptResponse {
   return { kind: 'answers', answers: [{ questionId: 'q1', optionIds: [optionId] }] }
@@ -98,23 +104,98 @@ const MCP_TOOL_APPROVAL = {
   _meta: { codex_approval_kind: 'mcp_tool_call', persist: ['session', 'always'] }
 }
 
-describe('MCP tool-call approvals', () => {
-  it('refuses session reuse and Deny when the request did not offer them', () => {
-    const registry = new CodexPromptRegistry()
-    const prompt = registered(
-      registry.register(
-        mcpElicitationRequest(15, {
-          ...MCP_TOOL_APPROVAL,
-          _meta: { codex_approval_kind: 'mcp_tool_call' }
-        })
-      )
-    )
+const TOOL_APPROVAL_NOT_KEPT_BY_CODEX = {
+  ...MCP_TOOL_APPROVAL,
+  _meta: { codex_approval_kind: 'mcp_tool_call', tool_params: { app: 'com.example.editor' } }
+}
 
+function respondedTo(): {
+  replies: unknown[]
+  connection: Parameters<typeof disposeCodexServerRequest>[1]
+} {
+  const replies: unknown[] = []
+  return {
+    replies,
+    connection: {
+      respond: (_id, reply) => replies.push(reply),
+      respondWithError: (_id, _code, message) => replies.push(message)
+    }
+  }
+}
+
+describe('MCP tool-call approvals', () => {
+  beforeEach(() => resetCodexMcpApprovalMemoryForTests())
+
+  it('tells Codex a plain Allow when Codex cannot keep "Allow for this session" itself', () => {
+    const registry = new CodexPromptRegistry()
+    const kept = registry.register(mcpElicitationRequest(14, MCP_TOOL_APPROVAL))
+    const notKept = registry.register(mcpElicitationRequest(15, TOOL_APPROVAL_NOT_KEPT_BY_CODEX))
+    const forSession = { kind: 'option', optionId: 'acceptForSession' } as const
+
+    expect(answer(kept, forSession)).toEqual({
+      action: 'accept',
+      content: null,
+      _meta: { persist: 'session' }
+    })
+    expect(answer(notKept, forSession)).toEqual({ action: 'accept', content: null, _meta: null })
     expect(() =>
-      prepareCodexPromptAnswer(prompt, { kind: 'option', optionId: 'acceptForSession' })
-    ).toThrow('did not offer acceptForSession')
-    expect(() => prepareCodexPromptAnswer(prompt, { kind: 'option', optionId: 'decline' })).toThrow(
-      'did not offer decline'
+      prepareCodexPromptAnswer(registered(notKept), { kind: 'option', optionId: 'decline' })
+    ).toThrow('did not offer decline')
+  })
+
+  it('asks a question again in Ask mode until it was allowed for the session', () => {
+    const chat = { sessionId: 'chat-1', mode: 'ask' } as const
+    const question = codexMcpApprovalQuestion(
+      mcpElicitationRequest(1, TOOL_APPROVAL_NOT_KEPT_BY_CODEX).params
     )
+    const ask = (id: number) => {
+      const { replies, connection } = respondedTo()
+      const disposition = disposeCodexServerRequest(
+        new CodexPromptRegistry(),
+        connection,
+        mcpElicitationRequest(id, TOOL_APPROVAL_NOT_KEPT_BY_CODEX),
+        chat
+      )
+      return { kind: disposition.kind, replies }
+    }
+
+    rememberCodexMcpApproval(chat, question, 'accept')
+    expect(ask(20)).toEqual({ kind: 'prompt', replies: [] })
+
+    rememberCodexMcpApproval(chat, question, 'acceptForSession')
+    expect(ask(21)).toEqual({
+      kind: 'responded',
+      replies: [{ action: 'accept', content: null, _meta: null }]
+    })
+  })
+
+  it('keeps a plain Allow under Approve for me, for that question and that chat only', () => {
+    const chat = { sessionId: 'chat-2', mode: 'auto' } as const
+    const request = mcpElicitationRequest(30, TOOL_APPROVAL_NOT_KEPT_BY_CODEX)
+    rememberCodexMcpApproval(chat, codexMcpApprovalQuestion(request.params), 'accept')
+    const dispose = (
+      asked: ReturnType<typeof mcpElicitationRequest>,
+      asking: { sessionId: string; mode: 'auto' | 'full-access' }
+    ) => {
+      const { replies, connection } = respondedTo()
+      return {
+        ...disposeCodexServerRequest(new CodexPromptRegistry(), connection, asked, asking),
+        replies
+      }
+    }
+    const otherApp = mcpElicitationRequest(31, {
+      ...TOOL_APPROVAL_NOT_KEPT_BY_CODEX,
+      _meta: { codex_approval_kind: 'mcp_tool_call', tool_params: { app: 'com.example.browser' } }
+    })
+
+    expect(dispose(request, chat)).toEqual({
+      kind: 'responded',
+      method: 'mcpServer/elicitation/request',
+      allowed: 'Allow Notion to run tool "notion.notion-update-page"?',
+      replies: [{ action: 'accept', content: null, _meta: null }]
+    })
+    expect(dispose(otherApp, chat).kind).toBe('prompt')
+    expect(dispose(request, { sessionId: 'chat-3', mode: 'auto' }).kind).toBe('prompt')
+    expect(dispose(otherApp, { sessionId: 'chat-3', mode: 'full-access' }).kind).toBe('responded')
   })
 })

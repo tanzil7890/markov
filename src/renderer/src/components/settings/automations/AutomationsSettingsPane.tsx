@@ -2,6 +2,7 @@ import { ArrowRight, CalendarClock } from 'lucide-react'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
 import { Button } from '@/components/ui/button'
 import { SettingsSwitchRow } from '../form-controls/SettingsFormControls'
+import { SettingsHowToGuide } from '../section-layout/SettingsHowToGuide'
 import { useAppStore } from '@/store/index'
 import { translate } from '@/i18n/i18n'
 
@@ -32,82 +33,7 @@ export function AutomationsSettingsPane({
           })
         }
       />
-      <section className="space-y-4 py-5">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium">
-            {translate(
-              'auto.components.settings.automations.howItWorksTitle',
-              'How Automations work'
-            )}
-          </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {translate(
-              'auto.components.settings.automations.howItWorksDescription',
-              'Schedule agent work once, then let Markov create each run and keep its results together.'
-            )}
-          </p>
-        </div>
-
-        <ol className="space-y-3">
-          <li className="flex items-start gap-3">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/30 text-[11px] font-semibold text-muted-foreground">
-              1
-            </span>
-            <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-sm font-medium">
-                {translate(
-                  'auto.components.settings.automations.defineStepTitle',
-                  'Describe the work'
-                )}
-              </p>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {translate(
-                  'auto.components.settings.automations.defineStepDescription',
-                  'Choose a project, agent, prompt, and schedule.'
-                )}
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/30 text-[11px] font-semibold text-muted-foreground">
-              2
-            </span>
-            <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-sm font-medium">
-                {translate(
-                  'auto.components.settings.automations.runStepTitle',
-                  'Markov starts each run'
-                )}
-              </p>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {translate(
-                  'auto.components.settings.automations.runStepDescription',
-                  'The selected agent gets a fresh workspace when the schedule is due.'
-                )}
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/30 text-[11px] font-semibold text-muted-foreground">
-              3
-            </span>
-            <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-sm font-medium">
-                {translate(
-                  'auto.components.settings.automations.reviewStepTitle',
-                  'Review the results'
-                )}
-              </p>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {translate(
-                  'auto.components.settings.automations.reviewStepDescription',
-                  'Inspect recent runs and continue the work whenever you need to.'
-                )}
-              </p>
-            </div>
-          </li>
-        </ol>
-
+      <div className="py-3">
         <Button
           type="button"
           variant="ghost"
@@ -133,7 +59,52 @@ export function AutomationsSettingsPane({
           </span>
           <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
         </Button>
-      </section>
+      </div>
+      <SettingsHowToGuide
+        title={translate(
+          'auto.components.settings.automations.howItWorksTitle',
+          'How Automations work'
+        )}
+        description={translate(
+          'auto.components.settings.automations.howItWorksDescription',
+          'Schedule agent work once, then let Markov create each run and keep its results together.'
+        )}
+        steps={[
+          {
+            key: 'define',
+            title: translate(
+              'auto.components.settings.automations.defineStepTitle',
+              'Describe the work'
+            ),
+            description: translate(
+              'auto.components.settings.automations.defineStepDescription',
+              'Choose a project, agent, prompt, and schedule.'
+            )
+          },
+          {
+            key: 'run',
+            title: translate(
+              'auto.components.settings.automations.runStepTitle',
+              'Markov starts each run'
+            ),
+            description: translate(
+              'auto.components.settings.automations.runStepDescription',
+              'The selected agent gets a fresh workspace when the schedule is due.'
+            )
+          },
+          {
+            key: 'review',
+            title: translate(
+              'auto.components.settings.automations.reviewStepTitle',
+              'Review the results'
+            ),
+            description: translate(
+              'auto.components.settings.automations.reviewStepDescription',
+              'Inspect recent runs and continue the work whenever you need to.'
+            )
+          }
+        ]}
+      />
     </div>
   )
 }

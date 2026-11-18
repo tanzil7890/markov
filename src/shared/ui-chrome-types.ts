@@ -73,7 +73,11 @@ export type StatusBarItem =
   | 'ssh'
   | 'resource-usage'
   | 'ports'
-export type FloatingTerminalTriggerLocation = 'top-bar' | 'floating-button' | 'status-bar'
+export type FloatingTerminalTriggerLocation =
+  | 'sidebar'
+  | 'top-bar'
+  | 'floating-button'
+  | 'status-bar'
 
 export type TaskResumeState = {
   githubMode?: 'items' | 'project'

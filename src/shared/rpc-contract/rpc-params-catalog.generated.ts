@@ -454,6 +454,7 @@ import {
   MarkovdMigrationCatalogReferenceParams,
   MarkovdMigrationCommitCatalogParams
 } from './markovd-migration-params'
+import { McpGatewayMessageParams } from './mcp-gateway-params'
 import { NativeChatSession, NativeChatUnsubscribe } from './native-chat-params'
 import {
   NotificationGetMissedSinceParams,
@@ -1281,6 +1282,7 @@ export const RPC_PARAMS_BY_METHOD = {
   'markovd.migration.stageCatalog': MarkovdMigrationCatalogParams,
   'markovd.migration.stageSnapshotChunk': MarkovdMigrationSnapshotChunkRequestSchema,
   'markovd.terminalCensus': MarkovdTerminalCensusParamsSchema,
+  'mcpGateway.message': McpGatewayMessageParams,
   'mobileRelay.hosts.list': null,
   'mobileRelay.hosts.worktrees': MobileRelayHostWorktreesParamsSchema,
   'mobileRelay.projectSections': null,

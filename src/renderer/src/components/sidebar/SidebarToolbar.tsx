@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollToCurrentWorkspaceToolbarButton } from './worktree-list/navigation/ScrollToCurrentWorkspaceToolbarButton'
 import { SidebarSettingsHelpMenu } from './SidebarSettingsHelpMenu'
+import { FloatingWorkspaceSidebarToggle } from './FloatingWorkspaceSidebarToggle'
 
 const SidebarToolbar = React.memo(function SidebarToolbar() {
   // Subscribe across this memo boundary so asynchronously applied locale changes relabel the toolbar and its children.
@@ -14,6 +15,7 @@ const SidebarToolbar = React.memo(function SidebarToolbar() {
           <SidebarSettingsHelpMenu />
         </div>
         <div className="flex items-center gap-1">
+          <FloatingWorkspaceSidebarToggle />
           <ScrollToCurrentWorkspaceToolbarButton />
         </div>
       </div>

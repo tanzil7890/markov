@@ -14,6 +14,10 @@ import {
   writeBatchedWorkspaceRecordEntry,
   type WorktreeTabModelReconciliationBatch
 } from './tabs-reconciliation-batch'
+import {
+  isRightSidebarTabGroupId,
+  layoutTabGroups
+} from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 export type WorktreeTabModelReconciliation = {
   patch: Partial<AppState>
@@ -53,7 +57,7 @@ export function projectWorktreeTabModelReconciliation(
           state.activeGroupIdByWorktree[worktreeId]
         )
       : null
-  const reconciliationGroup = ensuredGroupState?.group ?? groups[0] ?? null
+  const reconciliationGroup = ensuredGroupState?.group ?? layoutTabGroups(groups)[0] ?? null
   const restoredLegacyTabs =
     reconciliationGroup == null
       ? []
@@ -146,12 +150,19 @@ export function projectWorktreeTabModelReconciliation(
       ? group
       : { ...group, tabOrder, activeTabId, recentTabIds }
   })
+  const soleLayoutGroup =
+    layoutTabGroups(nextGroupsWithEmpty).length === 1
+      ? layoutTabGroups(nextGroupsWithEmpty)[0]
+      : undefined
   const prunedGroups =
     validTabs.length > 0
       ? nextGroupsWithEmpty.filter(
           // Preserve intentional empty panes; only collapse groups emptied by stale-tab cleanup.
+          // The main area keeps its last group even when only sidebar terminals remain.
           (group, index) =>
-            group.tabOrder.length > 0 || reconciledGroups[index].tabOrder.length === 0
+            group.tabOrder.length > 0 ||
+            reconciledGroups[index].tabOrder.length === 0 ||
+            group === soleLayoutGroup
         )
       : nextGroupsWithEmpty
   const groupsChanged =
@@ -161,11 +172,13 @@ export function projectWorktreeTabModelReconciliation(
   const currentActiveGroupId =
     state.activeGroupIdByWorktree[worktreeId] ??
     ensuredGroupState?.activeGroupIdByWorktree[worktreeId]
-  const activeGroupStillExists = nextGroups.some((group) => group.id === currentActiveGroupId)
+  // The sidebar's group is never the main area's active group or a layout leaf.
+  const nextLayoutGroups = layoutTabGroups(nextGroups)
+  const activeGroupStillExists = nextLayoutGroups.some((group) => group.id === currentActiveGroupId)
   const nextActiveGroupId = activeGroupStillExists
     ? currentActiveGroupId
-    : (nextGroups.find((group) => group.activeTabId !== null)?.id ??
-      nextGroups[0]?.id ??
+    : (nextLayoutGroups.find((group) => group.activeTabId !== null)?.id ??
+      nextLayoutGroups[0]?.id ??
       currentActiveGroupId)
   const tabsChanged = validTabs !== unifiedTabs
   const activeGroupChanged = nextActiveGroupId !== currentActiveGroupId
@@ -173,13 +186,14 @@ export function projectWorktreeTabModelReconciliation(
     restoredLegacyTabs.length > 0 && reconciliationGroup
       ? (state.layoutByWorktree[worktreeId] ?? { type: 'leaf', groupId: reconciliationGroup.id })
       : state.layoutByWorktree[worktreeId]
-  const validGroupIds = new Set(nextGroups.map((group) => group.id))
+  const validGroupIds = new Set(nextLayoutGroups.map((group) => group.id))
   const prunedNextLayout =
     baseNextLayout && validGroupIds.size > 0
       ? pruneTabGroupLayoutForGroups(baseNextLayout, validGroupIds)
       : baseNextLayout
   const nextLayout =
-    prunedNextLayout ?? (nextGroups[0] ? { type: 'leaf', groupId: nextGroups[0].id } : undefined)
+    prunedNextLayout ??
+    (nextLayoutGroups[0] ? { type: 'leaf', groupId: nextLayoutGroups[0].id } : undefined)
   const currentLayout = state.layoutByWorktree[worktreeId]
   const layoutChanged = nextLayout !== currentLayout
   let patch: Partial<AppState> = {}
@@ -257,10 +271,13 @@ export function projectWorktreeTabModelReconciliation(
 
   return {
     patch,
-    renderableTabCount: validTabs.length,
+    // Sidebar terminals do not make the main area non-empty.
+    renderableTabCount: validTabs.filter(
+      (tab) => !isRightSidebarTabGroupId(worktreeId, tab.groupId)
+    ).length,
     activeRenderableTabId:
-      nextGroups.find((group) => group.id === nextActiveGroupId)?.activeTabId ??
-      nextGroups.find((group) => group.activeTabId !== null)?.activeTabId ??
+      nextLayoutGroups.find((group) => group.id === nextActiveGroupId)?.activeTabId ??
+      nextLayoutGroups.find((group) => group.activeTabId !== null)?.activeTabId ??
       null
   }
 }

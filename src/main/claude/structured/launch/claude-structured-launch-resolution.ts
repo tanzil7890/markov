@@ -67,6 +67,7 @@ export type ClaudeStructuredSdkOptions = Pick<
   | 'supportedDialogKinds'
   | 'additionalDirectories'
   | 'plugins'
+  | 'mcpServers'
   | 'model'
   | 'effort'
   | 'allowDangerouslySkipPermissions'

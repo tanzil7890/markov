@@ -13,12 +13,12 @@ type Props = {
   color?: string
 }
 
-export function MarkovLogo({ size = 24, color = colors.textPrimary }: Props) {
+export function MarkovLogo({ size = 24, color = colors.markovMark }: Props) {
   useMobileColorScheme()
   const width = (size * MARKOV_MARK_WIDTH) / MARKOV_MARK_HEIGHT
   return (
     <Svg width={width} height={size} viewBox={MARKOV_MARK_VIEW_BOX}>
-      <Path fill={color} d={MARKOV_MARK_PATH} />
+      <Path fill={color} fillRule="evenodd" d={MARKOV_MARK_PATH} />
     </Svg>
   )
 }

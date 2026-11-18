@@ -106,6 +106,7 @@ export function buildWorkspaceCardFacts(card: WorktreeCardController): Workspace
       cli: Boolean(worktree.cliProvenance)
     },
     ports: { count: card.workspacePorts.length },
+    agents: { count: card.compactInlineAgentRows.length, listOpen: card.chatListOpen },
     lineage: {
       childCount: card.lineageChildCount,
       collapsed: card.lineageCollapsed,

@@ -21,6 +21,7 @@ import {
   ListChecks,
   PanelsTopLeft,
   Play,
+  Sparkles,
   SquareTerminal,
   TabletSmartphone
 } from 'lucide-react'
@@ -40,8 +41,7 @@ export function buildWorkflowSettingsSections(
         'Schedule agent work and choose whether Automations appears in the sidebar.'
       ),
       icon: CalendarClock,
-      searchEntries: getAutomationsSettingsSearchEntries(),
-      group: 'workflows'
+      searchEntries: getAutomationsSettingsSearchEntries()
     },
     {
       id: 'artifacts',
@@ -52,7 +52,6 @@ export function buildWorkflowSettingsSections(
       ),
       icon: Files,
       searchEntries: getArtifactsSettingsSearchEntries(),
-      group: 'workflows',
       badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
     },
     {
@@ -65,7 +64,6 @@ export function buildWorkflowSettingsSections(
       // Match the skills sidebar/page icon in its settings entry.
       icon: BookOpen,
       searchEntries: getShareSkillsSettingsSearchEntries(),
-      group: 'workflows',
       badge: translate('auto.hooks.useSettingsNavigationMetadata.40d80bad8a', 'Beta')
     },
     {
@@ -84,8 +82,7 @@ export function buildWorkflowSettingsSections(
             'Turn on session search for this computer and paired servers, or clear search data.'
           )
         }
-      ],
-      group: 'workflows'
+      ]
     },
     {
       id: 'git',
@@ -94,17 +91,21 @@ export function buildWorkflowSettingsSections(
         'Git & Source Control'
       ),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.ab4b21b58e',
-        'Branch naming, base refs, and Git AI Author.'
+        'settings.sections.git.description',
+        'Branch naming, base refs, and pull request defaults.'
       ),
       icon: GitBranch,
-      // Git AI Author lives inside Git, so search metadata covers both surfaces.
-      searchEntries: [
-        ...getGitPaneSearchEntries(),
-        ...getCommitMessageAiPaneSearchEntries(),
-        ...getGitProviderApiBudgetSearchEntries()
-      ],
-      group: 'workflows'
+      searchEntries: [...getGitPaneSearchEntries(), ...getGitProviderApiBudgetSearchEntries()]
+    },
+    {
+      id: 'git-ai',
+      title: translate('settings.sections.gitAi.title', 'Source Control AI'),
+      description: translate(
+        'settings.sections.gitAi.description',
+        'Which agent writes commit messages, pull request details, and fixes, and with what prompt.'
+      ),
+      icon: Sparkles,
+      searchEntries: getCommitMessageAiPaneSearchEntries()
     },
     {
       id: 'tasks',
@@ -114,8 +115,7 @@ export function buildWorkflowSettingsSections(
         'Connect providers, install the Linear skill, and choose what appears in Tasks.'
       ),
       icon: ListChecks,
-      searchEntries: getTasksPaneSearchEntries(),
-      group: 'workflows'
+      searchEntries: getTasksPaneSearchEntries()
     },
     {
       id: 'terminal',
@@ -125,8 +125,7 @@ export function buildWorkflowSettingsSections(
         'Shells, renderer, sessions, and terminal behavior.'
       ),
       icon: SquareTerminal,
-      searchEntries: terminalPaneSearchEntries,
-      group: 'workflows'
+      searchEntries: terminalPaneSearchEntries
     },
     {
       id: 'quick-commands',
@@ -136,8 +135,7 @@ export function buildWorkflowSettingsSections(
         'Saved terminal commands, scoped globally or per project.'
       ),
       icon: Play,
-      searchEntries: getQuickCommandsPaneSearchEntries(),
-      group: 'workflows'
+      searchEntries: getQuickCommandsPaneSearchEntries()
     },
     ...(showDesktopOnlySettings
       ? [
@@ -149,8 +147,7 @@ export function buildWorkflowSettingsSections(
               'Home page, link routing, and session cookies.'
             ),
             icon: Globe,
-            searchEntries: getBrowserPaneCombinedSearchEntries(),
-            group: 'workflows'
+            searchEntries: getBrowserPaneCombinedSearchEntries()
           }
         ]
       : []),
@@ -167,8 +164,7 @@ export function buildWorkflowSettingsSections(
               'Configure mobile emulator support for Markov and coding agents.'
             ),
             icon: TabletSmartphone,
-            searchEntries: getMobileEmulatorSearchEntries(),
-            group: 'workflows'
+            searchEntries: getMobileEmulatorSearchEntries()
           }
         ]
       : []),
@@ -187,8 +183,7 @@ export function buildWorkflowSettingsSections(
       icon: PanelsTopLeft,
       searchEntries: getFloatingWorkspaceSearchEntries({
         includeBrowser: showDesktopOnlySettings
-      }),
-      group: 'workflows'
+      })
     }
   ]
 }

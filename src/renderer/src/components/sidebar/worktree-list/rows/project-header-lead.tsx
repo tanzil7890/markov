@@ -7,7 +7,7 @@ import { isFolderRepo } from '../../../../../../shared/repo-kind'
 import { DEFAULT_REPO_BADGE_COLOR } from '../../../../../../shared/constants'
 import { handleRepoHeaderCollapseAffordancePointerDown } from './header-event-guards'
 
-/** The default folder glyph gives way to the chevron; an icon or colour the user picked stays. */
+/** A project row hides the default folder glyph; an icon or colour the user picked stays. */
 export function hasChosenRepoGlyph(
   repo: Repo | undefined,
   headerColor: string | undefined

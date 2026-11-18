@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react'
 import { ServerCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/store/index'
@@ -10,19 +11,34 @@ type ProviderHostScopeControlProps = {
   className?: string
 }
 
+const StatedOnceContext = createContext(false)
+
+/** A list of providers that states the scope once above its cards; the copy inside each card is then left out. */
+export const ProviderHostScopeStatedOnce = StatedOnceContext.Provider
+
+export function useProviderHostScopeStatedOnce(): boolean {
+  return useContext(StatedOnceContext)
+}
+
+/** Says which computer owns a provider's credentials. `standalone` is the one copy a list shows for all its cards. */
 export function ProviderHostScopeControl({
   labelPrefix,
   scope,
-  className
-}: ProviderHostScopeControlProps): React.JSX.Element {
+  className,
+  standalone = false
+}: ProviderHostScopeControlProps & { standalone?: boolean }): React.JSX.Element | null {
   const openSettingsPage = useAppStore((state) => state.openSettingsPage)
   const openSettingsTarget = useAppStore((state) => state.openSettingsTarget)
+  const statedOnce = useProviderHostScopeStatedOnce()
 
   const openHostsSettings = (): void => {
     openSettingsPage()
     openSettingsTarget({ pane: 'servers', repoId: null, sectionId: 'default-runtime' })
   }
 
+  if (statedOnce && !standalone) {
+    return null
+  }
   return (
     <div className={className}>
       <div className="flex flex-wrap items-start justify-between gap-3">

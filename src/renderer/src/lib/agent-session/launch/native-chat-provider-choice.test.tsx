@@ -10,6 +10,7 @@ import { installManagedRuntime } from '@/runtime/managed-runtime-install-status'
 import { buildNewTabAgentMenuRows } from '../../../../../shared/agent-launch/picker/agent-launch-picker-rows'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
 import type { TuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent'
+import { isOfferedTuiAgent } from '../../../../../shared/agent-launch/catalog/offered-tui-agents'
 import type { ManagedRuntimeInstallObservation } from '@/runtime/use-managed-runtime-install'
 import type * as HostChatProgramModule from '@/lib/host-chat-program'
 import type * as ManagedRuntimeInstallModule from '@/runtime/managed-runtime-install-status'
@@ -154,6 +155,9 @@ function renderRow(
 const checked = (name: string): string | null | undefined =>
   screen.getByRole('radiogroup', { name }).querySelector('[aria-checked="true"]')?.textContent
 
+// The settings catalog lists Antigravity only while it is offered.
+const itWithAntigravity = it.skipIf(!isOfferedTuiAgent('antigravity'))
+
 describe('agent row chat or CLI', () => {
   it.each([
     { agentDefaultSurface: undefined, override: undefined, expected: 'CLI' },
@@ -203,125 +207,131 @@ describe('agent row chat or CLI', () => {
     expect(screen.queryByRole('radiogroup', { name: 'Open Claude as' })).toBeNull()
   })
 
-  it('keeps Antigravity setup expanded from first install through its installed-row transition', async () => {
-    runtime.current = {
-      kind: 'active',
-      subject: { target: { kind: 'local' }, runtimeId: null, agent: 'antigravity' },
-      removable: true,
-      snapshot: {
-        kind: 'known',
-        state: {
-          agent: 'antigravity',
-          revision: 1,
-          available: true,
-          version: '1',
-          installedVersion: null,
-          installedCurrent: false,
-          operation: null,
-          source: null
+  itWithAntigravity(
+    'keeps Antigravity setup expanded from first install through its installed-row transition',
+    async () => {
+      runtime.current = {
+        kind: 'active',
+        subject: { target: { kind: 'local' }, runtimeId: null, agent: 'antigravity' },
+        removable: true,
+        snapshot: {
+          kind: 'known',
+          state: {
+            agent: 'antigravity',
+            revision: 1,
+            available: true,
+            version: '1',
+            installedVersion: null,
+            installedCurrent: false,
+            operation: null,
+            source: null
+          }
         }
       }
-    }
-    inventory.detected = null
-    inventory.failed = true
-    inventory.chatAvailable = false
-    const settings = createGlobalSettingsFixture({ agentDefaultSurface: 'chat' })
-    store.settings = settings
-    const element = () => (
-      <AgentLaunchSettingsCatalog
-        settings={projectAgentLaunchSettings(settings, 'darwin')}
-        mutate={vi.fn(async () => {})}
-        detectionTarget={{ kind: 'local' }}
-        hostName={null}
-        renderPermissions={() => null}
-        local={{ settings, updateSettings: vi.fn(), saveEnvironment: vi.fn(async () => {}) }}
-      />
-    )
-    const view = render(element(), { wrapper: TooltipProvider })
-    expect(screen.queryByText('Chat runtime')).toBeNull()
-    const row = screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')
-    if (!(row instanceof HTMLElement)) {
-      throw new Error('Antigravity row is missing')
-    }
-    fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
-    expect(screen.getByText('Chat runtime')).toBeTruthy()
-    expect(screen.queryByText('Antigravity account')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Install' }))
-    await vi.waitFor(() =>
-      expect(installManagedRuntime).toHaveBeenCalledWith({
-        target: { kind: 'local' },
-        runtimeId: null,
-        agent: 'antigravity'
+      inventory.detected = null
+      inventory.failed = true
+      inventory.chatAvailable = false
+      const settings = createGlobalSettingsFixture({ agentDefaultSurface: 'chat' })
+      store.settings = settings
+      const element = () => (
+        <AgentLaunchSettingsCatalog
+          settings={projectAgentLaunchSettings(settings, 'darwin')}
+          mutate={vi.fn(async () => {})}
+          detectionTarget={{ kind: 'local' }}
+          hostName={null}
+          renderPermissions={() => null}
+          local={{ settings, updateSettings: vi.fn(), saveEnvironment: vi.fn(async () => {}) }}
+        />
+      )
+      const view = render(element(), { wrapper: TooltipProvider })
+      expect(screen.queryByText('Chat runtime')).toBeNull()
+      const row = screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')
+      if (!(row instanceof HTMLElement)) {
+        throw new Error('Antigravity row is missing')
+      }
+      fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
+      expect(screen.getByText('Chat runtime')).toBeTruthy()
+      expect(screen.queryByText('Antigravity account')).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: 'Install' }))
+      await vi.waitFor(() =>
+        expect(installManagedRuntime).toHaveBeenCalledWith({
+          target: { kind: 'local' },
+          runtimeId: null,
+          agent: 'antigravity'
+        })
+      )
+      if (runtime.current.kind !== 'active' || runtime.current.snapshot.kind !== 'known') {
+        throw new Error('Managed runtime snapshot is missing')
+      }
+      Object.assign(runtime.current.snapshot.state, {
+        revision: 2,
+        source: 'managed',
+        installedVersion: '1',
+        installedCurrent: true
       })
-    )
-    if (runtime.current.kind !== 'active' || runtime.current.snapshot.kind !== 'known') {
-      throw new Error('Managed runtime snapshot is missing')
+      view.rerender(element())
+      expect(screen.getByText('Antigravity account')).toBeTruthy()
+      inventory.chatAvailable = true
+      view.rerender(element())
+      expect(screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')).toBe(
+        row
+      )
+      expect(document.getElementById('agents-installed')?.textContent).toContain('Antigravity')
+      expect(within(row).getByRole('button', { name: 'Collapse agent settings' })).toBeTruthy()
+      expect(
+        row.compareDocumentPosition(screen.getByRole('heading', { name: /Available to install/ })) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).not.toBe(0)
+      expect(within(row).getByRole('status').textContent).toContain('Installed')
+      expect(screen.getByText('Antigravity account')).toBeTruthy()
+      fireEvent.click(within(row).getByRole('button', { name: 'Collapse agent settings' }))
+      inventory.chatAvailable = false
+      view.rerender(element())
+      expect(screen.queryByText('Antigravity account')).toBeNull()
+      expect(screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')).toBe(
+        row
+      )
     }
-    Object.assign(runtime.current.snapshot.state, {
-      revision: 2,
-      source: 'managed',
-      installedVersion: '1',
-      installedCurrent: true
-    })
-    view.rerender(element())
-    expect(screen.getByText('Antigravity account')).toBeTruthy()
-    inventory.chatAvailable = true
-    view.rerender(element())
-    expect(screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')).toBe(
-      row
-    )
-    expect(document.getElementById('agents-installed')?.textContent).toContain('Antigravity')
-    expect(within(row).getByRole('button', { name: 'Collapse agent settings' })).toBeTruthy()
-    expect(
-      row.compareDocumentPosition(screen.getByRole('heading', { name: /Available to install/ })) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    ).not.toBe(0)
-    expect(within(row).getByRole('status').textContent).toContain('Installed')
-    expect(screen.getByText('Antigravity account')).toBeTruthy()
-    fireEvent.click(within(row).getByRole('button', { name: 'Collapse agent settings' }))
-    inventory.chatAvailable = false
-    view.rerender(element())
-    expect(screen.queryByText('Antigravity account')).toBeNull()
-    expect(screen.getByRole('radiogroup', { name: 'Open Antigravity as' }).closest('.py-3')).toBe(
-      row
-    )
-  })
+  )
 
-  it('lists an agent whose chat runs without its CLI as installed, with Chat only', () => {
-    vi.stubGlobal('api', { platform: { get: () => ({ platform: 'darwin' }) } })
-    const settings = createGlobalSettingsFixture({ agentDefaultSurface: 'chat' })
-    store.settings = settings
-    render(
-      <AgentLaunchSettingsCatalog
-        settings={projectAgentLaunchSettings(settings, 'darwin')}
-        mutate={vi.fn(async () => {})}
-        detectionTarget={{ kind: 'local' }}
-        hostName={null}
-        renderPermissions={() => null}
-        local={{ settings, updateSettings: vi.fn(), saveEnvironment: vi.fn(async () => {}) }}
-      />,
-      { wrapper: TooltipProvider }
-    )
-    const installed = document.getElementById('agents-installed')
-    expect(installed?.textContent).toContain('Antigravity')
-    expect(checked('Open Antigravity as')).toBe('Chat')
-    const group = screen.getByRole('radiogroup', { name: 'Open Antigravity as' })
-    expect(group.querySelector('[aria-checked="false"]')?.getAttribute('aria-disabled')).toBe(
-      'true'
-    )
-    const row = group.closest('.py-3')
-    if (!(row instanceof HTMLElement)) {
-      throw new Error('Missing native-only row')
+  itWithAntigravity(
+    'lists an agent whose chat runs without its CLI as installed, with Chat only',
+    () => {
+      vi.stubGlobal('api', { platform: { get: () => ({ platform: 'darwin' }) } })
+      const settings = createGlobalSettingsFixture({ agentDefaultSurface: 'chat' })
+      store.settings = settings
+      render(
+        <AgentLaunchSettingsCatalog
+          settings={projectAgentLaunchSettings(settings, 'darwin')}
+          mutate={vi.fn(async () => {})}
+          detectionTarget={{ kind: 'local' }}
+          hostName={null}
+          renderPermissions={() => null}
+          local={{ settings, updateSettings: vi.fn(), saveEnvironment: vi.fn(async () => {}) }}
+        />,
+        { wrapper: TooltipProvider }
+      )
+      const installed = document.getElementById('agents-installed')
+      expect(installed?.textContent).toContain('Antigravity')
+      expect(checked('Open Antigravity as')).toBe('Chat')
+      const group = screen.getByRole('radiogroup', { name: 'Open Antigravity as' })
+      expect(group.querySelector('[aria-checked="false"]')?.getAttribute('aria-disabled')).toBe(
+        'true'
+      )
+      const row = group.closest('.py-3')
+      if (!(row instanceof HTMLElement)) {
+        throw new Error('Missing native-only row')
+      }
+      fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
+      expect(within(row).getByText('Model')).toBeTruthy()
+      expect(within(row).getByText('Reasoning effort')).toBeTruthy()
+      expect(within(row).queryByRole('textbox', { name: 'Arguments' })).toBeNull()
+      expect(within(row).queryByRole('textbox', { name: 'Command' })).toBeNull()
+      expect(checked('Open Claude as')).toBe('Chat')
+      expect(checked('Open Codex as')).toBe('Chat')
+      vi.unstubAllGlobals()
     }
-    fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
-    expect(within(row).getByText('Model')).toBeTruthy()
-    expect(within(row).getByText('Reasoning effort')).toBeTruthy()
-    expect(within(row).queryByRole('textbox', { name: 'Arguments' })).toBeNull()
-    expect(within(row).queryByRole('textbox', { name: 'Command' })).toBeNull()
-    expect(checked('Open Claude as')).toBe('Chat')
-    expect(checked('Open Codex as')).toBe('Chat')
-    vi.unstubAllGlobals()
-  })
+  )
 
   it('retains saved client choices through missing inventory and writes the preference paired launches consume', async () => {
     for (const priorChoice of [false, true, undefined]) {
@@ -525,51 +535,54 @@ it.each(['chat', 'terminal'] as const)(
   }
 )
 
-it('offers the selected paired native-only program editor and writes effort without CLI controls', async () => {
-  inventory.detected = []
-  store.localDetectedAgentIdsByContext.host = ['claude', 'antigravity']
-  const settings = createGlobalSettingsFixture({
-    agentLaunchChoices: {},
-    agentPermissionDefault: 'own'
-  })
-  store.settings = settings
-  const mutate = vi.fn(async () => {})
-  const element = () => (
-    <AgentLaunchSettingsCatalog
-      settings={projectAgentLaunchSettings(settings, 'linux')}
-      mutate={mutate}
-      detectionTarget={{ kind: 'runtime', environmentId: 'paired-native' }}
-      hostName="Paired"
-      renderPermissions={() => null}
-    />
-  )
-  const view = render(element(), { wrapper: TooltipProvider })
-  const label = screen.getByText('Antigravity')
-  const row = label.closest('.py-3')
-  if (!(row instanceof HTMLElement)) {
-    throw new Error('Missing paired native-only row')
-  }
-  fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
-  expect(within(row).getByText('Model')).toBeTruthy()
-  expect(within(row).queryByRole('textbox', { name: 'Arguments' })).toBeNull()
-  expect(within(row).queryByRole('textbox', { name: 'Command' })).toBeNull()
-  expect(screen.queryByRole('radiogroup', { name: 'Open Antigravity as' })).toBeNull()
-  const effort = within(row).getByRole('button', { name: 'Reasoning effort: Default' })
-  await userEvent.click(effort)
-  const option = screen.getAllByRole('menuitemradio').find((item) => item.textContent === 'High')
-  if (!option) {
-    throw new Error('Missing paired effort option')
-  }
-  fireEvent.click(option)
-  await vi.waitFor(() => expect(mutate).toHaveBeenCalledOnce())
-  expect(mutate.mock.calls[0]).toEqual([
-    expect.objectContaining({
-      type: 'launch-choices',
-      agent: 'antigravity',
-      patch: { options: { effort: 'high' } }
+itWithAntigravity(
+  'offers the selected paired native-only program editor and writes effort without CLI controls',
+  async () => {
+    inventory.detected = []
+    store.localDetectedAgentIdsByContext.host = ['claude', 'antigravity']
+    const settings = createGlobalSettingsFixture({
+      agentLaunchChoices: {},
+      agentPermissionDefault: 'own'
     })
-  ])
-  inventory.chatAvailable = false
-  view.rerender(element())
-  expect(within(row).queryByText('Model')).toBeNull()
-})
+    store.settings = settings
+    const mutate = vi.fn(async () => {})
+    const element = () => (
+      <AgentLaunchSettingsCatalog
+        settings={projectAgentLaunchSettings(settings, 'linux')}
+        mutate={mutate}
+        detectionTarget={{ kind: 'runtime', environmentId: 'paired-native' }}
+        hostName="Paired"
+        renderPermissions={() => null}
+      />
+    )
+    const view = render(element(), { wrapper: TooltipProvider })
+    const label = screen.getByText('Antigravity')
+    const row = label.closest('.py-3')
+    if (!(row instanceof HTMLElement)) {
+      throw new Error('Missing paired native-only row')
+    }
+    fireEvent.click(within(row).getByRole('button', { name: 'Expand agent settings' }))
+    expect(within(row).getByText('Model')).toBeTruthy()
+    expect(within(row).queryByRole('textbox', { name: 'Arguments' })).toBeNull()
+    expect(within(row).queryByRole('textbox', { name: 'Command' })).toBeNull()
+    expect(screen.queryByRole('radiogroup', { name: 'Open Antigravity as' })).toBeNull()
+    const effort = within(row).getByRole('button', { name: 'Reasoning effort: Default' })
+    await userEvent.click(effort)
+    const option = screen.getAllByRole('menuitemradio').find((item) => item.textContent === 'High')
+    if (!option) {
+      throw new Error('Missing paired effort option')
+    }
+    fireEvent.click(option)
+    await vi.waitFor(() => expect(mutate).toHaveBeenCalledOnce())
+    expect(mutate.mock.calls[0]).toEqual([
+      expect.objectContaining({
+        type: 'launch-choices',
+        agent: 'antigravity',
+        patch: { options: { effort: 'high' } }
+      })
+    ])
+    inventory.chatAvailable = false
+    view.rerender(element())
+    expect(within(row).queryByText('Model')).toBeNull()
+  }
+)

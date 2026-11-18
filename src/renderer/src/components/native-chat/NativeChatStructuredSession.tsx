@@ -1,6 +1,5 @@
 import { NativeChatCrewFrame, NativeChatCrewPanel } from '../orchestration-crew/NativeChatCrewPanel'
 import { NativeChatUsageLimitActionsProvider } from './NativeChatUsageLimitActions'
-import { useNativeChatHandOff } from './use-native-chat-hand-off'
 import { cn } from '@/lib/utils'
 import { NATIVE_CHAT_APPEARANCE_ROOT_CLASS } from './native-chat-appearance-style'
 import { useNativeChatStoreAppearanceStyle } from './use-native-chat-store-appearance-style'
@@ -156,16 +155,8 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
     rootRef,
     { sessionId: props.sessionId, isVisible: props.isVisible }
   )
-  const handOff = useNativeChatHandOff({
-    pane: props,
-    directory: fileLinkContext,
-    messages: controller.messages,
-    epoch: controller.epoch,
-    focusComposer
-  })
   const paneCommands = useStructuredNativeChatPaneCommands({
     pane: props,
-    handOff,
     sessionContext: controller,
     ownerWorktreeId,
     rootRef,
@@ -275,7 +266,7 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
       style={appearanceStyle}
       data-native-chat-scheme={appearanceStyle.colorScheme}
     >
-      {nativeChatPaneHeader(props, ownerWorktreeId, appearanceStyle.colorScheme, handOff)}
+      {nativeChatPaneHeader(props, ownerWorktreeId, appearanceStyle.colorScheme)}
       <NativeChatCrewFrame
         panel={<NativeChatCrewPanel {...props} composerRef={composerRef} canMention={canMention} />}
       >
@@ -296,8 +287,6 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
               <NativeChatUsageLimitActionsProvider
                 recovery={controller}
                 pane={props}
-                directory={fileLinkContext}
-                messages={controller.messages}
                 view={continuation.view}
               >
                 <NativeChatClaudeSignInContext.Provider value={claudeSignIn}>
@@ -406,7 +395,6 @@ export function NativeChatStructuredSession(props: Omit<NativeChatStructuredView
         </>
       )}
       {paneCommands.menu}
-      {handOff.dialog}
       <LinkActionPopover request={linkActionRequest} onClose={closeLinkActions} />
     </div>
   )

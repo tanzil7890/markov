@@ -25,7 +25,7 @@ export function SearchableSetting({
   }
 
   return (
-    <div className={cn('scroll-mt-6 w-full max-w-3xl', className)} id={id}>
+    <div className={cn('scroll-mt-6 w-full', className)} id={id} data-setting-title={title}>
       {children}
     </div>
   )

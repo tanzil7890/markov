@@ -6,7 +6,6 @@ import {
   Folder,
   FolderGit2,
   MessageSquare,
-  MessageSquarePlus,
   MessagesSquare,
   Play,
   SquareTerminal
@@ -57,7 +56,6 @@ export function SessionInlineDetails({
   onResumeInWorktree,
   onResumeInNewTab,
   subagentResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   onOpenLog,
@@ -74,7 +72,6 @@ export function SessionInlineDetails({
   onResumeInWorktree: () => void
   onResumeInNewTab: () => void
   subagentResume?: AiVaultSubagentResumeActions | null
-  onContinueInNewSession?: () => void
   onResumeInNewChat?: () => void
   onResumeInNewCli?: () => void
   onOpenLog?: () => void
@@ -107,7 +104,6 @@ export function SessionInlineDetails({
       {!actionsHidden &&
       (showResumeInWorktree ||
         showResumeInNewTab ||
-        onContinueInNewSession ||
         onResumeInNewChat ||
         onResumeInNewCli ||
         onOpenLog) ? (
@@ -197,25 +193,6 @@ export function SessionInlineDetails({
                 <ResumeInNewCliTooltipText />
               </TooltipContent>
             </Tooltip>
-          ) : null}
-          {onContinueInNewSession ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="xs"
-              draggable={false}
-              onClick={(event) => {
-                event.stopPropagation()
-                onContinueInNewSession()
-              }}
-              className="h-7 shrink-0 px-2.5 text-[11px]"
-            >
-              <MessageSquarePlus className="size-3.5" />
-              {translate(
-                'components.agentSessionContinuation.handOffToAnotherAgent',
-                'Hand Off to Another Agent'
-              )}
-            </Button>
           ) : null}
           {onOpenLog ? (
             <Button

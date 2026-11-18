@@ -44,8 +44,8 @@ const LOCALIZED_STEP_COPY: Partial<Record<string, StepCopyThunk>> = {
       'New agents start here'
     ),
     body: translate(
-      'components.contextualTours.agentSessions.newTab.body',
-      'Click + to start an agent, a terminal, or a browser tab.'
+      'components.contextualTours.agentSessions.newChat.body',
+      'Click + to start a chat. The arrow beside it opens a terminal, a browser tab, or another agent.'
     )
   }),
   'agent-sessions-split-chat': () => ({

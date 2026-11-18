@@ -5,23 +5,20 @@ export function deriveNeededSectionIds(args: {
   mountedSectionIds: Set<string>
   activeSectionId: string | null
   pendingSectionId: string | null
-  query: string
-  visibleSectionIds: Set<string>
+  /** Sections shown together with the active one. */
+  companionSectionIds: readonly string[]
 }): Set<string> {
-  const hasSearchQuery = args.query.trim() !== ''
-  const next = hasSearchQuery ? new Set<string>() : new Set(args.mountedSectionIds)
-  if (!hasSearchQuery) {
-    for (const sectionId of args.navSectionIds) {
-      if (EAGER_SECTION_IDS.has(sectionId)) {
-        next.add(sectionId)
-      }
+  const next = new Set(args.mountedSectionIds)
+  for (const sectionId of args.navSectionIds) {
+    if (EAGER_SECTION_IDS.has(sectionId)) {
+      next.add(sectionId)
     }
   }
-  if (
-    args.activeSectionId &&
-    (!hasSearchQuery || args.visibleSectionIds.has(args.activeSectionId))
-  ) {
+  if (args.activeSectionId) {
     next.add(args.activeSectionId)
+  }
+  for (const sectionId of args.companionSectionIds) {
+    next.add(sectionId)
   }
   if (args.pendingSectionId) {
     next.add(args.pendingSectionId)

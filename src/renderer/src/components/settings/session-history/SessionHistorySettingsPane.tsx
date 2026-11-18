@@ -1,3 +1,4 @@
+import { isOfferedRightSidebarTab } from '../../../../../shared/right-sidebar-offered-tabs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
 import {
@@ -229,7 +230,7 @@ export function SessionHistorySettingsPane({
           )
         }))}
       />
-      {isWebClient ? null : (
+      {isWebClient || !isOfferedRightSidebarTab('vault') ? null : (
         <SettingsRow
           className="border-t border-border"
           label={translate('sessionHistory.settings.openInSidebar', 'Open in the sidebar')}

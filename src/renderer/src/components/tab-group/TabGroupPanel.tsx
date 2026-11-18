@@ -5,7 +5,6 @@ import { useAppStore } from '../../store'
 import TabBar from '../tab-bar/TabBar'
 
 import { useFloatingWorkspaceTopBarToggle } from '../../app-shell/FloatingWorkspaceTopBarToggle'
-import { TabBarQuickCommandsButton } from '../tab-bar/TabBarQuickCommandsButton'
 import { TabGroupPaneActionsMenu } from './TabGroupPaneActionsMenu'
 import { useTabGroupWorkspaceModel } from './useTabGroupWorkspaceModel'
 import { closeTerminalTab } from '../terminal/terminal-tab-actions'
@@ -26,6 +25,7 @@ import { UNFOCUSED_SPLIT_GROUP_OPACITY } from './split-group-dim'
 import { useWindowBackdropActive } from '@/lib/window-backdrop'
 import { useThemeBackgroundStore } from '@/store/theme-background'
 import { EditorRevealFlash } from './EditorRevealFlash'
+import { SETTINGS_TAB_ID, selectSettingsTabCoversGroup } from '@/lib/settings-tab-placement'
 
 const EditorPanel = lazy(() => import('../editor/EditorPanel'))
 const EMPTY_GROUPS: readonly TabGroup[] = []
@@ -122,6 +122,8 @@ export default function TabGroupPanel({
     [groupId, setBodyDropRef]
   )
   const attachEditorFileDropOwner = useEditorGroupFileDropOwner({ worktreeId, groupId })
+  // Why: Settings open as a tab covers this body, and an editor under it would keep the keyboard.
+  const coveredBySettingsTab = useAppStore((state) => selectSettingsTabCoversGroup(state, groupId))
   const backdropActive = useWindowBackdropActive()
   const themeBackgroundActive = useThemeBackgroundStore((state) => state.active)
   // Why: per-group anchor-name lets the worktree-level overlay position panes via CSS anchor positioning, so moving a tab between groups re-targets the anchor instead of remounting xterm (loses alt-screen TUI state) or reloading `<webview>`.
@@ -157,6 +159,10 @@ export default function TabGroupPanel({
         closeTerminalTab(terminalId, { reason: 'user' })
       }}
       onCloseOthers={(visibleId) => {
+        if (visibleId === SETTINGS_TAB_ID) {
+          commands.closeOthers(SETTINGS_TAB_ID)
+          return
+        }
         // Why: TabBar emits entityId for terminals/browsers but unifiedTabId for editors; match both so the menu works on every tab kind.
         const item = resolveGroupTabFromVisibleId(model.groupTabs, visibleId)
         if (item) {
@@ -306,19 +312,14 @@ export default function TabGroupPanel({
               />
             ) : null}
             <div className="min-w-0 flex-1 h-full">{tabBar}</div>
-            <div
-              className={actionChromeClassName}
-              style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-            >
-              <TabBarQuickCommandsButton
-                worktreeId={worktreeId}
-                groupId={groupId}
-                isFocused={isFocused}
-              />
-              {hasSplitGroups ? (
+            {hasSplitGroups ? (
+              <div
+                className={actionChromeClassName}
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
                 <TabGroupPaneActionsMenu isFocused={isFocused} onCloseGroup={commands.closeGroup} />
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             {/* Why: Electron drag hit-test respects no-drag only on DOM descendants, not z-index siblings, so this no-drag spacer keeps the floating right-sidebar toggle + window controls clickable. */}
             {reserveClosedExplorerToggleSpace && (topBarFloatingToggle || !rightSidebarOpen) ? (
               <div
@@ -347,6 +348,7 @@ export default function TabGroupPanel({
         data-worktree-id={worktreeId}
         className="relative flex-1 min-h-0 overflow-hidden"
         style={bodyAnchorStyle}
+        inert={coveredBySettingsTab}
       >
         {/* Why: empty anchor so the agent-sessions tour reads as a terminal-area tip, not toolbar chrome. */}
         {isFocused ? (
@@ -379,7 +381,7 @@ export default function TabGroupPanel({
                   activeFileId={activeTab.entityId}
                   activeViewStateId={activeTab.id}
                   isVisible={isVisible}
-                  isCmdSaveOwner={isFocused}
+                  isCmdSaveOwner={isFocused && !coveredBySettingsTab}
                   markdownAnnotationsEnabled={markdownAnnotationsEnabled}
                 />
               </Suspense>

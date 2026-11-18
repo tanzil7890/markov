@@ -102,7 +102,6 @@ Settings are grouped into panes. Everything here is searchable with `Cmd-,` then
 - Linear API token.
 - Jira — Cloud (email + API token) or self-hosted Server/Data Center (PAT or username/password). See [Jira items drawer](/docs/review/jira).
 - Bitbucket Cloud — **Connect** with **Email & API token** (default) or an **Access token**. Markov verifies the credential before saving. `MARKOV_BITBUCKET_*` environment variables take precedence and hide Connect / Disconnect. Saved credentials stay on this machine — on a [Remote Markov Server](/docs/remote-servers), set the env vars on the server instead. See [Hosted reviews](/docs/review/github).
-- MiniMax — paste a MiniMax session cookie (from `platform.minimax.io/console/usage`) to enable local usage and rate-limit tracking for the MiniMax CLI. Optional group ID and usage models fields override the defaults picked from the cookie.
 - MCP servers.
 
 ## Notifications
@@ -165,7 +164,7 @@ Settings are grouped into panes. Everything here is searchable with `Cmd-,` then
 
 - **Enable Floating Workspace** — global surface for terminal, browser, and markdown tabs that are **not** tied to a repo worktree.
 - **Terminal Directory** — start directory for new floating terminal tabs (`~` = home).
-- **Toggle Button Location** — where the floating-workspace toggle appears; the keyboard shortcut works regardless of button placement.
+- **Toggle Button Location** — where the floating-workspace toggle appears: the sidebar footer (default), top bar, a floating button, or the status bar. The keyboard shortcut works regardless of button placement.
 
 ## Plugins (Alpha)
 

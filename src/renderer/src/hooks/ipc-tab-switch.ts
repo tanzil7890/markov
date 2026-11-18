@@ -10,6 +10,17 @@ import {
   type TypeCyclableTab
 } from '@/components/terminal/tab-type-cycle'
 import { activateCycledTabOnOwner } from '@/lib/cycled-tab-owner-activation'
+import {
+  SETTINGS_TAB_ID,
+  isSettingsTabPrevious,
+  selectCyclableSettingsTab,
+  selectFocusedSettingsTabWorktreeId,
+  settingsTabInsertIndex
+} from '@/lib/settings-tab-placement'
+import {
+  getWorktreeTerminalTabOrder,
+  shouldUseWorktreeTerminalFallback
+} from './terminal-cycle-hydration-fallback'
 
 type AppStoreState = ReturnType<typeof useAppStore.getState>
 
@@ -20,17 +31,38 @@ type CycleContext = {
   groupTabIdInNav: string | null
 }
 
-/** Resolve active workspace/nav for either cycle action; null means nothing to cycle. */
-function resolveCycleContext(): CycleContext | null {
+const SETTINGS_CYCLE_TAB: TypeCyclableTab = {
+  type: 'settings',
+  id: SETTINGS_TAB_ID,
+  tabId: SETTINGS_TAB_ID
+}
+
+/** Resolve active workspace/nav for either cycle action; null means nothing to cycle.
+ *  `withSettingsTab` adds the Settings tab where the strip draws it, for cycles across every type. */
+function resolveCycleContext(options?: { withSettingsTab?: boolean }): CycleContext | null {
   const store = useAppStore.getState()
   const worktreeId = store.activeWorktreeId
   if (!worktreeId) {
     return null
   }
   // Cycle the visible group’s order so keyboard navigation follows dragged tabs.
-  const allTabIds = getActiveTabNavOrder(store, worktreeId)
+  const allTabIds: TypeCyclableTab[] = getActiveTabNavOrder(store, worktreeId)
+  const settings = options?.withSettingsTab ? selectCyclableSettingsTab(store, worktreeId) : null
+  if (settings) {
+    allTabIds.splice(
+      settingsTabInsertIndex(
+        allTabIds.map((entry) => entry.tabId ?? entry.id),
+        settings.tab.leftTabIds
+      ),
+      0,
+      SETTINGS_CYCLE_TAB
+    )
+  }
   if (allTabIds.length <= 1) {
     return null
+  }
+  if (settings?.shown) {
+    return { store, worktreeId, allTabIds, groupTabIdInNav: SETTINGS_TAB_ID }
   }
   const activeGroupId = store.activeGroupIdByWorktree[worktreeId]
   const group = activeGroupId
@@ -47,6 +79,12 @@ function resolveCycleContext(): CycleContext | null {
 /** Activate by unified tab ID after file/browser updates so duplicate entities focus the correct split instance. */
 export function activateCyclableTab(store: AppStoreState, next: TypeCyclableTab): void {
   const worktreeId = store.activeWorktreeId
+  if (next.type === 'settings') {
+    if (worktreeId) {
+      store.showSettingsTab(worktreeId)
+    }
+    return
+  }
   if (next.type === 'terminal') {
     store.setActiveTab(next.id)
     // Legacy terminal entity activation can choose another split copy; finish with exact unified ID.
@@ -84,6 +122,10 @@ export function activateCyclableTab(store: AppStoreState, next: TypeCyclableTab)
 
 /** Cycle the current type. Fresh installs use Cmd/Ctrl+Alt+[ / ]; migrated bindings may retain the inverse and remain rebindable. */
 export function handleSwitchTab(direction: number): boolean {
+  // Why: Settings is the only tab of its type, so there is no next one; the tab under it must not move.
+  if (selectFocusedSettingsTabWorktreeId(useAppStore.getState())) {
+    return true
+  }
   const ctx = resolveCycleContext()
   if (!ctx) {
     return false
@@ -107,7 +149,7 @@ export function handleSwitchTab(direction: number): boolean {
 
 /** Cycle all visible types. Fresh installs use Cmd/Ctrl+Shift+[ / ]; migrated bindings may retain the inverse and remain rebindable. */
 export function handleSwitchTabAcrossAllTypes(direction: number): boolean {
-  const ctx = resolveCycleContext()
+  const ctx = resolveCycleContext({ withSettingsTab: true })
   if (!ctx) {
     return false
   }
@@ -128,128 +170,9 @@ export function handleSwitchTabAcrossAllTypes(direction: number): boolean {
   return true
 }
 
-/** Build a stable worktree-wide terminal order for a temporarily incomplete group projection. */
-function getWorktreeTerminalTabOrder(store: AppStoreState, worktreeId: string): TypeCyclableTab[] {
-  const runtimeTabs = store.tabsByWorktree?.[worktreeId] ?? []
-  const unifiedTerminalTabs = (store.unifiedTabsByWorktree?.[worktreeId] ?? []).filter(
-    (tab) => tab.contentType === 'terminal'
-  )
-  const activeGroupId = store.activeGroupIdByWorktree?.[worktreeId]
-  const unifiedByEntity = new Map<string, typeof unifiedTerminalTabs>()
-  for (const tab of unifiedTerminalTabs) {
-    const existing = unifiedByEntity.get(tab.entityId)
-    if (existing) {
-      existing.push(tab)
-    } else {
-      unifiedByEntity.set(tab.entityId, [tab])
-    }
-  }
-
-  const resolveTabId = (entityId: string): string | undefined => {
-    const matches = unifiedByEntity.get(entityId) ?? []
-    // Keep split activation exact when the active group has one unambiguous copy.
-    const activeGroupMatch = activeGroupId
-      ? matches.filter((tab) => tab.groupId === activeGroupId)
-      : []
-    if (activeGroupMatch.length === 1) {
-      return activeGroupMatch[0].id
-    }
-    return matches.length === 1 ? matches[0].id : undefined
-  }
-
-  const result: TypeCyclableTab[] = []
-  const seenEntityIds = new Set<string>()
-  for (const tab of runtimeTabs) {
-    if (seenEntityIds.has(tab.id)) {
-      continue
-    }
-    seenEntityIds.add(tab.id)
-    const tabId = resolveTabId(tab.id)
-    result.push({ type: 'terminal', id: tab.id, ...(tabId ? { tabId } : {}) })
-  }
-  // Unified rows can arrive before their legacy runtime rows during hydration.
-  for (const tab of unifiedTerminalTabs) {
-    if (seenEntityIds.has(tab.entityId)) {
-      continue
-    }
-    seenEntityIds.add(tab.entityId)
-    result.push({ type: 'terminal', id: tab.entityId, tabId: tab.id })
-  }
-  return result
-}
-
-/** Return true only when a short active-group list is attributable to stale hydration. */
-function shouldUseWorktreeTerminalFallback(
-  store: AppStoreState,
-  worktreeId: string,
-  activeGroupNavTabs: readonly TypeCyclableTab[],
-  activeGroupTerminalTabs: readonly TypeCyclableTab[],
-  worktreeTerminalTabs: readonly TypeCyclableTab[]
-): boolean {
-  if (
-    activeGroupTerminalTabs.length >= 2 ||
-    worktreeTerminalTabs.length <= activeGroupTerminalTabs.length
-  ) {
-    return false
-  }
-  const groups = store.groupsByWorktree?.[worktreeId] ?? []
-  const activeGroupId = store.activeGroupIdByWorktree?.[worktreeId]
-  const activeGroup = activeGroupId ? groups.find((group) => group.id === activeGroupId) : undefined
-  if (!activeGroup) {
-    return true
-  }
-
-  const unifiedTerminalTabs = (store.unifiedTabsByWorktree?.[worktreeId] ?? []).filter(
-    (tab) => tab.contentType === 'terminal'
-  )
-  if (unifiedTerminalTabs.length === 0) {
-    return true
-  }
-  const allUnifiedEntityIds = new Set(unifiedTerminalTabs.map((tab) => tab.entityId))
-  const runtimeIdsMissingFromUnified = worktreeTerminalTabs.some(
-    (tab) => !allUnifiedEntityIds.has(tab.id)
-  )
-  if (runtimeIdsMissingFromUnified) {
-    return true
-  }
-
-  // Only empty group projection proves hydration gaps; do not cross splits whose populated editor/browser rows intentionally exclude terminals.
-  const hasPopulatedNonterminalRows = activeGroupNavTabs.some((tab) => tab.type !== 'terminal')
-  const groupTerminalTabs = unifiedTerminalTabs.filter((tab) => tab.groupId === activeGroup.id)
-  const visibleTerminalEntityIds = new Set(activeGroupTerminalTabs.map((tab) => tab.id))
-  if (groupTerminalTabs.some((tab) => !visibleTerminalEntityIds.has(tab.entityId))) {
-    return true
-  }
-  if (activeGroupTerminalTabs.length === 0 && hasPopulatedNonterminalRows) {
-    return groupTerminalTabs.length > 0
-  }
-
-  // One group can recover absent runtime rows as hydration gaps; multiple one-terminal groups intentionally no-op.
-  const declaredGroupTabIds = new Set(activeGroup.tabOrder ?? [])
-  if (groupTerminalTabs.some((tab) => !declaredGroupTabIds.has(tab.id))) {
-    return true
-  }
-  if (groups.length <= 1) {
-    const activeGroupEntityIds = new Set(groupTerminalTabs.map((tab) => tab.entityId))
-    if (worktreeTerminalTabs.some((tab) => !activeGroupEntityIds.has(tab.id))) {
-      return true
-    }
-  }
-
-  if (activeGroup.activeTabId) {
-    const activeTab = (store.unifiedTabsByWorktree?.[worktreeId] ?? []).find(
-      (tab) => tab.id === activeGroup.activeTabId
-    )
-    if (!activeTab || activeTab.groupId !== activeGroup.id) {
-      return true
-    }
-  }
-  return false
-}
-
 /** Ctrl+Tab quick-toggles MRU across visible types in the active group. */
 export function handleSwitchRecentTab(): boolean {
-  const ctx = resolveCycleContext()
+  const ctx = resolveCycleContext({ withSettingsTab: true })
   if (!ctx) {
     return false
   }
@@ -258,7 +181,21 @@ export function handleSwitchRecentTab(): boolean {
   const group = groupId
     ? (store.groupsByWorktree[worktreeId] ?? []).find((candidate) => candidate.id === groupId)
     : undefined
-  const next = getPreviousRecentTab(allTabIds, group?.recentTabIds, groupTabIdInNav)
+  const layoutTabs = allTabIds.filter((entry) => entry.type !== 'settings')
+  if (groupTabIdInNav === SETTINGS_TAB_ID) {
+    // From Settings, the previous tab is the one it covers.
+    const covered = layoutTabs.find((entry) => entry.tabId === group?.activeTabId)
+    if (!covered) {
+      return false
+    }
+    activateCyclableTab(store, covered)
+    return true
+  }
+  if (selectCyclableSettingsTab(store, worktreeId) && isSettingsTabPrevious(store, worktreeId)) {
+    activateCyclableTab(store, SETTINGS_CYCLE_TAB)
+    return true
+  }
+  const next = getPreviousRecentTab(layoutTabs, group?.recentTabIds, groupTabIdInNav)
   if (!next) {
     return false
   }
@@ -285,7 +222,9 @@ export function handleSwitchTerminalTab(direction: number): boolean {
     activeGroupTerminalTabs,
     worktreeTerminalTabs
   )
-  const cycleTabs = activeGroupNavTabs.filter((entry) => isTerminalCycleType(entry.type))
+  const cycleTabs: TypeCyclableTab[] = activeGroupNavTabs.filter((entry) =>
+    isTerminalCycleType(entry.type)
+  )
   if (useFallback) {
     const visibleTerminalIds = new Set(activeGroupTerminalTabs.map((tab) => tab.id))
     cycleTabs.push(...worktreeTerminalTabs.filter((tab) => !visibleTerminalIds.has(tab.id)))

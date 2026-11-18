@@ -12,6 +12,7 @@ import {
 import { isPaneDropData, isTabDragData, type TabDragItemData } from './tab-drag-data'
 import { MARKOV_LAYOUT_OWNER_IS_MAIN } from '../../../../shared/layout-owner-switch'
 import { dropTabThroughLayoutOwner } from './tab-group-layout-owner-commands'
+import { SETTINGS_TAB_ID, visualTabOrder } from '@/lib/settings-tab-placement'
 
 type AppState = ReturnType<typeof useAppStore.getState>
 
@@ -113,16 +114,33 @@ export function commitTabDragDrop({
       return
     }
 
-    const overIndex = targetGroup.tabOrder.indexOf(overData.unifiedTabId)
-    const rawInsertIndex = overIndex + (insertion.side === 'right' ? 1 : 0)
+    // Why the order on screen: the Settings tab sits among the layout tabs without being one, so a
+    // drop is placed there first and then split into the layout order and the Settings tab's place.
+    const visualOrder = visualTabOrder(state, worktreeId, targetGroup).filter(
+      (id) => id !== activeData.unifiedTabId
+    )
+    const overVisualIndex = visualOrder.indexOf(overData.unifiedTabId)
+    visualOrder.splice(
+      overVisualIndex === -1
+        ? visualOrder.length
+        : overVisualIndex + (insertion.side === 'right' ? 1 : 0),
+      0,
+      activeData.unifiedTabId
+    )
+    state.placeSettingsTab(worktreeId, overData.groupId, visualOrder)
+    if (activeData.unifiedTabId === SETTINGS_TAB_ID) {
+      if (activeData.groupId !== overData.groupId) {
+        state.focusGroup(worktreeId, overData.groupId)
+      }
+      finishDrag(activeData.groupId === overData.groupId)
+      return
+    }
+    const nextOrder = visualOrder.filter((id) => id !== SETTINGS_TAB_ID)
 
     if (activeData.groupId === overData.groupId) {
       const oldIndex = targetGroup.tabOrder.indexOf(activeData.unifiedTabId)
-      // Adjust forward insertion after removing the source tab so the target slot does not shift left.
-      const nextIndex = oldIndex < rawInsertIndex ? rawInsertIndex - 1 : rawInsertIndex
+      const nextIndex = nextOrder.indexOf(activeData.unifiedTabId)
       if (oldIndex !== -1 && oldIndex !== nextIndex) {
-        const nextOrder = targetGroup.tabOrder.filter((id) => id !== activeData.unifiedTabId)
-        nextOrder.splice(nextIndex, 0, activeData.unifiedTabId)
         if (
           MARKOV_LAYOUT_OWNER_IS_MAIN &&
           dropTabThroughLayoutOwner(worktreeId, {
@@ -145,7 +163,7 @@ export function commitTabDragDrop({
         })
       }
     } else {
-      const index = overIndex === -1 ? targetGroup.tabOrder.length : rawInsertIndex
+      const index = nextOrder.indexOf(activeData.unifiedTabId)
       if (
         MARKOV_LAYOUT_OWNER_IS_MAIN &&
         dropTabThroughLayoutOwner(worktreeId, {
@@ -182,6 +200,22 @@ export function commitTabDragDrop({
   }
 
   if (isPaneDropData(overData)) {
+    if (activeData.unifiedTabId === SETTINGS_TAB_ID) {
+      const targetGroup = (state.groupsByWorktree[worktreeId] ?? []).find(
+        (group) => group.id === overData.groupId
+      )
+      if (targetGroup && activeData.groupId !== overData.groupId) {
+        state.placeSettingsTab(worktreeId, overData.groupId, [
+          ...targetGroup.tabOrder,
+          SETTINGS_TAB_ID
+        ])
+        state.focusGroup(worktreeId, overData.groupId)
+        finishDrag(false)
+        return
+      }
+      finishDrag(true)
+      return
+    }
     if (activeData.groupId !== overData.groupId) {
       if (
         MARKOV_LAYOUT_OWNER_IS_MAIN &&

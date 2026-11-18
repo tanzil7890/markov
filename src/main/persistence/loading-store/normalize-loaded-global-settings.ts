@@ -22,6 +22,7 @@ import {
 } from '../applying-settings/terminal-settings-migrations'
 import { readLegacySidekickFlag } from '../applying-settings/onboarding-normalization'
 import { normalizeMachineName } from '../../../shared/machine-name'
+import { migrateFloatingTerminalTriggerLocation } from '../../../shared/floating-terminal-trigger-location'
 import type { PersistedState } from '../../../shared/persisted-state-types'
 import type { PreparedLoadedTerminalSettings } from './prepare-loaded-terminal-settings'
 import type { PreparedLoadedProfileSettings } from './prepare-loaded-profile-settings'
@@ -130,6 +131,8 @@ export function normalizeLoadedGlobalSettings(
     floatingTerminalCwd: migratedFloatingTerminalCwd,
     floatingTerminalTrustedCwds: migratedFloatingTerminalTrustedCwds,
     floatingTerminalCwdMigratedToAppWorkspace: true,
+    floatingTerminalTriggerLocation: migrateFloatingTerminalTriggerLocation(parsed.settings),
+    floatingTerminalTriggerMovedToSidebar: true,
     terminalScrollbackRows: migratedTerminalScrollback.rows,
     terminalDefaultShell: normalizeTerminalDefaultShell(parsed.settings?.terminalDefaultShell),
     terminalQuickCommands: normalizeTerminalQuickCommands(parsed.settings?.terminalQuickCommands),

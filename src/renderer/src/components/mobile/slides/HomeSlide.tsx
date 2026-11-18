@@ -207,7 +207,7 @@ function HomeSectionRow({
 function MarkovLogo(): React.JSX.Element {
   return (
     <svg className="mp-markov-logo" viewBox={MARKOV_MARK_VIEW_BOX} fill="currentColor" aria-hidden>
-      <path d={MARKOV_MARK_PATH} />
+      <path d={MARKOV_MARK_PATH} fillRule="evenodd" />
     </svg>
   )
 }

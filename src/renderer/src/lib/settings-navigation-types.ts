@@ -14,13 +14,21 @@ export type SettingsNavInstallStatus =
   | 'checking'
 
 const SETTINGS_NAV_TARGETS = [
+  'overview',
   'general',
+  'tabs',
+  'editor',
+  'cli',
+  'updates',
   'integrations',
   'accounts',
   'browser',
   'git',
+  'git-ai',
   'tasks',
   'appearance',
+  'appearance-terminal',
+  'appearance-window',
   'chat',
   'input',
   'floating-workspace',
@@ -28,6 +36,7 @@ const SETTINGS_NAV_TARGETS = [
   'quick-commands',
   'notifications',
   'computer-use',
+  'connections',
   'developer-permissions',
   'privacy',
   'advanced',
@@ -121,13 +130,6 @@ export type SettingsNavSection = {
   description: string
   icon: SettingsNavIcon
   searchEntries: SettingsSearchEntry[]
-  group: string
   badge?: string
   installStatus?: SettingsNavInstallStatus
-}
-
-export type SettingsNavGroup = {
-  id: string
-  title: string
-  sections: SettingsNavSection[]
 }

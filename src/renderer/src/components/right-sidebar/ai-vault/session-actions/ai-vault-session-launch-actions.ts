@@ -2,7 +2,7 @@ import {
   notifyAiVaultSessionPreparationFailure,
   resolveAiVaultSessionLaunchTargetOrNotify
 } from './ai-vault-session-launch-feedback'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 import {
   buildAiVaultResumeCopyCommandForWorktree,
@@ -33,14 +33,11 @@ import type { Worktree } from '../../../../../../shared/worktree/types'
 import { translate } from '@/i18n/i18n'
 import { describeAiVaultCliForkFailure } from './ai-vault-session-cli-fork'
 import type { AiVaultSessionResumeTargetState } from './ai-vault-session-resume'
-import { prepareAiVaultSessionContinuation } from './ai-vault-session-continuation'
-import type { AgentSessionContinuationRequest } from '@/lib/agent-session-continuation'
 import { activateAiVaultStructuredSession } from '@/lib/activate-ai-vault-structured-session'
 import { adoptsCliConversations } from '../../../../../../shared/structured-agent-cli-conversation-adoption'
 import { newAgentLaunchRequestId } from '@/lib/agent-session/launch/routing/agent-launch-request-id'
 import { describeAiVaultResumeFailure } from '@/lib/agent-session/resume/history/ai-vault-resume-refusal'
 import { resumeAiVaultSessionInNewChat } from './ai-vault-session-resume-in-chat-launch'
-import { resolveAiVaultTargetWorkspacePath } from './ai-vault-session-launch-target'
 
 export function useAiVaultSessionLaunchActions({
   activeWorktree,
@@ -53,9 +50,6 @@ export function useAiVaultSessionLaunchActions({
   targetState: AiVaultSessionResumeTargetState
   agentCmdOverrides?: Partial<Record<AiVaultAgent, string | null>>
 }) {
-  const [continuationRequest, setContinuationRequest] =
-    useState<AgentSessionContinuationRequest | null>(null)
-
   const buildResumeCommand = useCallback(
     (session: AiVaultSession, worktreeId?: string | null): string =>
       buildAiVaultResumeCopyCommandForWorktree({
@@ -218,57 +212,11 @@ export function useAiVaultSessionLaunchActions({
     [activeWorktree?.id, activeWorktreeId]
   )
 
-  const handleContinueInNewSession = useCallback(
-    (session: AiVaultSession, targetWorktreeId: string): void => {
-      const targetId = resolveAiVaultSessionLaunchTargetOrNotify({
-        sessionFilePath: session.filePath,
-        sessionExecutionHostId: session.executionHostId,
-        activeWorktreeId: activeWorktreeId ?? activeWorktree?.id ?? null,
-        targetWorktreeId,
-        targetState
-      })
-      if (!targetId) {
-        return
-      }
-
-      const targetWorkspacePath = resolveAiVaultTargetWorkspacePath(
-        targetState,
-        targetId.worktreeId
-      )
-      if (!targetWorkspacePath) {
-        toast.error(
-          translate(
-            'auto.components.right.sidebar.AiVaultPanel.openWorkspaceBeforeResuming',
-            'Open a workspace before resuming a session.'
-          )
-        )
-        return
-      }
-      setContinuationRequest(
-        prepareAiVaultSessionContinuation({
-          session,
-          targetWorktreeId: targetId.worktreeId,
-          targetWorkspacePath
-        })
-      )
-    },
-    [activeWorktree?.id, activeWorktreeId, targetState]
-  )
-
-  const handleContinuationDialogOpenChange = useCallback((open: boolean): void => {
-    if (!open) {
-      setContinuationRequest(null)
-    }
-  }, [])
-
   return {
     buildResumeStartup,
     copyResumeCommand,
     handleResume,
     handleResumeInNewCli,
-    handleResumeInNewChat,
-    handleContinueInNewSession,
-    continuationRequest,
-    handleContinuationDialogOpenChange
+    handleResumeInNewChat
   }
 }

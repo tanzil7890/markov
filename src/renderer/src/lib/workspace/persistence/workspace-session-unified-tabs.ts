@@ -2,6 +2,7 @@ import { structuredLaunchSlotIds } from '../../agent-session/launch/structured-a
 import type { Tab, TabGroup, TabGroupLayoutNode } from '../../../../../shared/tab-types'
 import type { WorkspaceSessionState } from '../../../../../shared/workspace-session/workspace-session-state-types'
 import type { WorkspaceSessionSnapshot } from './workspace-session'
+import { layoutTabGroups } from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 type PersistedUnifiedTabSessionData = Pick<
   WorkspaceSessionState,
@@ -101,13 +102,17 @@ export function buildPersistedUnifiedTabSessionData(
 
     unifiedTabs[worktreeId] = persistedTabs
     tabGroups[worktreeId] = groups
+    // The sidebar's group is saved with its tabs but is never the layout or its focus.
+    const laidOutGroupIds = new Set(layoutTabGroups(groups).map((group) => group.id))
+    const fallbackGroupId = layoutTabGroups(groups)[0]?.id ?? groups[0].id
     const activeGroupId = sourceActiveGroups[worktreeId]
     activeGroupIdByWorktree[worktreeId] =
-      activeGroupId && groupIds.has(activeGroupId) ? activeGroupId : groups[0].id
-    const prunedLayout = sourceLayouts[worktreeId]
-      ? prunePersistedLayoutForGroups(sourceLayouts[worktreeId], groupIds)
-      : null
-    tabGroupLayouts[worktreeId] = prunedLayout ?? { type: 'leaf', groupId: groups[0].id }
+      activeGroupId && laidOutGroupIds.has(activeGroupId) ? activeGroupId : fallbackGroupId
+    const prunedLayout =
+      sourceLayouts[worktreeId] && laidOutGroupIds.size > 0
+        ? prunePersistedLayoutForGroups(sourceLayouts[worktreeId], laidOutGroupIds)
+        : null
+    tabGroupLayouts[worktreeId] = prunedLayout ?? { type: 'leaf', groupId: fallbackGroupId }
   }
 
   return {

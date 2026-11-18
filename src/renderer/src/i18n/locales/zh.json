@@ -1517,7 +1517,6 @@
         "2eece16ad1": "通知",
         "1f452cbd4c": "选择和编辑行为。",
         "0c6ee88a5f": "输入与编辑",
-        "b11a5a48a2": "主题、缩放、应用程序和终端外观、侧边栏和状态栏。",
         "93d88d20bf": "外观",
         "2d0659f6f0": "全局终端、浏览器和 Markdown 选项卡。",
         "65b19f5bde": "浮动工作区",
@@ -1530,12 +1529,8 @@
         "c33bfd664c": "Shell、渲染器、会话和终端行为。",
         "a9fb10afca": "终端",
         "85f4fd7710": "任务来源",
-        "ab4b21b58e": "分支命名、基础引用和 Git AI Author。",
         "09607cb0fe": "Git 和源代码控制",
         "33a5e1d597": "连接 GitHub、GitLab、Linear 和源托管服务。",
-        "2b043783ef": "集成",
-        "2cd4ea75da": "工作区默认值、应用程序设置和维护。",
-        "13241992bd": "通用",
         "724c440e72": "入门",
         "0505d0df29": "开始使用 Markov",
         "ea0b1bc7b8": "设置指南",
@@ -1549,7 +1544,6 @@
         "cd50cec5d7": "通过 Markov 协调多个编码智能体。",
         "58a868e8e4": "编排",
         "7c79d3b7bf": "可选",
-        "b1c2f8b0ac": "Claude、Codex、Gemini、OpenCode Go、MiniMax 和 Grok 的可选账户切换与使用量设置。",
         "f70ac54d38": "AI 提供商账户",
         "4121f7a0a2": "管理 AI 智能体、设置默认值并自定义命令。",
         "b49abbd2f7": "智能体",
@@ -3790,20 +3784,10 @@
             "searchProvider": "使用 {{value0}} 搜索"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "命令",
-            "20bbd75896": "无命令",
-            "b82e237a4b": "更快捷的命令",
-            "85482c57bc": "运行快捷命令",
-            "b775303755": "运行快捷命令：{{value0}}",
             "196593b6a9": "删除 {{value0}}",
             "15529ede69": "编辑 {{value0}}",
-            "1d411fb6a5": "为此仓库保存快捷命令",
-            "8f1e971966": "添加快捷命令",
             "3220e2da27": "该快捷命令将从您保存的列表中删除。",
             "e8e1a52edb": "删除“{{value0}}”？",
-            "37e1bb90ce": "运行：{{value0}}",
-            "77ac113df0": "开始 {{value0}}: {{value1}}",
-            "7b1c9d6ae1": "执行",
             "be8f0ff166": "删除",
             "f3a8c2d1e7": "搜索快捷命令...",
             "b4e7f9a2c1": "没有匹配的命令",
@@ -3873,15 +3857,11 @@
             "7ab2964bea": "未读的智能体完成"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "命令",
             "b856c833ae": "{{value0}} 上的命令"
           },
           "TabBarQuickCommandHostLoadStatus": {
             "82e294f3ca": "主机不可用",
             "7c129b08ff": "正在加载主机..."
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "无法在 CLI 中打开此会话。"
           },
           "tabCreateEntry": {
             "fileNotFound": "找不到文件：{{path}}",
@@ -6949,12 +6929,6 @@
           },
           "2edf606c46": "关闭时最小化到托盘",
           "b707773a0d": "启用后，关闭窗口会让 Markov 继续在系统托盘中运行，而不是退出。",
-          "interfaceDefaultFont": "默认字体",
-          "terminalDefaultFont": "默认字体",
-          "interfaceTitle": "界面",
-          "terminalTitle": "终端",
-          "windowSidebarTitle": "窗口和侧边栏",
-          "windowSidebarSummary": "侧边栏、状态栏和文件浏览器",
           "gitIgnoredGlossary": "与 .gitignore 匹配的文件。",
           "statusBarDescription": "选择状态栏中显示哪些指示器。",
           "showPinnedWorktreesInGroups": {
@@ -7378,7 +7352,6 @@
           "nodeDistMirrorLabel": "Node.js 下载镜像"
         },
         "GeneralPane": {
-          "d58fccfd84": "导航",
           "5cb5475664": "关闭固定标签页前确认",
           "36b2a5dc6d": "关闭固定标签页前显示确认对话框。",
           "projectRuntime": "项目运行时",
@@ -8173,7 +8146,6 @@
           "9907545fa3": "通知",
           "d0b7021d64": "选择和编辑行为。",
           "d7a3e635b6": "输入与编辑",
-          "6d1a27e193": "主题、缩放、应用程序和终端外观、侧边栏和状态栏。",
           "2b4474780a": "外观",
           "3d9adfe6a5": "全局终端、浏览器和 Markdown 选项卡。",
           "3eb22a3ada": "浮动工作区",
@@ -8186,12 +8158,9 @@
           "b79b5b31e9": "Shell、渲染器、会话和终端行为。",
           "3de4bbb841": "终端",
           "11faa2f7dd": "任务来源",
-          "cfa34f4465": "分支命名、基础引用和 Git AI Author。",
           "70100f94c7": "Git 和源代码控制",
           "b07041697f": "连接 GitHub、GitLab、Linear 和源托管服务。",
           "c9ca101a3b": "集成",
-          "f9b77539fd": "工作区默认值、应用程序设置和维护。",
-          "7807c11c4d": "通用",
           "6855b0f77d": "完成使 Markov 对于并行智能体工作有用的核心工作流程。",
           "6d119427ef": "入门清单",
           "eb1176a14e": "使用设备上模型进行本地语音到文本听写。",
@@ -8208,12 +8177,7 @@
           "acc7bbdefd": "再按一次 ESC 退出设置",
           "43b68e10f0": "你有未保存的 AI 设置。离开后这些设置将被放弃。",
           "17bdee4ff1": "放弃未保存的 AI 设置？",
-          "084d8fac5b": "隐私与安全",
-          "23931df7e8": "远程主机",
           "8bd117d669": "界面",
-          "e1578cd4bc": "工作流程",
-          "9abb9be3bc": "初始设置",
-          "23c6874fdf": "AI 能力",
           "65358016ea": "放弃",
           "dev": "开发工具",
           "devDescription": "仅用于调试 UI 状态的开发工具。",
@@ -8249,9 +8213,7 @@
           "dbceaa8840": "搜索设置",
           "60f8a673a7": "返回应用",
           "6503182299": "入门清单",
-          "82db1b7de4": "入门清单，已完成 {{value0}}/{{value1}}。显示设置指南。",
-          "df38d612b7": "尚未添加项目。",
-          "3e483e256b": "没有匹配的项目设置。"
+          "df38d612b7": "尚未添加项目。"
         },
         "ShortcutFilterRail": {
           "28b63545bf": "状态",
@@ -19282,8 +19244,7 @@
         "continueNow": "立即继续",
         "leadIn": "无需等待，继续此聊天：",
         "switchAccount": "切换账号",
-        "addAccount": "添加账号…",
-        "accountUnavailable": "此聊天无法切换到其他账户。请将其移交给其他智能体。"
+        "addAccount": "添加账号…"
       },
       "usageLimitAutoContinue": {
         "cancelFailed": "无法取消自动继续。请重试。",
@@ -19292,7 +19253,6 @@
         "scheduled": "Markov 将在 {{time}} 继续此聊天。",
         "cancel": "不要继续"
       },
-      "settings": "聊天设置",
       "textAttachmentPreview": {
         "copiedContents": "已复制内容",
         "textAttachment": "文本附件",
@@ -19611,28 +19571,7 @@
       }
     },
     "agentSessionContinuation": {
-      "preparingContext": "正在准备已保存的聊天上下文…",
-      "handOffToAnotherAgent": "移交给另一个智能体",
-      "dialogTitle": "移交给另一个智能体",
-      "dialogDescription": "从当前进度启动一个新的智能体会话，原会话保持不变。",
-      "untitledSession": "当前会话",
-      "originalAgent": "原智能体：{{agent}}",
-      "agent": "智能体",
       "selectAgent": "选择智能体",
-      "detectingAgents": "正在此工作区主机上检测智能体…",
-      "detectionFailed": "无法检测此工作区主机上的智能体。",
-      "noAgents": "未在此工作区主机上检测到已启用的智能体。",
-      "onlySourceFamilyDetected": "此工作区主机上可用的智能体均与 {{agent}} 共享使用限额。请启用或安装其他智能体。",
-      "context": "上下文",
-      "modeFocused": "聚焦交接（推荐）",
-      "modeFocusedDescription": "使用最新进度和当前工作区，仅在需要时读取更早的会话细节。",
-      "modeLoadedDescription": "使用此聊天中当前已加载的最近消息和当前工作区。",
-      "modeCapturedDescription": "使用捕获的文本和当前工作区。",
-      "modeFull": "完整会话记录",
-      "modeFullDescription": "让新智能体在继续前读取完整的已保存会话。这可能需要更长时间，并消耗大量上下文、套餐用量或 API 额度。",
-      "startsIn": "启动目录：",
-      "startSession": "启动新会话",
-      "starting": "正在启动…",
       "noContext": "没有可用于在新会话中继续的上下文。",
       "agentDisabled": "{{agent}} 已在智能体设置中停用。",
       "agentUnavailable": "未在此工作区主机上检测到 {{agent}}。",

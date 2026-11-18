@@ -2,6 +2,7 @@ import React from 'react'
 import { LinearAgentSkillSetupPrompt } from '../../LinearAgentSkillSetupPrompt'
 import type { WorktreeCardController } from '../controller/use-worktree-card-controller'
 import WorktreeCardAgents from '../activity/WorktreeCardAgents'
+import { WorktreeCardChatsToggle } from '../activity/worktree-card-chats-toggle'
 import {
   renderWorktreeCardIndicators,
   WorktreeCardIdentityHover,
@@ -58,6 +59,9 @@ export const CARD_ACTIVITY_PARTS = {
       // Why: counterbalance the card stack gap so agents right after the title read as one group.
       className={props.tight === true ? '-mt-1' : 'mt-0'}
     />
+  )),
+  ChatsToggle: part([], (_props, _children, card) => (
+    <WorktreeCardChatsToggle worktreeId={card.worktree.id} agents={card.compactInlineAgentRows} />
   )),
   RemoteBranchConflict: part([], (_props, _children, { remoteBranchConflict }) =>
     remoteBranchConflict ? (

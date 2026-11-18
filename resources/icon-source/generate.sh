@@ -25,35 +25,28 @@ if [ -z "$MAGICK_BIN" ]; then
   exit 1
 fi
 
-# The logo draws consonant squares in ink and vowel circles in red; on dark grounds the ink turns paper.
-MARK_INK="#161514"
+# The logo is Markie in red with its eyes cut out, so it reads on light and dark grounds alike.
 MARK_PAPER="#EFE6D3"
-LOGO_ON_DARK="$TMP_DIR/logo-on-dark.svg"
-sed "s/$MARK_INK/$MARK_PAPER/g" "$LOGO" >"$LOGO_ON_DARK"
+LOGO_ON_DARK="$LOGO"
 
-# Usage: split_mark <path id> <output> [fill]; one layer of the logo, optionally recolored.
-split_mark() {
-  local root layer
-  root=$(grep -o '<svg[^>]*>' "$LOGO")
-  layer=$(grep -o "<path[^>]*id=\"$1\"[^>]*/>" "$LOGO")
-  if [ -n "${3:-}" ]; then
-    layer=$(echo "$layer" | sed -E "s/fill=\"[^\"]*\"/fill=\"$3\"/")
+# Usage: mark_layer <output> [fill]; the mark as one Icon Composer layer, optionally recolored.
+mark_layer() {
+  if [ -n "${2:-}" ]; then
+    sed -E "s/fill=\"#[0-9A-Fa-f]{6}\"/fill=\"$2\"/" "$LOGO" >"$1"
+  else
+    cp "$LOGO" "$1"
   fi
-  printf '%s\n%s\n</svg>\n' "$root" "$layer" >"$2"
 }
 
-# Icon Composer colors each layer on its own, so every project gets the squares and circles separately.
 for project in icon blue watercolor; do
   mkdir -p "$SCRIPT_DIR/$project.icon/Assets"
-  split_mark vowels "$SCRIPT_DIR/$project.icon/Assets/vowels.svg"
 done
-split_mark consonants "$SCRIPT_DIR/icon.icon/Assets/consonants.svg"
-# The alternates sit on color, so their squares are white.
+mark_layer "$SCRIPT_DIR/icon.icon/Assets/markie.svg"
+# The alternates sit on color, so Markie is white there.
 for project in blue watercolor; do
-  split_mark consonants "$SCRIPT_DIR/$project.icon/Assets/consonants.svg" '#FFFFFF'
+  mark_layer "$SCRIPT_DIR/$project.icon/Assets/markie.svg" '#FFFFFF'
 done
-# The docs site defaults to its dark theme.
-cp "$LOGO_ON_DARK" "$DOCS_PUBLIC_DIR/logo.svg"
+cp "$LOGO" "$DOCS_PUBLIC_DIR/logo.svg"
 
 # Usage: compile_icon <project name>; writes $TMP_DIR/<name>/<name>.icns (requires Xcode).
 compile_icon() {
@@ -135,11 +128,11 @@ for variant in blue watercolor; do
 done
 
 # macOS tints template images itself, so only the alpha channel matters.
-render_mark 22x14 black "$TMP_DIR/tray.png"
-"$MAGICK_BIN" "$TMP_DIR/tray.png" -background none -gravity center -extent 22x14 \
+render_mark x16 black "$TMP_DIR/tray.png"
+"$MAGICK_BIN" "$TMP_DIR/tray.png" -background none -gravity center -extent 22x16 \
   "PNG32:$RESOURCES_DIR/tray/markov-menu-barTemplate.png"
-render_mark 44x28 black "$TMP_DIR/tray@2x.png"
-"$MAGICK_BIN" "$TMP_DIR/tray@2x.png" -background none -gravity center -extent 44x28 \
+render_mark x32 black "$TMP_DIR/tray@2x.png"
+"$MAGICK_BIN" "$TMP_DIR/tray@2x.png" -background none -gravity center -extent 44x32 \
   "PNG32:$RESOURCES_DIR/tray/markov-menu-barTemplate@2x.png"
 echo "  -> resources/tray/markov-menu-barTemplate{,@2x}.png"
 
@@ -153,19 +146,19 @@ cp "$BUILD_DIR/icon.ico" "$DOCS_PUBLIC_DIR/favicon.ico"
 echo "  -> docs/site/public/docs/favicon.ico"
 
 # iOS masks the corners itself, so the store icon is a full-bleed opaque square.
-render_logo "$LOGO" 800x "$TMP_DIR/mobile-mark.png"
+render_logo "$LOGO" 620x "$TMP_DIR/mobile-mark.png"
 "$MAGICK_BIN" -size 1024x1024 xc:"$MARK_PAPER" \
   "$TMP_DIR/mobile-mark.png" -gravity center -composite \
   -alpha off "PNG24:$MOBILE_ASSETS_DIR/icon.png"
 echo "  -> mobile/assets/icon.png (1024x1024)"
 
 # Android draws the adaptive foreground over app.json's backgroundColor (paper) and crops to the
-# 66dp safe circle; 480px wide keeps the mark's corners inside it.
+# 66dp safe circle; 480px wide keeps Markie's rounded outline inside it.
 render_logo "$LOGO" 480x "$TMP_DIR/adaptive.png"
 "$MAGICK_BIN" "$TMP_DIR/adaptive.png" -background none -gravity center -extent 1024x1024 \
   "PNG32:$MOBILE_ASSETS_DIR/adaptive-icon.png"
-render_logo "$LOGO_ON_DARK" 360x "$TMP_DIR/splash.png"
-"$MAGICK_BIN" "$TMP_DIR/splash.png" -background none -gravity center -extent 400x255 \
+render_logo "$LOGO_ON_DARK" 240x "$TMP_DIR/splash.png"
+"$MAGICK_BIN" "$TMP_DIR/splash.png" -background none -gravity center -extent 400x400 \
   "PNG32:$MOBILE_ASSETS_DIR/splash-icon.png"
 # Android notification icons are alpha-only silhouettes.
 render_mark 48x white "$TMP_DIR/notification.png"

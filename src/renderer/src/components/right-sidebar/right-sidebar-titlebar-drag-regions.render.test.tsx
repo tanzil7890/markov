@@ -173,6 +173,10 @@ vi.mock('./checks-panel/ChecksPanel', () => ({
   default: () => <div data-checks-panel />
 }))
 
+vi.mock('./bottom-panel/RightSidebarBottomPanel', () => ({
+  RightSidebarBottomPanel: () => null
+}))
+
 vi.mock('./PortsPanel', () => ({
   default: () => <div data-ports-panel />
 }))
@@ -222,7 +226,7 @@ describe('rendered right sidebar titlebar drag regions', () => {
     const markup = renderToStaticMarkup(<RightSidebar />)
 
     expect(markup).toContain('aria-label="Explorer')
-    expect(markup).toContain('aria-label="Agents')
+    expect(markup).not.toContain('aria-label="Agents')
     expect(markup).not.toContain('aria-label="Search')
     expect(markup).toContain('aria-label="Attached worktrees')
     expect(markup).toContain('aria-label="PR Checks')

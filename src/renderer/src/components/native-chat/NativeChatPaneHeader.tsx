@@ -1,18 +1,18 @@
-import { Fragment, useCallback } from 'react'
-import { MessageSquarePlus, SquareSplitVertical } from 'lucide-react'
-import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'
+import { useCallback, useRef } from 'react'
+import { ChevronDown, PanelLeftClose, PanelRightClose, SquareSplitVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { translate } from '@/i18n/i18n'
-import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
-import { agentForksConversations } from '../../../../shared/agent-launch/startup/agent-resume-argv'
-import type { NativeChatTabSession } from '../tab-bar/tab-session-history-switch'
+import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
 import { useStructuredChatPaneActions } from './use-structured-chat-pane-actions'
-import { NativeChatResumeInCliButton } from './NativeChatResumeInCliButton'
-import { NativeChatSettingsButton } from './NativeChatSettingsButton'
 import type { NativeChatStructuredViewProps } from './native-chat-view-types'
-import type { NativeChatHandOff } from './use-native-chat-hand-off'
 import { setNativeChatPaneSlot } from './native-chat-pane-slots'
 
 // Why inherit: the labelled actions read in the chat's font, not the terminal title's mono.
@@ -21,24 +21,18 @@ const HEADER_STYLE: React.CSSProperties & Record<'--markov-pane-title-bg', strin
   fontFamily: 'inherit'
 }
 
-export type NativeChatHeaderHandOff = { open: () => void; disabled: boolean }
-
 export function NativeChatPaneHeader({
   tabId,
   worktreeId,
   groupId,
-  nativeChat,
   focused,
-  colorScheme,
-  handOff
+  colorScheme
 }: {
   tabId: string
   worktreeId: string
   groupId: string
-  nativeChat: NativeChatTabSession
   focused: boolean
   colorScheme: React.CSSProperties['colorScheme']
-  handOff?: NativeChatHeaderHandOff
 }): React.JSX.Element {
   const actions = useStructuredChatPaneActions(tabId, worktreeId, groupId)
   const workspaceSlotRef = useCallback(
@@ -47,15 +41,13 @@ export function NativeChatPaneHeader({
   )
   const documentDark = useDocumentDarkTheme()
   const light = colorScheme ? colorScheme === 'light' : !documentDark
-  const split = translate(
-    'auto.components.terminal.pane.TerminalContextMenu.20e565d865',
-    'Split Terminal Right'
-  )
-  const splitShortcutCombos = useShortcutKeyComboDetails('terminal.splitRight')
-  const handOffLabel = translate(
-    'components.agentSessionContinuation.handOffToAnotherAgent',
-    'Hand Off to Another Agent'
-  )
+  const splitRightShortcut = useOptionalShortcutLabel('terminal.splitRight')
+  // Why: a chosen split focuses its new terminal, so the closing menu must not pull focus back.
+  const splitChosenRef = useRef(false)
+  const runSplit = (split: () => void): void => {
+    splitChosenRef.current = true
+    split()
+  }
   return (
     <div
       className="pane-title-bar z-20"
@@ -65,75 +57,54 @@ export function NativeChatPaneHeader({
     >
       <div ref={workspaceSlotRef} className="flex min-w-0 flex-1 items-center" />
       <div className="pane-title-actions ml-auto flex shrink-0 items-center gap-0">
-        {handOff && focused ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="pane-title"
-                size="xs"
-                aria-label={handOffLabel}
-                disabled={handOff.disabled}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  handOff.open()
-                }}
-              >
-                <MessageSquarePlus className="size-3" />
-                <span>{translate('components.native-chat.header.handOff', 'Hand off')}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={4}>
-              {handOffLabel}
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
-        {nativeChat.agent && agentForksConversations(nativeChat.agent) ? (
-          <NativeChatResumeInCliButton
-            tabId={tabId}
-            worktreeId={worktreeId}
-            nativeChat={nativeChat}
-          />
-        ) : null}
-        <Tooltip>
-          <TooltipTrigger asChild>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="pane-title"
               size="xs"
-              aria-label={split}
               data-contextual-tour-target={focused ? 'chat-pane-split-target' : undefined}
-              onClick={(event) => {
-                event.stopPropagation()
-                actions.onSplitRight()
-              }}
+              onClick={(event) => event.stopPropagation()}
             >
               <SquareSplitVertical className="size-3" />
               <span>{translate('components.native-chat.header.split', 'Split')}</span>
+              <ChevronDown className="size-3" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={4}>
-            <span className="inline-flex items-center gap-1.5">
-              <span>
-                {split}
-                {splitShortcutCombos.length > 0 ? ': ' : null}
-              </span>
-              {splitShortcutCombos.map((shortcut, index) => (
-                <Fragment key={JSON.stringify([shortcut.keys, shortcut.doubleTap])}>
-                  {index > 0 ? <span>{', '}</span> : null}
-                  <ShortcutKeyCombo
-                    keys={shortcut.keys}
-                    doubleTap={shortcut.doubleTap}
-                    className="gap-0.5"
-                    keyCapClassName="min-w-0 border-background/30 bg-background/10 px-1 py-0 text-3xs text-background shadow-none"
-                    separatorClassName="mx-0 text-3xs text-background/70"
-                  />
-                </Fragment>
-              ))}
-            </span>
-          </TooltipContent>
-        </Tooltip>
-        <NativeChatSettingsButton />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={4}
+            // Portaled content still bubbles React events to the chat, which has its own handlers.
+            onClick={(event) => event.stopPropagation()}
+            onCloseAutoFocus={(event) => {
+              if (splitChosenRef.current) {
+                splitChosenRef.current = false
+                event.preventDefault()
+              }
+            }}
+          >
+            <DropdownMenuItem
+              className="whitespace-nowrap"
+              onSelect={() => runSplit(actions.onSplitRight)}
+            >
+              <PanelRightClose />
+              {translate(
+                'auto.components.terminal.pane.TerminalContextMenu.20e565d865',
+                'Split Terminal Right'
+              )}
+              {splitRightShortcut ? (
+                <DropdownMenuShortcut>{splitRightShortcut}</DropdownMenuShortcut>
+              ) : null}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="whitespace-nowrap"
+              onSelect={() => runSplit(actions.onSplitLeft)}
+            >
+              <PanelLeftClose />
+              {translate('components.native-chat.header.splitTerminalLeft', 'Split Terminal Left')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )
@@ -142,31 +113,18 @@ export function NativeChatPaneHeader({
 export function nativeChatPaneHeader(
   view: Pick<
     NativeChatStructuredViewProps,
-    | 'tabId'
-    | 'groupId'
-    | 'sessionId'
-    | 'agent'
-    | 'isVisible'
-    | 'isFocusedGroup'
-    | 'contextMenuActions'
+    'tabId' | 'groupId' | 'isVisible' | 'isFocusedGroup' | 'contextMenuActions'
   >,
   worktreeId: string | null,
-  colorScheme: React.CSSProperties['colorScheme'],
-  handOff?: NativeChatHandOff
+  colorScheme: React.CSSProperties['colorScheme']
 ): React.JSX.Element | null {
   return view.isVisible && worktreeId && view.groupId && !view.contextMenuActions ? (
     <NativeChatPaneHeader
       tabId={view.tabId}
       worktreeId={worktreeId}
       groupId={view.groupId}
-      nativeChat={{ sessionId: view.sessionId, agent: view.agent }}
       focused={view.isFocusedGroup}
       colorScheme={colorScheme}
-      handOff={
-        handOff?.available
-          ? { open: handOff.open, disabled: handOff.preparing || handOff.dialog !== null }
-          : undefined
-      }
     />
   ) : null
 }

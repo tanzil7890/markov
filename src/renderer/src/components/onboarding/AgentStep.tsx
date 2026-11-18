@@ -23,7 +23,7 @@ import {
   TerminalModeChatTip,
   chatAvailableDetail
 } from './AgentStepSurfaceSections'
-import { isOnboardingSetupAgent } from './agent-cli-install-commands'
+import { isAgentCliInstallAgent } from '../../../../shared/agent-cli-install-types'
 
 const NO_CHAT_AGENTS: readonly TuiAgent[] = []
 
@@ -182,7 +182,7 @@ export function AgentStep({
             />
           </span>
           <div className="flex shrink-0 items-center gap-2">
-            {onOpenAgentSetup && isOnboardingSetupAgent(selectedEntry.id) ? (
+            {onOpenAgentSetup && isAgentCliInstallAgent(selectedEntry.id) ? (
               <OpenAgentSetupButton
                 label={translate(
                   'components.onboarding.agentStep.installAgent',

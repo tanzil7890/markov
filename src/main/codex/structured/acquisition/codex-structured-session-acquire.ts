@@ -41,6 +41,7 @@ import type { CodexStructuredNotificationRetry } from '../session-lifecycle/code
 import type { deliverCodexServerRequest } from '../session-lifecycle/codex-structured-provider-events'
 import { codexAcquisitionNotificationHandler } from './codex-structured-acquisition-notification'
 import { codexStartFailure } from '../../app-server/codex-startup-outcome'
+import { withMcpGatewayForCodexChat } from '../../../mcp-gateway/mcp-gateway-agent-launch'
 
 export async function acquireCodexStructuredSession(input: {
   input: StructuredAgentSessionAcquireInput
@@ -138,7 +139,7 @@ export async function acquireCodexStructuredSession(input: {
     const connection = await open(
       {
         command: launch.command,
-        args: launch.args,
+        args: await withMcpGatewayForCodexChat(launch.args),
         cwd: launch.cwd,
         ...(launch.env ? { env: launch.env } : {}),
         ...(launch.envToDelete ? { envToDelete: launch.envToDelete } : {})

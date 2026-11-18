@@ -83,6 +83,8 @@ export type WorkspaceCardFacts = {
   }
   provenance: { automation: boolean; cli: boolean }
   ports: { count: number }
+  /** Chats in the compact list (0 for full rows or when inline agents are off); `listOpen` when shown under the title. */
+  agents: { count: number; listOpen: boolean }
   lineage: { childCount: number; collapsed: boolean; toggleable: boolean }
   place: {
     isActive: boolean

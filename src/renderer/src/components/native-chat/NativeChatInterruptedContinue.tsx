@@ -192,8 +192,6 @@ export function useNativeChatInterruptedContinuation(input: {
       continueNow,
       usageLimitTurnItemId,
       usageLimitAutoContinue,
-      onUsageLimitHandOffStarted:
-        usageLimitAutoContinue?.kind === 'scheduled' ? usageLimitAutoContinue.cancel : undefined,
       usageLimitContinueDisabled: usageCapability === 'unknown',
       continueUsageLimit
     }),

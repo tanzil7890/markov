@@ -9,12 +9,15 @@ import {
   getLinearAgentSkillNavInstallStatus
 } from '@/lib/agent-skill-nav-install-status'
 import { getProjectHostSetupProjectionFromState } from '../../../store/project-host-setup-selector'
-import { getSettingsSectionSearchEntries, rankSettingsSearchItems } from '../search/settings-search'
+import { findSettingsSearchHits, getSettingsSectionSearchEntries } from '../search/settings-search'
+import { locateSettingsSection, resolveSettingsDestinations } from './settings-destinations'
 import { deriveNeededSectionIds } from '../page/settings-load-performance'
 import { DESKTOP_TERMINAL_SCROLLBACK_ROW_PRESETS as SCROLLBACK_PRESETS_ROWS } from '../../../../../shared/terminal/replay/terminal-scrollback-policy'
 import type { SettingsStoreModel } from '../page/use-settings-store-model'
 import type { SettingsInteractionController } from '../page/use-settings-interaction-controller'
 import { hasReadyVoiceModel } from './settings-navigation-foundations'
+
+const SEARCH_HIT_LIMIT = 60
 
 export function useSettingsNavigationModel(
   model: SettingsStoreModel,
@@ -131,34 +134,19 @@ export function useSettingsNavigationModel(
     return section ? getSettingsSectionSearchEntries(section) : []
   }
 
-  const visibleNavSections = useMemo(() => {
-    const rankedSections = rankSettingsSearchItems(
-      model.settingsSearchQuery,
-      navSections,
-      getSettingsSectionSearchEntries
-    ).map(({ item }) => item)
-    const visible = [...rankedSections]
-    for (const [id, dirty] of [
-      ['git', model.hasUnsavedCommitPromptChanges || model.hasUnsavedBranchPromptChanges],
-      ['chat', model.hasUnsavedChatPromptChanges]
-    ] as const) {
-      const section = navSectionById.get(id)
-      if (dirty && section && !visible.some((item) => item.id === id)) {
-        visible.push(section)
-      }
-    }
-    return visible
-  }, [
-    model.hasUnsavedCommitPromptChanges,
-    model.hasUnsavedBranchPromptChanges,
-    model.hasUnsavedChatPromptChanges,
-    navSectionById,
-    navSections,
-    model.settingsSearchQuery
-  ])
-  const visibleSectionIds = useMemo(
-    () => new Set(visibleNavSections.map((section) => section.id)),
-    [visibleNavSections]
+  const navSectionIds = useMemo(
+    () => new Set(navSections.map((section) => section.id)),
+    [navSections]
+  )
+  const destinations = useMemo(() => resolveSettingsDestinations(navSectionIds), [navSectionIds])
+  // Null for a project, which is a page of its own.
+  const activeLocation = useMemo(
+    () => locateSettingsSection(destinations, model.activeSectionId),
+    [destinations, model.activeSectionId]
+  )
+  const searchHits = useMemo(
+    () => findSettingsSearchHits(model.settingsSearchQuery, navSections, SEARCH_HIT_LIMIT),
+    [model.settingsSearchQuery, navSections]
   )
   const projectByRepoId = useMemo(() => {
     const projection = getProjectHostSetupProjectionFromState({
@@ -183,16 +171,15 @@ export function useSettingsNavigationModel(
         mountedSectionIds: model.mountedSectionIds,
         activeSectionId: model.activeSectionId,
         pendingSectionId: interactions.pendingNavSectionRef.current,
-        query: model.settingsSearchQuery,
-        visibleSectionIds
+        // Why: a tab can stack several sections, and all of them are on screen.
+        companionSectionIds: activeLocation?.tab.sectionIds ?? []
       }),
     [
+      activeLocation,
       model.activeSectionId,
       model.mountedSectionIds,
       interactions.pendingNavSectionRef,
-      navSections,
-      model.settingsSearchQuery,
-      visibleSectionIds
+      navSections
     ]
   )
 
@@ -200,9 +187,12 @@ export function useSettingsNavigationModel(
     applyTheme,
     displayedGitUsername,
     navSections,
+    navSectionIds,
+    navSectionById,
+    destinations,
+    activeLocation,
+    searchHits,
     getSectionSearchEntries,
-    visibleNavSections,
-    visibleSectionIds,
     projectByRepoId,
     neededSectionIds
   }

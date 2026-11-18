@@ -1,4 +1,4 @@
-import { getAppearancePaneSearchEntries } from '@/components/settings/appearance/appearance-search'
+import { getAppearancePartSearchEntries } from '@/components/settings/appearance/appearance-part-search'
 import { getChatAppearanceSearchEntries } from '@/components/settings/appearance/chat/chat-appearance-search'
 import { getChatBehaviorSearchEntries } from '@/components/settings/chat/chat-behavior-search'
 import { getChatNamingSearchEntry } from '@/components/settings/chat/chat-naming-search'
@@ -11,7 +11,16 @@ import { getShortcutsPaneSearchEntries } from '@/components/settings/shortcuts/s
 import { getStatsPaneSearchEntries } from '@/components/stats/stats-search'
 import { translate } from '@/i18n/i18n'
 import type { SettingsNavSection } from '@/lib/settings-navigation-types'
-import { BarChart3, Bell, Keyboard, MessageSquare, Palette, TextCursorInput } from 'lucide-react'
+import {
+  BarChart3,
+  Bell,
+  Keyboard,
+  MessageSquare,
+  Palette,
+  PanelLeft,
+  SquareTerminal,
+  TextCursorInput
+} from 'lucide-react'
 import type { SettingsNavigationBuildOptions } from './settings-navigation-build-options'
 
 export function buildInterfaceSettingsSections({
@@ -24,21 +33,41 @@ export function buildInterfaceSettingsSections({
   mobileEmulatorCreationEnabled
 }: SettingsNavigationBuildOptions): SettingsNavSection[] {
   const showDesktopOnlySettings = !isWebClient
+  const appearanceSearchOptions = {
+    showDesktopThemeImports: showDesktopOnlySettings,
+    showSystemTray: showDesktopOnlySettings && isWindows,
+    showMenuBarIcon: showDesktopOnlySettings && isMac
+  }
   return [
     {
       id: 'appearance',
       title: translate('auto.hooks.useSettingsNavigationMetadata.93d88d20bf', 'Appearance'),
       description: translate(
-        'auto.hooks.useSettingsNavigationMetadata.b11a5a48a2',
-        'Theme, zoom, app and terminal appearance, sidebars, and status bar.'
+        'settings.sections.appearance.description',
+        'Theme, zoom, fonts, language, and the window title bar.'
       ),
       icon: Palette,
-      searchEntries: getAppearancePaneSearchEntries({
-        showDesktopThemeImports: showDesktopOnlySettings,
-        showSystemTray: showDesktopOnlySettings && isWindows,
-        showMenuBarIcon: showDesktopOnlySettings && isMac
-      }),
-      group: 'interface'
+      searchEntries: getAppearancePartSearchEntries('interface', appearanceSearchOptions)
+    },
+    {
+      id: 'appearance-terminal',
+      title: translate('settings.sections.appearanceTerminal.title', 'Terminal appearance'),
+      description: translate(
+        'settings.sections.appearanceTerminal.description',
+        'Terminal fonts, themes, cursor, and pane colors.'
+      ),
+      icon: SquareTerminal,
+      searchEntries: getAppearancePartSearchEntries('terminal', appearanceSearchOptions)
+    },
+    {
+      id: 'appearance-window',
+      title: translate('settings.sections.appearanceWindow.title', 'Sidebar & status bar'),
+      description: translate(
+        'settings.sections.appearanceWindow.description',
+        'What the sidebar, status bar, and file explorer show.'
+      ),
+      icon: PanelLeft,
+      searchEntries: getAppearancePartSearchEntries('window', appearanceSearchOptions)
     },
     {
       id: 'chat',
@@ -55,8 +84,7 @@ export function buildInterfaceSettingsSections({
         ...(showDesktopOnlySettings
           ? [getChatNamingSearchEntry(), getChatInlineVisualsSearchEntry()]
           : [])
-      ],
-      group: 'interface'
+      ]
     },
     {
       id: 'input',
@@ -66,8 +94,7 @@ export function buildInterfaceSettingsSections({
         'Selection and editing behavior.'
       ),
       icon: TextCursorInput,
-      searchEntries: getInputPaneSearchEntries(),
-      group: 'interface'
+      searchEntries: getInputPaneSearchEntries()
     },
     ...(showDesktopOnlySettings
       ? [
@@ -82,8 +109,7 @@ export function buildInterfaceSettingsSections({
               'Native desktop notifications for agent and terminal events.'
             ),
             icon: Bell,
-            searchEntries: getNotificationsPaneSearchEntries(),
-            group: 'interface'
+            searchEntries: getNotificationsPaneSearchEntries()
           }
         ]
       : []),
@@ -98,8 +124,7 @@ export function buildInterfaceSettingsSections({
       searchEntries: getShortcutsPaneSearchEntries({
         includeManagedBrowser: managedBrowserCreationEnabled,
         includeMobileEmulator: mobileEmulatorCreationEnabled
-      }),
-      group: 'interface'
+      })
     },
     {
       id: 'stats',
@@ -109,8 +134,7 @@ export function buildInterfaceSettingsSections({
         'Markov stats plus Claude, Codex, OpenCode, Muse token analytics and Grok subscription usage.'
       ),
       icon: BarChart3,
-      searchEntries: getStatsPaneSearchEntries(),
-      group: 'interface'
+      searchEntries: getStatsPaneSearchEntries()
     }
   ]
 }

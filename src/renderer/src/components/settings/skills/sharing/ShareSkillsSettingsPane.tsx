@@ -5,9 +5,8 @@ import { translate } from '@/i18n/i18n'
 import { isWebClientLocation } from '@/lib/web-client-location'
 import { useAppStore } from '@/store/index'
 import { SettingsSwitchRow } from '../../form-controls/SettingsFormControls'
+import { SettingsHowToGuide, type SettingsHowToStep } from '../../section-layout/SettingsHowToGuide'
 import { MarkovSignInButton, MarkovSignInWaitNotice } from '../../../MarkovSignInProgress'
-
-type HowToStep = { key: string; title: string; description: string }
 
 export function ShareSkillsSettingsPane(): React.JSX.Element {
   const openSkillsPage = useAppStore((state) => state.openSkillsPage)
@@ -21,7 +20,7 @@ export function ShareSkillsSettingsPane(): React.JSX.Element {
 
   useMarkovProfileAuthStatusRefresh()
 
-  const steps: HowToStep[] = [
+  const steps: SettingsHowToStep[] = [
     {
       key: 'select',
       title: translate(
@@ -162,34 +161,8 @@ export function ShareSkillsSettingsPane(): React.JSX.Element {
         </section>
       ) : null}
 
-      <section className="space-y-4 py-5">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium">
-            {translate('auto.components.settings.shareSkills.howToTitle', 'How to share skills')}
-          </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {translate(
-              'auto.components.settings.shareSkills.howToDescription',
-              'Publish one skill or a bundle such as a collection of 30 skills behind one link.'
-            )}
-          </p>
-        </div>
-
-        <ol className="space-y-3">
-          {steps.map((step, index) => (
-            <li key={step.key} className="flex items-start gap-3">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/30 text-[11px] font-semibold text-muted-foreground">
-                {index + 1}
-              </span>
-              <div className="min-w-0 flex-1 space-y-0.5">
-                <p className="text-sm font-medium">{step.title}</p>
-                <p className="text-xs leading-relaxed text-muted-foreground">{step.description}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        {!isWebClient ? (
+      {!isWebClient ? (
+        <div className="py-3">
           <Button
             type="button"
             variant="ghost"
@@ -212,8 +185,16 @@ export function ShareSkillsSettingsPane(): React.JSX.Element {
             </span>
             <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
           </Button>
-        ) : null}
-      </section>
+        </div>
+      ) : null}
+      <SettingsHowToGuide
+        title={translate('auto.components.settings.shareSkills.howToTitle', 'How to share skills')}
+        description={translate(
+          'auto.components.settings.shareSkills.howToDescription',
+          'Publish one skill or a bundle such as a collection of 30 skills behind one link.'
+        )}
+        steps={steps}
+      />
     </div>
   )
 }

@@ -22,16 +22,36 @@ function isClaudeExecutableToken(token: string): boolean {
   return /^claude(\.(exe|cmd|bat|ps1))?$/i.test(base)
 }
 
+export function isCodexExecutableToken(token: string | undefined): boolean {
+  const base = token?.split(/[\\/]/).pop()?.toLowerCase()
+  return base !== undefined && /^codex(?:\.(?:exe|cmd|bat|ps1))?$/.test(base)
+}
+
 /** Accept claude only in command position (start, wrapper --, PowerShell &, or POSIX assignments); path-shaped arguments cannot claim execution. */
 export function findClaudeExecutableIndex(
   tokens: readonly string[],
   shell: AgentStartupShell
 ): number {
+  return findAgentExecutableIndex(tokens, shell, isClaudeExecutableToken)
+}
+
+export function findCodexExecutableIndex(
+  tokens: readonly string[],
+  shell: AgentStartupShell
+): number {
+  return findAgentExecutableIndex(tokens, shell, isCodexExecutableToken)
+}
+
+function findAgentExecutableIndex(
+  tokens: readonly string[],
+  shell: AgentStartupShell,
+  isExecutableToken: (token: string) => boolean
+): number {
   let commandPosition = true
   for (let i = 0; i < tokens.length; i += 1) {
     const token = tokens[i]
     if (commandPosition) {
-      if (isClaudeExecutableToken(token)) {
+      if (isExecutableToken(token)) {
         return i
       }
       if (

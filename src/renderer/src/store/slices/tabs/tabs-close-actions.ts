@@ -27,11 +27,20 @@ import { settleAttentionRemovedBy } from '../workspace-attention/attention-remov
 import { MARKOV_LAYOUT_OWNER_IS_MAIN } from '../../../../../shared/layout-owner-switch'
 import { closeContentTabThroughLayoutOwner } from './content-tab-close-through-layout-owner'
 import { isEditorTabContentType } from '../editor/tabs/editor-tab-content-type'
-import type { AppState } from '../../types'
 import type { TuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent'
 import { isTuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent-config'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../../../shared/execution-host'
 import { forgetDesktopCreatedServerTab } from '@/lib/desktop-created-server-tabs'
+import {
+  countMainAreaTabs,
+  dropsGroupOnLastTabClose,
+  layoutTabGroups
+} from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
+import {
+  emptiedWorktreeLandingPatch,
+  landOnEmptiedWorktree,
+  landsOnEmptiedWorktree
+} from './tabs-close-emptied-landing'
 
 export function createTabsCloseActions(
   set: TabsSliceSet,
@@ -148,8 +157,11 @@ export function createTabsCloseActions(
             if (
               group &&
               wasLastTab &&
-              current.layoutByWorktree[worktreeId] &&
-              nextGroups.length > 1
+              dropsGroupOnLastTabClose(
+                group,
+                nextGroups,
+                Boolean(current.layoutByWorktree[worktreeId])
+              )
             ) {
               nextGroups = nextGroups.filter((candidate) => candidate.id !== group.id)
               const collapsedState = collapseGroupLayout(
@@ -157,7 +169,7 @@ export function createTabsCloseActions(
                 current.activeGroupIdByWorktree,
                 worktreeId,
                 group.id,
-                nextGroups[0]?.id ?? null
+                layoutTabGroups(nextGroups)[0]?.id ?? null
               )
               nextLayoutByWorktree = collapsedState.layoutByWorktree
               nextActiveGroupIdByWorktree = collapsedState.activeGroupIdByWorktree
@@ -165,7 +177,7 @@ export function createTabsCloseActions(
             // Unwinding a failed create added no tab; preserve the original selection instead of landing on welcome.
             const shouldDeactivateWorktree =
               !opts?.preserveWorktreeSelection &&
-              landsOnEmptiedWorktree(current, worktreeId, nextTabs.length)
+              landsOnEmptiedWorktree(current, worktreeId, countMainAreaTabs(worktreeId, nextTabs))
             return {
               unifiedTabsByWorktree: { ...current.unifiedTabsByWorktree, [worktreeId]: nextTabs },
               groupsByWorktree: {
@@ -239,75 +251,6 @@ export function createTabsCloseActions(
       return { closedTabId: tabId, wasLastTab, worktreeId }
     }
   }
-}
-
-// Last user-close lands on welcome; failed-create cleanup preserves selection.
-type LandingState = Pick<
-  AppState,
-  | 'activeWorktreeId'
-  | 'unifiedTabsByWorktree'
-  | 'tabsByWorktree'
-  | 'browserTabsByWorktree'
-  | 'openFiles'
-  | 'activeTabIdByWorktree'
-  | 'activeBrowserTabIdByWorktree'
-  | 'activeFileIdByWorktree'
-  | 'activeTabTypeByWorktree'
->
-
-function landsOnEmptiedWorktree(
-  current: LandingState,
-  worktreeId: string,
-  remainingTabs: number
-): boolean {
-  return (
-    current.activeWorktreeId === worktreeId &&
-    remainingTabs === 0 &&
-    (current.tabsByWorktree[worktreeId] ?? []).length === 0 &&
-    (current.browserTabsByWorktree[worktreeId] ?? []).length === 0 &&
-    !current.openFiles.some((file) => file.worktreeId === worktreeId)
-  )
-}
-
-function emptiedWorktreeLandingPatch(current: LandingState, worktreeId: string) {
-  return {
-    activeWorktreeId: null,
-    activeWorkspaceKey: null,
-    activeWorkspaceExecutionHostId: null,
-    activeTabId: null,
-    activeBrowserTabId: null,
-    activeFileId: null,
-    activeTabType: 'terminal' as const,
-    activeTabIdByWorktree: { ...current.activeTabIdByWorktree, [worktreeId]: null },
-    activeBrowserTabIdByWorktree: { ...current.activeBrowserTabIdByWorktree, [worktreeId]: null },
-    activeFileIdByWorktree: { ...current.activeFileIdByWorktree, [worktreeId]: null },
-    activeTabTypeByWorktree: {
-      ...current.activeTabTypeByWorktree,
-      [worktreeId]: 'terminal' as const
-    }
-  }
-}
-
-type LandingSet = (update: (state: AppState) => Partial<AppState>) => void
-
-/** After main's frame dropped a closed tab: lands when that emptied the active worktree. */
-export function landOnEmptiedWorktree(
-  set: LandingSet,
-  get: () => AppState,
-  worktreeId: string
-): boolean {
-  const state = get()
-  if (
-    !landsOnEmptiedWorktree(
-      state,
-      worktreeId,
-      (state.unifiedTabsByWorktree[worktreeId] ?? []).length
-    )
-  ) {
-    return false
-  }
-  set((current) => emptiedWorktreeLandingPatch(current, worktreeId))
-  return true
 }
 
 /** Main opens the chat where it opens any chat this host lists: a host-kept chat comes back. */

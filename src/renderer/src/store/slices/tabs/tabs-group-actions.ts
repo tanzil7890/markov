@@ -11,6 +11,10 @@ import { workspaceRootGroupId } from '../../../../../shared/workspace-layout/wor
 import { insertTabIdIntoOrder } from '../../../../../shared/workspace-layout/tab-order'
 import { resolveUnifiedTabCreatePlacement } from './tabs-create-placement'
 import { ownsGlobalSelection } from '../../global-selection-owner'
+import {
+  isRightSidebarTabGroupId,
+  layoutTabGroups
+} from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 type SplitGroupState = Pick<
   TabsSlice,
@@ -62,9 +66,13 @@ export function createTabsGroupActions(
 > {
   return {
     ensureWorktreeRootGroup: (worktreeId, orderSlot) => {
-      const existingGroups = get().groupsByWorktree[worktreeId] ?? []
+      // The sidebar's group is not a root; a workspace holding only it still gets one.
+      const existingGroups = layoutTabGroups(get().groupsByWorktree[worktreeId] ?? [])
       if (!orderSlot && existingGroups.length > 0) {
-        return get().activeGroupIdByWorktree[worktreeId] ?? existingGroups[0].id
+        const activeGroupId = get().activeGroupIdByWorktree[worktreeId]
+        return activeGroupId && existingGroups.some((group) => group.id === activeGroupId)
+          ? activeGroupId
+          : existingGroups[0].id
       }
 
       let groupId = workspaceRootGroupId(worktreeId)
@@ -77,16 +85,17 @@ export function createTabsGroupActions(
           return state
         }
         const tabs = state.unifiedTabsByWorktree[worktreeId] ?? []
+        const laidOutGroups = layoutTabGroups(groups)
         const placement = resolveUnifiedTabCreatePlacement({
-          groups,
+          groups: laidOutGroups,
           tabs,
           activeGroupId: state.activeGroupIdByWorktree[worktreeId],
           targetGroupId: orderSlot?.targetGroupId,
           lookupWorktrees: () => []
         })
         const group =
-          groups.find((entry) => entry.id === placement.groupId) ??
-          groups[0] ??
+          laidOutGroups.find((entry) => entry.id === placement.groupId) ??
+          laidOutGroups[0] ??
           emptySplitGroup(worktreeId, groupId)
         groupId = group.id
         let tabOrder = group.tabOrder
@@ -108,9 +117,9 @@ export function createTabsGroupActions(
         return {
           groupsByWorktree: {
             ...state.groupsByWorktree,
-            [worktreeId]: groups.length
+            [worktreeId]: laidOutGroups.length
               ? groups.map((entry) => (entry.id === groupId ? nextGroup : entry))
-              : [nextGroup]
+              : [nextGroup, ...groups]
           },
           layoutByWorktree: {
             ...state.layoutByWorktree,
@@ -119,7 +128,7 @@ export function createTabsGroupActions(
               groupId
             }
           },
-          activeGroupIdByWorktree: groups.length
+          activeGroupIdByWorktree: laidOutGroups.length
             ? state.activeGroupIdByWorktree
             : {
                 ...state.activeGroupIdByWorktree,
@@ -132,6 +141,10 @@ export function createTabsGroupActions(
 
     focusGroup: (worktreeId, groupId) =>
       set((state) => {
+        // The sidebar shows its own terminals; the main area's focus stays where it was.
+        if (isRightSidebarTabGroupId(worktreeId, groupId)) {
+          return state
+        }
         const groupAlreadyFocused = state.activeGroupIdByWorktree[worktreeId] === groupId
         const nextActiveGroupIdByWorktree = groupAlreadyFocused
           ? state.activeGroupIdByWorktree
@@ -186,7 +199,7 @@ export function createTabsGroupActions(
           current.activeGroupIdByWorktree,
           worktreeId,
           groupId,
-          remainingGroups[0]?.id ?? null
+          layoutTabGroups(remainingGroups)[0]?.id ?? null
         )
         // Why: drop the dead group's recent-quick-command entry so the map can't grow unbounded as groups open/close.
         const { [groupId]: _droppedRecent, ...remainingRecent } =

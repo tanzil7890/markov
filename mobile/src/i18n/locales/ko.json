@@ -2160,9 +2160,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "접기"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "새 CLI에서 재개"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "최신 내용으로 스크롤"
     },

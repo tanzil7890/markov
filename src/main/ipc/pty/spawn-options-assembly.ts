@@ -1,4 +1,5 @@
 import { withClaudeAgentViewPlugin } from '../../../shared/claude-agent-view-launch'
+import { withMcpGatewayServer } from '../../mcp-gateway/mcp-gateway-agent-launch'
 import { resolveStartupShell } from '../../../shared/agent-launch/startup/tui-agent-startup-shell'
 import { resolveLocalWindowsAgentStartupShell } from '../../../shared/windows-terminal-shell'
 import { getAppEnvironment } from '../../../shared/app-environment'
@@ -140,10 +141,15 @@ export async function assemblePtySpawnLaunchOptions(input: PtySpawnLaunchOptions
   })
   const env = openCodeLaunch.env
   const pluginDir = !connectionId ? env?.MARKOV_CLAUDE_AGENT_VIEW_PLUGIN_DIR : undefined
-  const launchCommand =
+  const pluginCommand =
     pluginDir && openCodeLaunch.command
       ? withClaudeAgentViewPlugin(openCodeLaunch.command, pluginDir, shell)
       : openCodeLaunch.command
+  // Connections live on this machine: an SSH host or a WSL guest cannot run this app's CLI path.
+  const launchCommand =
+    connectionId || input.codexRuntime === 'wsl'
+      ? pluginCommand
+      : await withMcpGatewayServer(pluginCommand, shell)
   promoteAgentTeamsShimPath(env, input.requestedAgentTeamsPath)
   const spawnOptions: PtySpawnOptions = {
     cols: args.cols,

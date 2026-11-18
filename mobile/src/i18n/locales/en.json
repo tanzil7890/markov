@@ -2281,9 +2281,6 @@
       "availableSkills": "{{count}} available",
       "commands": "Commands"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Resume in New CLI"
-    },
     "nativeChatRenderData": {
       "notFoundTitle": "Can't find this conversation yet",
       "notFoundSubtitle": "Send a message to start one, or open the terminal view to see what {{agent}} is doing.",

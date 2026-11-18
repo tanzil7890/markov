@@ -20,6 +20,7 @@ import {
 import { DEFAULT_SOURCE_CONTROL_GROUP_ORDER } from './source-control/listing/source-control-group-order'
 import { DESKTOP_TERMINAL_SCROLLBACK_ROWS_DEFAULT } from './terminal/replay/terminal-scrollback-policy'
 import { NESTED_WORKER_MAX_DEPTH_DEFAULT } from './nested-worker-depth'
+import { DEFAULT_FLOATING_TERMINAL_TRIGGER_LOCATION } from './floating-terminal-trigger-location'
 
 export function buildDefaultSettings(args: {
   workspaceDir: string
@@ -192,7 +193,8 @@ export function buildDefaultSettings(args: {
     floatingTerminalCwd: '~',
     floatingTerminalTrustedCwds: [],
     floatingTerminalCwdMigratedToAppWorkspace: true,
-    floatingTerminalTriggerLocation: 'top-bar',
+    floatingTerminalTriggerLocation: DEFAULT_FLOATING_TERMINAL_TRIGGER_LOCATION,
+    floatingTerminalTriggerMovedToSidebar: true,
     notifications: args.notifications,
     diffDefaultView: 'inline',
     diffWordWrap: false,

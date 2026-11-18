@@ -49,24 +49,24 @@ export function renderSetupGuideSettingsSection(context: SettingsRenderContext):
 }
 
 export function renderGeneralSettingsSection(context: SettingsRenderContext): React.JSX.Element {
-  const { model, interactions, navigation, terminal, view } = context
+  const { model, navigation, terminal, view } = context
   return (
     <SettingsSection
       id="general"
-      title={translate('auto.components.settings.Settings.7807c11c4d', 'General')}
+      title={translate('settings.sections.workspaces.title', 'Workspaces')}
       description={translate(
-        'auto.components.settings.Settings.f9b77539fd',
-        'Workspace defaults, app setup, and maintenance.'
+        'settings.sections.workspaces.description',
+        'Where workspaces are created and which ones the sidebar lists.'
       )}
       searchEntries={navigation.getSectionSearchEntries('general')}
+      // The workspace block carries its own heading.
+      hideHeader
     >
       {view.isSectionMounted('general') ? (
         <GeneralPane
           settings={model.settings}
           updateSettings={model.updateSettings}
           updateSettingsOrThrow={model.updateSettingsOrThrow}
-          fontSuggestions={model.terminalFontSuggestions}
-          onRequestFontSuggestions={interactions.requestFontSuggestions}
           wslSupportedPlatform={terminal.localWslSupportedPlatform}
           wslAvailable={terminal.localWindowsRuntimeCapabilities.wslAvailable}
           wslDistros={terminal.localWindowsRuntimeCapabilities.wslDistros}
@@ -84,7 +84,8 @@ export function renderIntegrationsSettingsSection(
   return (
     <SettingsSection
       id="integrations"
-      title={translate('auto.components.settings.Settings.c9ca101a3b', 'Integrations')}
+      // Why not "Integrations": the tab above it already carries that name.
+      title={translate('settings.integrations.servicesTitle', 'Services')}
       description={translate(
         'auto.components.settings.Settings.b07041697f',
         'Connect GitHub, GitLab, Linear, and source-hosting services.'

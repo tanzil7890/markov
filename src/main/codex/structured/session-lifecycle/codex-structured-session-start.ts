@@ -1,3 +1,4 @@
+import { codexReplacedCommandNotice } from '../launch/codex-chat-command'
 import type { AgentSessionAccountKind } from '../../../../shared/agent-session/agent-session-availability'
 import {
   throwIfSignalAborted,
@@ -202,6 +203,19 @@ export async function openCodexStructuredSession(
   }
   current()
   acquisitions.deleteIfCurrent(sessionId, attempt)
+  if (launch.replacedCommand && launch.resumeThreadId === null) {
+    // Said once, in a new chat: a later start of the same chat would only repeat it.
+    session.translator?.handle({
+      type: 'notification',
+      sessionId,
+      threadId: opened.threadId,
+      method: 'warning',
+      params: {
+        threadId: opened.threadId,
+        message: codexReplacedCommandNotice(launch.command, launch.replacedCommand)
+      }
+    })
+  }
   session.skillReport = new CodexSkillReport({
     connection,
     cwd: launch.cwd,

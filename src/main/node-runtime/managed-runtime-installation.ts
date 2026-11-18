@@ -72,6 +72,11 @@ export class ManagedRuntimeInstallation {
     return this.state.subscribe(onChange)
   }
 
+  /** Settles once no install or removal is running; never rejects. */
+  whenIdle(): Promise<void> {
+    return this.mutation
+  }
+
   private async readInstalledFacts(): Promise<InstalledFacts> {
     const pin = this.runtime.pin()
     const { release, broken, unreadable } = resolveInstalledRuntimeRelease(this.root, pin)

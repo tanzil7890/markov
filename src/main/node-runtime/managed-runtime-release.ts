@@ -12,6 +12,8 @@ export type ManagedRuntimePin = {
   archiveSha256: string
   archiveBytes: number
   members: readonly { path: string; sha256: string; bytes: number }[]
+  /** Unpack every file of a tar.gz, not only `members`: its other files are needed beside them. */
+  extractWholeArchive?: true
 }
 
 export type ManagedRuntime = {

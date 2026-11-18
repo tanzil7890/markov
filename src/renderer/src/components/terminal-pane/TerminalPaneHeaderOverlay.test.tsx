@@ -77,8 +77,6 @@ function renderOverlay({
   onClosePane = vi.fn(),
   onRemoveTitle = vi.fn(),
   onRenameSubmit = vi.fn(),
-  canContinueAgentSessionInNewSession = false,
-  onContinueAgentSessionInNewSession = vi.fn(),
   canShowTerminal = false,
   canResumeInNewNativeChat = false,
   renameValue = '',
@@ -93,8 +91,6 @@ function renderOverlay({
   onClosePane?: ReturnType<typeof vi.fn>
   onRemoveTitle?: ReturnType<typeof vi.fn>
   onRenameSubmit?: ReturnType<typeof vi.fn>
-  canContinueAgentSessionInNewSession?: boolean
-  onContinueAgentSessionInNewSession?: ReturnType<typeof vi.fn>
   canShowTerminal?: boolean
   canResumeInNewNativeChat?: boolean
   renameValue?: string
@@ -141,10 +137,6 @@ function renderOverlay({
         hiddenStartupStyle={{}}
         managerRef={{ current: dropSetup?.manager ?? null }}
         paneTransportsRef={{ current: dropSetup?.transports ?? new Map<number, PtyTransport>() }}
-        canContinueAgentSessionInNewSession={canContinueAgentSessionInNewSession}
-        onContinueAgentSessionInNewSession={
-          onContinueAgentSessionInNewSession as (pane: ManagedPane) => void
-        }
         canShowTerminal={canShowTerminal}
         onShowTerminal={vi.fn()}
         canResumeInNewNativeChat={canResumeInNewNativeChat}
@@ -214,12 +206,6 @@ describe('TerminalPaneHeaderOverlay', () => {
     })
 
     expect(container.querySelector('button[aria-label="Show terminal"]')).not.toBeNull()
-    expect(container.querySelectorAll('button[aria-label="Chat settings"]')).toHaveLength(1)
-    expect(
-      container.querySelector(
-        '.pane-title-bar[data-active-pane] button[aria-label="Chat settings"]'
-      )
-    ).not.toBeNull()
     expect(container.textContent).not.toContain('Continue in Chat UI')
   })
 
@@ -326,25 +312,6 @@ describe('TerminalPaneHeaderOverlay', () => {
     pressInputKey(input as HTMLInputElement, 'Enter')
 
     expect(onRenameSubmit).toHaveBeenCalledTimes(1)
-  })
-
-  it('shows new-session continuation on the active agent pane header', () => {
-    const onContinueAgentSessionInNewSession = vi.fn()
-    const { container } = renderOverlay({
-      paneTitles: { 1: '', 2: '' },
-      canContinueAgentSessionInNewSession: true,
-      onContinueAgentSessionInNewSession
-    })
-    const handoff = container.querySelector<HTMLButtonElement>(
-      'button[aria-label="Hand Off to Another Agent"]'
-    )
-
-    expect(handoff).not.toBeNull()
-    act(() => handoff?.click())
-
-    expect(onContinueAgentSessionInNewSession).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 1 })
-    )
   })
 })
 

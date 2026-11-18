@@ -3,8 +3,6 @@ import { fetchCodexRateLimits } from '../codex-fetcher'
 import { fetchGeminiRateLimits } from '../gemini-usage-fetcher'
 import { fetchGrokRateLimits } from '../grok-fetcher'
 import { readGrokAuthSession } from '../grok-auth'
-import { fetchCursorRateLimits } from '../cursor-fetcher'
-import { readCursorAuthSession } from '../cursor-auth'
 import { fetchZcodeRateLimits } from '../zcode-usage-fetcher'
 import { fetchAntigravityRateLimits } from '../antigravity-usage-fetcher'
 import { antigravityUsageDisabledSnapshot } from '../antigravity-usage-snapshot'
@@ -78,6 +76,7 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
     // Gate only Codex, never siblings, when its runtime is skipped (#STA-4422).
     const codexHome = await this.resolveCodexHome(codexTarget)
     const antigravityFetchAllowed =
+      !this.isProviderWithheld('antigravity') &&
       (this.antigravityUsageEnabledResolver?.() ?? true) &&
       (options?.force || !this.shouldSkipAutomatedFetch('antigravity', this.state.antigravity))
     // A login change seen here invalidates before the baseline below, so this read still counts.
@@ -177,18 +176,12 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
         : this.withFetchingStatus(previousState.zcode, 'zcode')
     })
 
-    // Async Keychain/worker DB reads must not delay other providers.
-    const cursorResultPromise = readCursorAuthSession()
-      .then((authReadResult) => {
-        this.cursorAuthConfigured = authReadResult.status === 'ok'
-        return fetchCursorRateLimits({ signal, authReadResult })
-      })
-      .then(
-        (value) => ({ status: 'fulfilled', value }) as const,
-        (reason) => ({ status: 'rejected', reason }) as const
-      )
+    const cursorResultPromise = this.fetchCursorWithLocalSignIn(signal).then(
+      (value) => ({ status: 'fulfilled', value }) as const,
+      (reason) => ({ status: 'rejected', reason }) as const
+    )
 
-    const zcodeResultPromise = (
+    const zcodeResultPromise = this.unlessWithheld('zcode', () =>
       zcodePlanConfigResult.error
         ? Promise.resolve(this.getZcodePlanCredentialError(zcodePlanConfigResult.error))
         : fetchZcodeRateLimits({ signal, planCredential: zcodePlanCredential })
@@ -243,35 +236,39 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
               signal
             })),
         fetchGeminiRateLimits(geminiCliOAuthEnabled),
-        fetchOpenCodeGoUsage({
-          settingsApiKey: openCodeGoApiKey,
-          // Store/env keys become known only when the fetch resolves them.
-          onApiKeyResolved: (resolution) => {
-            // A credential change invalidates stale in-flight presence results.
-            if (opencodeGeneration !== this.opencodeFetchGeneration) {
-              return
-            }
-            // An undecryptable or briefly unreadable saved key still counts, so the bar stays up.
-            this.openCodeGoApiKeyConfigured =
-              resolution.status === 'found' ||
-              openCodeGoApiKeyError !== null ||
-              openCodeGoApiKeyReadSkipped
-          },
-          cookie,
-          workspaceIdOverride: workspaceIdOverride || undefined,
-          networkProxySettings: this.networkProxySettingsResolver?.(),
-          signal
-        }),
+        this.unlessWithheld('opencode-go', () =>
+          fetchOpenCodeGoUsage({
+            settingsApiKey: openCodeGoApiKey,
+            // Store/env keys become known only when the fetch resolves them.
+            onApiKeyResolved: (resolution) => {
+              // A credential change invalidates stale in-flight presence results.
+              if (opencodeGeneration !== this.opencodeFetchGeneration) {
+                return
+              }
+              // An undecryptable or briefly unreadable saved key still counts, so the bar stays up.
+              this.openCodeGoApiKeyConfigured =
+                resolution.status === 'found' ||
+                openCodeGoApiKeyError !== null ||
+                openCodeGoApiKeyReadSkipped
+            },
+            cookie,
+            workspaceIdOverride: workspaceIdOverride || undefined,
+            networkProxySettings: this.networkProxySettingsResolver?.(),
+            signal
+          })
+        ),
         this.fetchKimiWithResolvedHome(),
-        miniMaxConfigResult.error
-          ? Promise.resolve(this.getMiniMaxCredentialError(miniMaxConfigResult.error))
-          : fetchMiniMaxRateLimits({
-              cookie: miniMaxCookie,
-              groupId: miniMaxGroupId,
-              models: miniMaxModels,
-              endpointMode: miniMaxEndpoint,
-              apiKey: miniMaxApiKey
-            })
+        this.unlessWithheld('minimax', () =>
+          miniMaxConfigResult.error
+            ? Promise.resolve(this.getMiniMaxCredentialError(miniMaxConfigResult.error))
+            : fetchMiniMaxRateLimits({
+                cookie: miniMaxCookie,
+                groupId: miniMaxGroupId,
+                models: miniMaxModels,
+                endpointMode: miniMaxEndpoint,
+                apiKey: miniMaxApiKey
+              })
+        )
       ])
 
     if (signal.aborted) {

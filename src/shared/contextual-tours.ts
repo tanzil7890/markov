@@ -86,7 +86,7 @@ export const CONTEXTUAL_TOURS = [
       {
         id: 'agent-sessions-new-tab',
         title: 'New agents start here',
-        body: 'Click + to start an agent, a terminal, or a browser tab.',
+        body: 'Click + to start a chat. The arrow beside it opens a terminal, a browser tab, or another agent.',
         targetSelector: '[data-contextual-tour-target="tab-create-menu"]',
         requiredForStart: true,
         preferredPlacement: 'bottom',

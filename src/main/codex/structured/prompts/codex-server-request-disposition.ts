@@ -3,6 +3,13 @@ import type {
   CodexAppServerServerRequest
 } from '../../app-server/codex-app-server-connection-types'
 import './codex-structured-prompt-replies'
+import { readRecord, readString } from '../../app-server/codex-item-field-readers'
+import { isCodexMcpToolApproval } from './codex-mcp-tool-approval'
+import {
+  codexMcpApprovalAllowedWithoutAsking,
+  codexMcpApprovalQuestion,
+  type CodexMcpApprovalChat
+} from './codex-mcp-approval-memory'
 import {
   CODEX_COMMAND_APPROVAL_METHOD,
   CODEX_FILE_CHANGE_APPROVAL_METHOD,
@@ -21,7 +28,8 @@ export const CODEX_LEGACY_EXEC_APPROVAL_METHOD = 'execCommandApproval'
 
 export type CodexServerRequestDisposition =
   | { kind: 'prompt'; prompt: CodexPendingPrompt }
-  | { kind: 'responded'; method: string }
+  /** `allowed`: the words of an approval Markov allowed without asking, for the chat's record. */
+  | { kind: 'responded'; method: string; allowed?: string }
 
 type ResponseConnection = Pick<CodexAppServerConnection, 'respond' | 'respondWithError'>
 
@@ -29,8 +37,27 @@ type ResponseConnection = Pick<CodexAppServerConnection, 'respond' | 'respondWit
 export function disposeCodexServerRequest(
   registry: CodexPromptRegistry,
   connection: ResponseConnection,
-  request: CodexAppServerServerRequest
+  request: CodexAppServerServerRequest,
+  /** The chat asking; without it every approval is put to the user. */
+  chat?: CodexMcpApprovalChat
 ): CodexServerRequestDisposition {
+  const params = readRecord(request.params)
+  // Why turnId: only an approval that would have become a prompt is allowed in its place.
+  if (
+    chat &&
+    request.method === CODEX_MCP_ELICITATION_METHOD &&
+    isCodexMcpToolApproval(params) &&
+    readString(params, 'threadId') &&
+    readString(params, 'turnId') &&
+    codexMcpApprovalAllowedWithoutAsking(chat, codexMcpApprovalQuestion(params))
+  ) {
+    connection.respond(request.id, { action: 'accept', content: null, _meta: null })
+    return {
+      kind: 'responded',
+      method: request.method,
+      allowed: readString(params, 'message') ?? 'Allow this tool call?'
+    }
+  }
   const prompt = registry.register(request)
   if (prompt) {
     return { kind: 'prompt', prompt }

@@ -46,6 +46,7 @@ import { CLIENT_UI_METHODS } from './client-state/client-ui'
 import { CLIENT_EVENT_METHODS } from './client-events/client-events'
 import { WORKSPACE_PORT_METHODS } from './workspace-ports/workspace-ports'
 import { LINK_PREVIEW_METHODS } from './link-preview/link-preview'
+import { MCP_GATEWAY_METHODS } from './mcp-gateway/mcp-gateway'
 import { PLUGIN_METHODS } from './plugins/plugins'
 import { PLUGIN_VIEW_METHODS } from './plugins/plugin-view'
 import { PLUGIN_DEV_EMIT_METHODS } from './plugins/plugin-dev-emit'
@@ -139,6 +140,7 @@ export const ALL_RPC_METHODS = [
   ...SPEECH_METHODS,
   ...WORKSPACE_PORT_METHODS,
   ...LINK_PREVIEW_METHODS,
+  ...MCP_GATEWAY_METHODS,
   ...PLUGIN_METHODS,
   ...PLUGIN_VIEW_METHODS,
   ...PLUGIN_DEV_EMIT_METHODS,

@@ -1,3 +1,4 @@
+import { selectFocusedSettingsTabWorktreeId } from '@/lib/settings-tab-placement'
 import { usePluginCommands } from '@/store/plugin-panels'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { matchesRecentTabSwitcherChord } from '../../../../shared/window-shortcut-policy'
@@ -68,6 +69,10 @@ export function useNativeChatToggleShortcut(worktreeId: string, isWorktreeActive
     ): void => {
       const state = useAppStore.getState()
       if (!matchesNativeChatToggleShortcut(input, platform, state.keybindings)) {
+        return
+      }
+      // Why: the chat or terminal to toggle is under the Settings tab, out of sight.
+      if (selectFocusedSettingsTabWorktreeId(state)) {
         return
       }
       const context = getKeybindingContext(e.target)

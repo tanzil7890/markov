@@ -37,7 +37,6 @@ import {
 import { NativeChatPaneMenuItems } from './NativeChatPaneMenuItems'
 import { NativeChatStructuredPaneMenuItems } from './NativeChatStructuredPaneMenuItems'
 import type { NativeChatComposerHandle } from './native-chat-composer-types'
-import { AgentSessionContinuationMenuItem } from '@/components/terminal-pane/AgentSessionContinuationMenuItem'
 import { AgentSessionContextCopyMenuItem } from '@/components/terminal-pane/AgentSessionContextCopyMenuItem'
 import {
   noNativeChatContextMenuTarget,
@@ -70,9 +69,6 @@ type UseNativeChatContextMenuArgs = {
   enabled?: boolean
   /** Bridge-only escape hatch; structured sessions have no terminal view. */
   onSwitchToTerminal?: () => void
-  /** Hand off a standalone structured chat; terminal panes supply their own action. */
-  onHandOff?: () => void
-  handOffDisabled?: boolean
   actions: NativeChatContextMenuActions
   showTerminalPaneActions?: boolean
   splitShortcutLabels?: { right: string; down: string }
@@ -98,8 +94,6 @@ export type NativeChatContextMenuActions = {
   canExpandPane: boolean
   isPaneExpanded: boolean
   onToggleExpand: () => void
-  canContinueAgentSessionInNewSession: boolean
-  onContinueAgentSessionInNewSession: () => void
   onCopyAgentSessionContext: () => void
   onSetTitle: () => void
   canClearPaneTitle: boolean
@@ -120,8 +114,6 @@ export const emptyNativeChatContextMenuActions: Omit<NativeChatContextMenuAction
   canExpandPane: false,
   isPaneExpanded: false,
   onToggleExpand: () => {},
-  canContinueAgentSessionInNewSession: false,
-  onContinueAgentSessionInNewSession: () => {},
   onCopyAgentSessionContext: () => {},
   onSetTitle: () => {},
   canClearPaneTitle: false,
@@ -139,8 +131,6 @@ export function useNativeChatContextMenu({
   composerRef,
   enabled = true,
   onSwitchToTerminal,
-  onHandOff,
-  handOffDisabled,
   actions,
   showTerminalPaneActions = true,
   splitShortcutLabels,
@@ -175,7 +165,7 @@ export function useNativeChatContextMenu({
     state.canPaste ||
     Boolean(target.quoteText ?? target.link ?? target.codeText ?? target.messageText) ||
     (target.rewindItemId !== null && rewind !== undefined)
-  const hasSessionItems = onFind !== undefined || onHandOff !== undefined || showTerminalPaneActions
+  const hasSessionItems = onFind !== undefined || showTerminalPaneActions
   const hasItems =
     hasEditItems ||
     hasSessionItems ||
@@ -310,9 +300,6 @@ export function useNativeChatContextMenu({
           {hasEditItems && hasSessionItems ? <DropdownMenuSeparator /> : null}
           {onFind ? <NativeChatFindMenuItem onSelect={() => onFind(state.returnFocusTo)} /> : null}
           {standaloneMenu.quickCommands}
-          {onHandOff ? (
-            <AgentSessionContinuationMenuItem disabled={handOffDisabled} onSelect={onHandOff} />
-          ) : null}
           {standaloneMenu.sessionItems}
           {showTerminalPaneActions ? (
             <>
@@ -327,11 +314,6 @@ export function useNativeChatContextMenu({
                     <DropdownMenuShortcut>{shortcutLabel}</DropdownMenuShortcut>
                   ) : null}
                 </DropdownMenuItem>
-              ) : null}
-              {actions.canContinueAgentSessionInNewSession ? (
-                <AgentSessionContinuationMenuItem
-                  onSelect={actions.onContinueAgentSessionInNewSession}
-                />
               ) : null}
               <AgentSessionContextCopyMenuItem onSelect={actions.onCopyAgentSessionContext} />
             </>

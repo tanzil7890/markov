@@ -1,14 +1,9 @@
 import type { SettingsSearchEntry } from '../search/settings-search'
-import { getTerminalAppearanceSearchEntries } from '../terminal/terminal-search'
-import { getSidebarEntries } from './appearance-sidebar-search'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from '../search/settings-search-keywords'
-import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { getStatusBarToggles } from './appearance-status-bar-search'
 import { getUsagePercentageDisplayEntry } from './appearance-usage-percentage-search'
-import { getMenuBarIconEntries, getSystemTrayEntries } from './appearance-system-presence-search'
-import { getReduceVisualEffectsEntries } from './appearance-reduce-visual-effects-search'
 
 export const getThemeEntries = createLocalizedCatalog((): SettingsSearchEntry[] => [
   {
@@ -251,50 +246,3 @@ export const getAppIconEntries = createLocalizedCatalog((): SettingsSearchEntry[
     ]
   }
 ])
-
-const getAppearanceSectionEntries = createLocalizedCatalog((): SettingsSearchEntry[] => [
-  {
-    title: translate('auto.components.settings.AppearancePane.interfaceTitle', 'Interface')
-  },
-  {
-    title: translate('auto.components.settings.AppearancePane.terminalTitle', 'Terminal')
-  },
-  {
-    title: translate(
-      'auto.components.settings.AppearancePane.windowSidebarTitle',
-      'Window & Sidebar'
-    ),
-    description: translate(
-      'auto.components.settings.AppearancePane.windowSidebarSummary',
-      'Sidebar, status bar, and file explorer'
-    )
-  }
-])
-
-type AppearancePaneSearchOptions = {
-  showDesktopThemeImports?: boolean
-  showSystemTray?: boolean
-  showMenuBarIcon?: boolean
-}
-
-export function getAppearancePaneSearchEntries(
-  options: AppearancePaneSearchOptions = {}
-): SettingsSearchEntry[] {
-  return [
-    ...getAppearanceSectionEntries(),
-    ...getThemeEntries(),
-    ...getCodeEditorThemeEntries(),
-    ...(SHOW_UI_LANGUAGE_SETTING ? getLanguageEntries() : []),
-    ...getTypographyEntries(),
-    ...getZoomEntries(),
-    ...getTerminalAppearanceSearchEntries(options),
-    ...getLayoutEntries(),
-    ...getTitlebarEntries(),
-    ...getReduceVisualEffectsEntries(),
-    ...getStatusBarEntries(),
-    ...getSidebarEntries(),
-    ...getAppIconEntries(),
-    ...getSystemTrayEntries(options),
-    ...getMenuBarIconEntries(options)
-  ]
-}

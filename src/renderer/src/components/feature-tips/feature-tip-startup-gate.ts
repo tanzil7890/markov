@@ -1,3 +1,4 @@
+import { isOfferedRightSidebarTab } from '../../../../shared/right-sidebar-offered-tabs'
 import {
   getCompletedFeatureTipIds,
   getOrderedUnseenFeatureTips,
@@ -32,8 +33,13 @@ export function isSessionSearchFeatureTipCompleted(
   settings: FeatureTipSettings | null | undefined,
   webClient: boolean
 ): boolean {
-  // Why: the browser client cannot index transcripts, so there is nothing to turn on.
-  return webClient || resolveAiVaultSearchSettings(settings).enabled
+  // Why: the browser client cannot index transcripts, so there is nothing to turn on; and the tip
+  // ends by opening the sidebar's Agents tab, so it is not shown while that tab is withheld.
+  return (
+    webClient ||
+    !isOfferedRightSidebarTab('vault') ||
+    resolveAiVaultSearchSettings(settings).enabled
+  )
 }
 
 /** Unseen tips whose feature the user has not already set up, in display order. */

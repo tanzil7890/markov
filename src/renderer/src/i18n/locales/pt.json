@@ -2215,7 +2215,6 @@
         "2eece16ad1": "Notificações",
         "1f452cbd4c": "Comportamento de seleção e edição.",
         "0c6ee88a5f": "Entrada e Edição",
-        "b11a5a48a2": "Tema, zoom, aparência do aplicativo e do terminal, barras laterais e barra de status.",
         "93d88d20bf": "Aparência",
         "2d0659f6f0": "Abas globais de terminal, navegador e markdown.",
         "65b19f5bde": "Espaço de Trabalho Flutuante",
@@ -2228,12 +2227,8 @@
         "c33bfd664c": "Shells, renderização, sessões e comportamento do terminal.",
         "a9fb10afca": "Terminal",
         "85f4fd7710": "Origens de Tarefas",
-        "ab4b21b58e": "Nomenclatura de branch, refs base e Autor de IA do Git.",
         "09607cb0fe": "Git e Controle de Versão",
         "33a5e1d597": "Conecte GitHub, GitLab, Linear e serviços de hospedagem de código.",
-        "2b043783ef": "Integrações",
-        "2cd4ea75da": "Padrões de espaço de trabalho, configuração do aplicativo e manutenção.",
-        "13241992bd": "Geral",
         "724c440e72": "primeiros passos",
         "0505d0df29": "comece a usar o Markov",
         "ea0b1bc7b8": "guia de configuração",
@@ -2247,7 +2242,6 @@
         "cd50cec5d7": "Coordene vários agentes de código através do Markov.",
         "58a868e8e4": "Orquestração",
         "7c79d3b7bf": "Opcional",
-        "b1c2f8b0ac": "Alternância de conta opcional e configuração de uso para Claude, Codex, Gemini, OpenCode Go, MiniMax e Grok.",
         "f70ac54d38": "Contas de Provedores de IA",
         "4121f7a0a2": "Gerencie agentes de IA, defina um padrão e personalize comandos.",
         "b49abbd2f7": "Agentes",
@@ -5091,7 +5085,6 @@
           "9907545fa3": "Notificações",
           "d0b7021d64": "Comportamento de seleção e edição.",
           "d7a3e635b6": "Entrada e Edição",
-          "6d1a27e193": "Tema, zoom, aparência do aplicativo e do terminal, barras laterais e barra de status.",
           "2b4474780a": "Aparência",
           "3d9adfe6a5": "Abas globais de terminal, navegador e markdown.",
           "3eb22a3ada": "Espaço de Trabalho Flutuante",
@@ -5104,12 +5097,9 @@
           "b79b5b31e9": "Shells, renderização, sessões e comportamento do terminal.",
           "3de4bbb841": "Terminal",
           "11faa2f7dd": "Origens de Tarefas",
-          "cfa34f4465": "Nomenclatura de branch, refs base e Autor de IA do Git.",
           "70100f94c7": "Git e Controle de Versão",
           "b07041697f": "Conecte GitHub, GitLab, Linear e serviços de hospedagem de código.",
           "c9ca101a3b": "Integrações",
-          "f9b77539fd": "Padrões de espaço de trabalho, configuração do aplicativo e manutenção.",
-          "7807c11c4d": "Geral",
           "6855b0f77d": "Conclua os fluxos de trabalho essenciais que tornam o Markov útil para trabalho paralelo com agentes.",
           "6d119427ef": "Checklist de introdução",
           "eb1176a14e": "Ditado de voz para texto local com modelos no dispositivo.",
@@ -5126,12 +5116,7 @@
           "acc7bbdefd": "Pressione ESC novamente para sair das configurações",
           "43b68e10f0": "Você tem alterações não salvas do Autor de IA do Git. Sair vai descartá-las.",
           "17bdee4ff1": "Descartar alterações não salvas do Autor de IA do Git?",
-          "084d8fac5b": "Privacidade e Segurança",
-          "23931df7e8": "Hosts Remotos",
           "8bd117d669": "Interface",
-          "e1578cd4bc": "Fluxos de Trabalho",
-          "9abb9be3bc": "Configurar",
-          "23c6874fdf": "Capacidades de IA",
           "65358016ea": "Descartar",
           "dev": "Ferramentas de Dev",
           "devDescription": "Ferramentas exclusivas para desenvolvedores testarem estados de UI.",
@@ -5534,12 +5519,6 @@
             "tintOpacityDescription": "Controla com que intensidade a tonalidade é misturada na barra lateral.",
             "tintDescription": "Mantenha a barra lateral esquerda padrão ou aplique uma tonalidade. Para seguir o terminal, escolha Combinar com o Terminal como tema claro ou escuro."
           },
-          "interfaceDefaultFont": "Fonte padrão",
-          "terminalDefaultFont": "Fonte padrão",
-          "interfaceTitle": "Interface",
-          "terminalTitle": "Terminal",
-          "windowSidebarTitle": "Janela e Barra Lateral",
-          "windowSidebarSummary": "Barra lateral, barra de status e explorador de arquivos",
           "gitIgnoredGlossary": "Arquivos correspondentes ao .gitignore.",
           "statusBarDescription": "Escolha quais indicadores aparecem na barra de status.",
           "showPinnedWorktreesInGroups": {
@@ -8273,9 +8252,7 @@
           "dbceaa8840": "Pesquisar configurações",
           "60f8a673a7": "Voltar ao app",
           "6503182299": "Checklist de introdução",
-          "82db1b7de4": "Checklist de introdução, {{value0}} de {{value1}} concluído(s). Mostrar guia de configuração.",
-          "df38d612b7": "Nenhum projeto adicionado ainda.",
-          "3e483e256b": "Nenhuma configuração de projeto correspondente."
+          "df38d612b7": "Nenhum projeto adicionado ainda."
         },
         "computer": {
           "use": {
@@ -8335,7 +8312,6 @@
         "GeneralPane": {
           "confirm_running_work_close": "Confirmar antes de fechar chats ou terminais ativos",
           "confirm_running_work_close_description": "Perguntar antes de parar um agente ou comando ativo ao fechar o chat ou terminal.",
-          "d58fccfd84": "Navegação",
           "5cb5475664": "Confirmar antes de fechar abas fixadas",
           "36b2a5dc6d": "Mostra uma caixa de diálogo de confirmação antes de fechar uma aba fixada.",
           "projectRuntime": "Runtime do Projeto",
@@ -17030,20 +17006,10 @@
             "splitTerminalDown": "Dividir terminal para baixo"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "Comando",
-            "20bbd75896": "Nenhum comando",
-            "b82e237a4b": "Mais comandos rápidos",
-            "85482c57bc": "Executar comando rápido",
-            "b775303755": "Executar comando rápido: {{value0}}",
             "196593b6a9": "Remover {{value0}}",
             "15529ede69": "Editar {{value0}}",
-            "1d411fb6a5": "Salvar um comando rápido para este repositório",
-            "8f1e971966": "Adicionar comando rápido",
             "3220e2da27": "Este comando rápido será removido da sua lista salva.",
             "e8e1a52edb": "Excluir \"{{value0}}\"?",
-            "37e1bb90ce": "Executar: {{value0}}",
-            "77ac113df0": "Iniciar {{value0}}: {{value1}}",
-            "7b1c9d6ae1": "Executar",
             "be8f0ff166": "Excluir",
             "f3a8c2d1e7": "Buscar comandos rápidos...",
             "b4e7f9a2c1": "Nenhum comando corresponde",
@@ -17147,7 +17113,6 @@
             "4655cf570e": "Fechar aba"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "Comando",
             "b856c833ae": "Comando em {{value0}}"
           },
           "TabBarQuickCommandHostLoadStatus": {
@@ -17162,9 +17127,6 @@
           },
           "TerminalTabLeadingIcon": {
             "7ab2964bea": "Conclusão de agente não lida"
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "Esta sessão não pode ser aberta na CLI."
           },
           "tabCreateEntry": {
             "fileNotFound": "Arquivo não encontrado: {{path}}",
@@ -21004,7 +20966,6 @@
         "modelApplyFailed": "Não foi possível aplicar o modelo {{value}}.",
         "effortApplyFailed": "Não foi possível aplicar o esforço {{value}}."
       },
-      "settings": "Configurações do chat",
       "textAttachmentPreview": {
         "copiedContents": "Conteúdo copiado",
         "textAttachment": "Anexo de texto",
@@ -21340,36 +21301,15 @@
       }
     },
     "agentSessionContinuation": {
-      "dialogTitle": "Continuar em Nova Sessão",
-      "dialogDescription": "Inicie uma nova sessão de Agente a partir deste ponto de parada. A sessão original permanece inalterada.",
-      "untitledSession": "Sessão atual",
-      "originalAgent": "Agente Original: {{agent}}",
-      "agent": "Agente",
       "selectAgent": "Selecionar um Agente",
-      "detectingAgents": "Detectando Agentes neste host do espaço de trabalho…",
-      "detectionFailed": "Não foi possível detectar Agentes neste host do espaço de trabalho.",
-      "noAgents": "Nenhum Agente ativado foi detectado neste host do espaço de trabalho.",
-      "onlySourceFamilyDetected": "Neste host do espaço de trabalho só há Agentes disponíveis que compartilham o limite de uso com {{agent}}. Ative ou instale um Agente diferente.",
-      "context": "Contexto",
-      "modeFocused": "Transferência focada (Recomendado)",
-      "modeFocusedDescription": "Usa o status mais recente e o espaço de trabalho atual, lendo detalhes de transcrições mais antigas somente quando necessário.",
-      "modeFull": "Transcrição completa da sessão",
-      "modeFullDescription": "Solicita que o novo Agente leia a sessão salva completa antes de continuar. Isso pode levar mais tempo e usar contexto, uso do plano ou créditos de API significativos.",
-      "startsIn": "Inicia em:",
-      "startSession": "Iniciar Nova Sessão",
-      "starting": "Iniciando…",
       "noContext": "Nenhum contexto de sessão está disponível para continuar em uma nova sessão.",
       "agentDisabled": "{{agent}} está desativado nas configurações de Agente.",
       "agentUnavailable": "{{agent}} não foi detectado neste host do espaço de trabalho.",
       "sent": "Contexto da sessão enviado para {{agent}} em uma nova sessão.",
       "deliveryFailed": "A nova sessão do {{agent}} foi iniciada, mas o contexto não pôde ser enviado.",
       "launchFailed": "Não foi possível iniciar uma nova sessão do {{agent}}.",
-      "handOffToAnotherAgent": "Transferir para outro agente",
       "deliveryUnconfirmed": "O Markov não conseguiu confirmar se o {{agent}} recebeu o contexto da sessão. Confira a nova sessão e cole o contexto manualmente se o campo de texto estiver vazio.",
-      "copyPrompt": "Copiar prompt",
-      "modeLoadedDescription": "Usa as mensagens recentes carregadas neste chat e o espaço de trabalho atual.",
-      "modeCapturedDescription": "Usa o texto capturado e o espaço de trabalho atual.",
-      "preparingContext": "Preparando o contexto salvo do chat…"
+      "copyPrompt": "Copiar prompt"
     },
     "status": {
       "bar": {

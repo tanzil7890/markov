@@ -24,6 +24,7 @@ import { createAccountRuntimeTargetSettingsSync } from '../../rate-limits/accoun
 import { normalizeCodexRuntimeSelection } from '../../codex-accounts/runtime-selection'
 import { normalizeClaudeRuntimeSelection } from '../../claude-accounts/runtime-selection'
 import type { ClaudeStatusLineRateLimits } from '../../../shared/claude-statusline-rate-limits'
+import { isOfferedUsageProvider } from '../../../shared/agent-launch/catalog/offered-usage-trackers'
 
 export type ProviderAccountServices = {
   rateLimits: RateLimitService
@@ -132,6 +133,8 @@ export function createProviderAccountServices(
       apiKey
     }
   })
+  // A withheld agent's or tracker's usage is never fetched, whatever sign-in is saved for it.
+  rateLimits.setProviderOfferedResolver(isOfferedUsageProvider)
   rateLimits.setZcodePlanConfigResolver(() => ({
     site: store.getSettings().zcodePlanSite ?? 'zai',
     apiKey: readZcodePlanApiKey() ?? ''

@@ -59,6 +59,10 @@ Every change must consider these areas:
 4. Folder Workspaces
    - Don't assume every workspace is a git worktree.
 
+# Offered Agents
+
+Only 9 of the 45 supported agent CLIs are offered in the UI; the rest are withheld, not deleted. Before adding, hiding, or restoring an agent or a usage tracker (MiniMax is withheld the same way) read [`docs/agents-md-refs/offered-agents.md`](./docs/agents-md-refs/offered-agents.md).
+
 # Footguns
 
 ## Git / GitHub

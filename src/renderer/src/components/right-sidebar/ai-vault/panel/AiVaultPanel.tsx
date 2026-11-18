@@ -31,7 +31,6 @@ import { useAiVaultSessionRefresh } from '../scanning/ai-vault-session-refresh'
 import { useAiVaultPanelHostScope } from '../scope/ai-vault-host-scope'
 import { useAiVaultPanelScope } from '../scope/use-ai-vault-panel-scope'
 import { usePersistedAiVaultViewOptions } from '../scope/use-persisted-ai-vault-view-options'
-import { AgentSessionContinuationDialog } from '@/components/agent-session-continuation/AgentSessionContinuationDialog'
 import { AiVaultScanIssueBanners } from '../scanning/AiVaultScanIssueBanners'
 import { useAiVaultSessionDeleteAction } from '../session-actions/ai-vault-session-delete-action'
 import { useAiVaultPanelSearch } from '../search/use-ai-vault-search'
@@ -355,7 +354,6 @@ export default function AiVaultPanel({
             onJumpToWorktree={paneActions.jumpToWorktree}
             onResume={launchActions.handleResume}
             getSessionResumeInChat={getSessionResumeInChat}
-            onContinueInNewSession={launchActions.handleContinueInNewSession}
             onResumeInNewChat={launchActions.handleResumeInNewChat}
             onResumeInNewCli={launchActions.handleResumeInNewCli}
             onCopyResume={(session, worktreeId) =>
@@ -389,14 +387,6 @@ export default function AiVaultPanel({
           />
         )}
       </AiVaultPanelSearch>
-      {launchActions.continuationRequest && (
-        <AgentSessionContinuationDialog
-          open
-          request={launchActions.continuationRequest}
-          onOpenChange={launchActions.handleContinuationDialogOpenChange}
-          onStarted={onSessionOpened}
-        />
-      )}
     </div>
   )
 }

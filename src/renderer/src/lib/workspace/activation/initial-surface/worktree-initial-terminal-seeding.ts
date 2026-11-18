@@ -6,7 +6,6 @@ import type { ExecutionHostId } from '../../../../../../shared/execution-host'
 import type { FolderWorkspace } from '../../../../../../shared/folder-workspaces/folder-workspace-types'
 import { folderWorkspaceKey } from '../../../../../../shared/workspace-scope'
 import { shouldAutoCreateInitialTerminal } from '@/components/terminal/initial-terminal'
-import { isTerminalWorkspaceEmptiedOnPurpose } from '../../../../../../shared/workspace-layout/closed-terminal-tab-tombstones'
 import { shouldSeedWorktreePrimaryTerminal } from '../../../../../../shared/worktree-first-surface'
 import { createSequencedSetupAgentCommands } from '../../../../../../shared/setup-agent-sequencing'
 import { getSetupRunnerCommandPlatformForPath } from '../../../../../../shared/setup-runner-command'
@@ -28,6 +27,10 @@ import { applyDefaultTerminalTabs } from '@/lib/workspace/activation/initial-sur
 import { openDefaultAgentChatInEmptyWorkspace } from '@/lib/workspace/activation/initial-surface/empty-workspace-default-agent-chat'
 import { isEmptyWorkspaceDefaultSurfacePending } from '@/lib/workspace/activation/initial-surface/empty-workspace-default-surface-claims'
 import { findPendingWorktreeCreationId } from '../../creation/pending-worktree-creation'
+import {
+  isMainAreaEmptiedOnPurpose,
+  mainAreaTerminalRows
+} from '../../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 function getSetupRunnerCommandPlatformForLaunch(setup: WorktreeSetupLaunch): 'windows' | 'posix' {
   return getSetupRunnerCommandPlatformForPath(
@@ -142,7 +145,7 @@ export function ensureWorktreeHasInitialTerminal(
   )
   // Explicit spawn evidence survives new-worktree ownership races; later activations also defer to host-owned terminal creation.
   if (backendStartupTerminalSpawned || hostAuthority === 'live') {
-    const existingTerminalTabId = store.tabsByWorktree[worktreeId]?.[0]?.id
+    const existingTerminalTabId = mainAreaTerminalRows(store, worktreeId)?.[0]?.id
     if (existingTerminalTabId && (setup || issueCommand)) {
       queueSetupAndIssueCommands(
         store,
@@ -214,7 +217,7 @@ export function ensureWorktreeHasInitialTerminal(
   }
   // Only passive startup honors last-close tombstones; explicit activation requests a surface because closing the last terminal normally deactivates. Runtime-owned live sessions bail above, editor/browser survivors remain renderable, and pane moves/retirement intentionally allow reseeding.
   const shouldHonourClosedTerminalTombstone =
-    isTerminalWorkspaceEmptiedOnPurpose(store, worktreeId) && opts?.reseedEmptiedWorkspace !== true
+    isMainAreaEmptiedOnPurpose(store, worktreeId) && opts?.reseedEmptiedWorkspace !== true
   // An unanswered host is not empty; seeding there adds a tab per launch (STA-4658). Explicit launch requests below remain ungated.
   const shouldAutoCreate =
     hostAuthority === 'none' &&
@@ -223,7 +226,7 @@ export function ensureWorktreeHasInitialTerminal(
   const shouldCreateNewStartupTerminal =
     opts?.createNewTerminalForStartup === true && sequencedStartup !== undefined
   if (!shouldAutoCreate && !shouldCreateForExplicitWork && !shouldCreateNewStartupTerminal) {
-    const existingTerminalTabId = store.tabsByWorktree[worktreeId]?.[0]?.id
+    const existingTerminalTabId = mainAreaTerminalRows(store, worktreeId)?.[0]?.id
     if (existingTerminalTabId && (setup || issueCommand)) {
       // Main can adopt the startup tab yet fail setup spawn; renderer still runs returned fallback setup.
       queueSetupAndIssueCommands(

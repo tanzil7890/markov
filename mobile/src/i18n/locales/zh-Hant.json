@@ -2152,9 +2152,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "收合"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "在新的 CLI 中恢復"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "捲動至最新內容"
     },

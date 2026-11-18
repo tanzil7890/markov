@@ -5,19 +5,6 @@ import { translateSearchKeyword } from '../search/settings-search-keywords'
 /** Stable Settings deep-link / scroll target for the Used/Remaining control. */
 export const USAGE_PERCENTAGE_DISPLAY_SETTING_ID = 'usage-percentage-display'
 
-/** Appearance section keys that can be force-opened for nested deep links. */
-export type AppearanceAccordionSection = 'interface' | 'terminal' | 'window'
-
-/** Resolve the section that must open before a nested deep-link row becomes visible. */
-export function resolveAppearanceAccordionDeepLink(
-  sectionId: string | undefined
-): AppearanceAccordionSection | null {
-  if (sectionId === USAGE_PERCENTAGE_DISPLAY_SETTING_ID) {
-    return 'window'
-  }
-  return null
-}
-
 export const getUsagePercentageDisplayEntry = createLocalizedCatalog(() => ({
   title: translate(
     'auto.components.settings.appearance.search.usagePercentageDisplayTitle',

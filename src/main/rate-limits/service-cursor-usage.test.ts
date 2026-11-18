@@ -62,6 +62,20 @@ describe('RateLimitService Cursor usage', () => {
     vi.mocked(fetchCodexRateLimits).mockResolvedValue(okProvider('codex', 0))
   })
 
+  it('neither reads the Cursor sign-in nor fetches its usage while Cursor is withheld', async () => {
+    const service = new RateLimitService()
+    service.setProviderOfferedResolver((provider) => provider !== 'cursor')
+    await service.refresh()
+
+    expect(readCursorAuthSession).not.toHaveBeenCalled()
+    expect(fetchCursorRateLimits).not.toHaveBeenCalled()
+    expect(service.getState().cursor).toMatchObject({
+      provider: 'cursor',
+      status: 'unavailable',
+      error: null
+    })
+  })
+
   it('publishes an error snapshot instead of dropping the cycle when the fetch throws', async () => {
     vi.mocked(readCursorAuthSession).mockResolvedValue({ status: 'missing' })
     vi.mocked(fetchCursorRateLimits).mockRejectedValue(new Error('boom'))

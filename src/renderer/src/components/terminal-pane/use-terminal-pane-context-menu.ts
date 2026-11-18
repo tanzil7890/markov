@@ -8,7 +8,6 @@ import { sendTerminalQuickCommandToPane } from './terminal-quick-command-dispatc
 import type { TerminalPasteSource } from './input/paste/terminal-paste-model'
 import { runQuickCommandInNewTab } from '@/lib/run-quick-command-in-new-tab'
 import type { PreparedAgentSessionFork } from './terminal-agent-session-fork'
-import type { AgentSessionContinuationRequest } from '@/lib/agent-session-continuation'
 import { pasteTerminalPaneMenuClipboard } from './input/paste/terminal-pane-menu-paste'
 import {
   copyTerminalPaneMenuAgentSessionId,
@@ -17,7 +16,6 @@ import {
   copyTerminalPaneMenuTerminalId
 } from './clipboard/terminal-pane-menu-copy-actions'
 import {
-  continueAgentSessionFromMenuPane,
   copyAgentSessionContextFromMenuPane,
   forkAgentSessionFromMenuPane
 } from './terminal-pane-menu-agent-session-actions'
@@ -45,7 +43,6 @@ type UseTerminalPaneContextMenuDeps = {
   onClearPaneTitle: (paneId: number) => void
   onPasteError: (message: string) => void
   onAgentSessionForkReady: (fork: PreparedAgentSessionFork) => void
-  onAgentSessionContinuationReady: (request: AgentSessionContinuationRequest) => void
   forceBracketedMultilineTextPaste: boolean
   rightClickToPaste: boolean
 }
@@ -74,7 +71,6 @@ type TerminalMenuState = {
   onClearScreen: () => void
   onResetTerminal: () => void
   onForkAgentSession: () => Promise<void>
-  onContinueAgentSessionInNewSession: () => void
   onCopyAgentSessionContext: () => Promise<void>
   onQuickCommand: (command: TerminalQuickCommand, historyId: string) => void
   onToggleExpand: () => void
@@ -99,7 +95,6 @@ export function useTerminalPaneContextMenu({
   onClearPaneTitle,
   onPasteError,
   onAgentSessionForkReady,
-  onAgentSessionContinuationReady,
   forceBracketedMultilineTextPaste,
   rightClickToPaste
 }: UseTerminalPaneContextMenuDeps): TerminalMenuState {
@@ -167,8 +162,7 @@ export function useTerminalPaneContextMenu({
     worktreeId,
     groupId,
     fallbackCwd,
-    onAgentSessionForkReady,
-    onAgentSessionContinuationReady
+    onAgentSessionForkReady
   }
 
   const onCopy = async (): Promise<void> => copyTerminalPaneMenuSelection(resolveMenuPane())
@@ -234,9 +228,6 @@ export function useTerminalPaneContextMenu({
 
   const onForkAgentSession = async (): Promise<void> =>
     forkAgentSessionFromMenuPane(agentSessionContext, resolveMenuPane())
-
-  const onContinueAgentSessionInNewSession = (): void =>
-    continueAgentSessionFromMenuPane(agentSessionContext, resolveMenuPane())
 
   const onCopyAgentSessionContext = async (): Promise<void> =>
     copyAgentSessionContextFromMenuPane(resolveMenuPane())
@@ -321,7 +312,6 @@ export function useTerminalPaneContextMenu({
     onClearScreen,
     onResetTerminal,
     onForkAgentSession,
-    onContinueAgentSessionInNewSession,
     onCopyAgentSessionContext,
     onQuickCommand,
     onToggleExpand,

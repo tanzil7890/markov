@@ -1,3 +1,4 @@
+import { isOfferedRightSidebarTab } from '../../../../shared/right-sidebar-offered-tabs'
 import type { ActivityBarItem } from './activity-bar-buttons'
 
 type RightSidebarActivityVisibilityState = {
@@ -13,6 +14,7 @@ export function getVisibleRightSidebarActivityItems(
 ): ActivityBarItem[] {
   return items.filter(
     (item) =>
+      isOfferedRightSidebarTab(item.id) &&
       (!item.gitOnly || !isFolder) &&
       (!item.folderOnly || isFolderWorkspace) &&
       (!item.sshOnly || hasSshHost)

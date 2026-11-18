@@ -1,6 +1,5 @@
 import type { TerminalTab } from '../../../../shared/workspace-layout/terminal-tab-types'
 import { CliChatResumeMenuItems } from './CliChatResumeMenuItems'
-import { NativeChatCliForkMenuItems } from './NativeChatCliForkMenuItems'
 import type { NativeChatTabSession } from './tab-session-history-switch'
 
 export function TabSessionSurfaceSwitchMenuItems(props: {
@@ -9,9 +8,6 @@ export function TabSessionSurfaceSwitchMenuItems(props: {
   leadingSeparator: boolean
   onComplete?: () => void
 }): React.JSX.Element | null {
-  return props.nativeChat ? (
-    <NativeChatCliForkMenuItems {...props} nativeChat={props.nativeChat} />
-  ) : (
-    <CliChatResumeMenuItems {...props} />
-  )
+  // A chat tab offers no surface switch; a terminal agent tab can continue in Chat UI.
+  return props.nativeChat ? null : <CliChatResumeMenuItems {...props} />
 }

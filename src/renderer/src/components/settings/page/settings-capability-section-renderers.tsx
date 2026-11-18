@@ -3,6 +3,7 @@ import { getProviderAccountsOwnerKey } from '@/runtime/runtime-provider-accounts
 import { AgentsPane } from '../agents/AgentsPane'
 import { AgentDefaultSurfaceSection } from '../agents/surfaces/AgentDefaultSurfaceSection'
 import { ComputerUsePane } from '../computer-use/ComputerUsePane'
+import { ConnectionsSettingsSection } from '../connections/ConnectionsSettingsSection'
 import { LinearAgentSkillPane } from '../skills/linear/LinearAgentSkillPane'
 import { OrchestrationPane } from '../orchestration/OrchestrationPane'
 import { VoicePane } from '../voice/VoicePane'
@@ -146,6 +147,12 @@ export function renderDesktopCapabilitySettingsSections(
   const { model, navigation, view } = context
   return model.showDesktopOnlySettings ? (
     <>
+      <ConnectionsSettingsSection
+        mounted={view.isSectionMounted('connections')}
+        localHost={model.settingsHostScope.target.kind === 'local'}
+        searchEntries={navigation.getSectionSearchEntries('connections')}
+      />
+
       <SettingsSection
         id="computer-use"
         title={translate('auto.components.settings.Settings.c9841721cb', 'Computer Use')}

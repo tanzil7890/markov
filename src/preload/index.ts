@@ -46,6 +46,8 @@ import { codexConfigSyncApi } from './api/codex-config-sync-bridge'
 import { preflightApi } from './api/preflight-bridge'
 import { notificationsApi } from './api/notifications-bridge'
 import { onboardingApi } from './api/onboarding-bridge'
+import { agentCliInstallApi } from './api/agent-cli-install-bridge'
+import { mcpConnectionsApi } from './api/mcp-connections-bridge'
 import { dashboardApi } from './api/dashboard-bridge'
 import { terminalPreviewApi } from './api/terminal-preview-bridge'
 import { macosTccPromptsApi } from './api/macos-tcc-prompts-bridge'
@@ -151,6 +153,8 @@ const api = {
   preflight: preflightApi,
   notifications: notificationsApi,
   onboarding: onboardingApi,
+  agentCliInstall: agentCliInstallApi,
+  mcpConnections: mcpConnectionsApi,
   dashboard: dashboardApi,
   terminalPreview: terminalPreviewApi,
   macosTccPrompts: macosTccPromptsApi,

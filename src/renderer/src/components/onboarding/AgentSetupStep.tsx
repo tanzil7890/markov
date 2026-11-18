@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ExternalLink, Loader2, Terminal } from 'lucide-react'
+import { ExternalLink, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { IntegrationStatusPill } from '@/components/integration-status-pill'
 import { AgentIcon, getAgentCatalog } from '@/lib/agent-catalog'
-import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import { isMacUserAgent, isWindowsUserAgent } from '@/components/terminal-pane/pane-helpers'
 import type {
@@ -13,17 +13,20 @@ import type {
 } from '../../../../shared/managed-account-types'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
 import { OnboardingInlineCommandTerminal } from './OnboardingInlineCommandTerminal'
-import { getAgentCliInstallPlan, type OnboardingSetupAgent } from './agent-cli-install-commands'
+import { getAgentCliInstallPlan } from './agent-cli-install-commands'
+import type { AgentCliInstallAgent } from '../../../../shared/agent-cli-install-types'
+import { AgentInstallActions, agentInstallStatusText } from './AgentInstallActions'
+import { useAgentCliOneClickInstall } from './use-agent-cli-one-click-install'
 
 type AgentSignIn = { signedIn: boolean; email: string | null }
 
-function agentLabel(agent: OnboardingSetupAgent): string {
+function agentLabel(agent: AgentCliInstallAgent): string {
   return agent === 'claude'
     ? translate('components.onboarding.agentSetup.claude.label', 'Claude Code')
     : translate('components.onboarding.agentSetup.codex.label', 'Codex')
 }
 
-function signInLabel(agent: OnboardingSetupAgent): string {
+function signInLabel(agent: AgentCliInstallAgent): string {
   return agent === 'claude'
     ? translate('components.onboarding.agentSetup.claude.signIn', 'Sign in with Claude')
     : translate('components.onboarding.agentSetup.codex.signIn', 'Sign in with ChatGPT')
@@ -51,7 +54,7 @@ function codexSignIn(state: CodexRateLimitAccountsState): AgentSignIn {
     : { signedIn: false, email: null }
 }
 
-async function readAgentSignIn(agent: OnboardingSetupAgent): Promise<AgentSignIn> {
+async function readAgentSignIn(agent: AgentCliInstallAgent): Promise<AgentSignIn> {
   return agent === 'claude'
     ? claudeSignIn(await window.api.claudeAccounts.list())
     : codexSignIn(await window.api.codexAccounts.list())
@@ -70,7 +73,7 @@ async function addClaudeAccountAndSelectIfNone(): Promise<AgentSignIn> {
   return claudeSignIn(after)
 }
 
-async function addAgentAccount(agent: OnboardingSetupAgent): Promise<AgentSignIn> {
+async function addAgentAccount(agent: AgentCliInstallAgent): Promise<AgentSignIn> {
   return agent === 'claude'
     ? addClaudeAccountAndSelectIfNone()
     : codexSignIn(await window.api.codexAccounts.add({ runtime: 'host' }))
@@ -86,7 +89,7 @@ function AgentSetupRow({
   isDetecting,
   onRecheck
 }: {
-  agent: OnboardingSetupAgent
+  agent: AgentCliInstallAgent
   installed: boolean
   isDetecting: boolean
   onRecheck: () => void
@@ -98,6 +101,7 @@ function AgentSetupRow({
   const plan = getAgentCliInstallPlan(agent, installPlatform())
   const label = agentLabel(agent)
   const homepageUrl = getAgentCatalog().find((entry) => entry.id === agent)?.homepageUrl
+  const oneClick = useAgentCliOneClickInstall(agent, onRecheck)
 
   useEffect(() => {
     if (!installed) {
@@ -159,7 +163,7 @@ function AgentSetupRow({
 
   const connected = installed && signIn?.signedIn === true
   const status = !installed
-    ? translate('components.onboarding.agentSetup.notInstalled', 'Not installed on this computer')
+    ? agentInstallStatusText(oneClick.state)
     : connected
       ? signIn?.email
         ? translate('components.onboarding.agentSetup.signedInAs', 'Signed in as {{email}}', {
@@ -191,40 +195,30 @@ function AgentSetupRow({
               </IntegrationStatusPill>
             ) : null}
           </div>
-          <p className="mt-1 truncate text-[13px] leading-relaxed text-muted-foreground">
+          <p
+            title={status}
+            className={cn(
+              'mt-1 truncate text-[13px] leading-relaxed',
+              !installed && oneClick.state.kind === 'failed'
+                ? 'text-status-warning-text'
+                : 'text-muted-foreground'
+            )}
+          >
             {status}
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {!installed ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={terminalOpen}
-                onClick={() => setTerminalOpen(true)}
-              >
-                <Terminal className="size-3.5" />
-                {translate('components.onboarding.agentSetup.install', 'Install')}
-              </Button>
-              {homepageUrl ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(event) => openAppHttpLink(homepageUrl, { event })}
-                >
-                  <ExternalLink className="size-3.5" />
-                  {translate(
-                    'auto.components.onboarding.AgentStep.9c163bb0e0',
-                    'Install instructions'
-                  )}
-                </Button>
-              ) : null}
-              <Button variant="ghost" size="sm" disabled={isDetecting} onClick={onRecheck}>
-                {isDetecting ? <Loader2 className="size-3.5 animate-spin" /> : null}
-                {translate('auto.components.onboarding.IntegrationsStep.80e3ce0bc9', 'Re-check')}
-              </Button>
-            </>
+            <AgentInstallActions
+              state={oneClick.state}
+              oneClickSupported={oneClick.supported}
+              onInstall={() => void oneClick.install()}
+              terminalOpen={terminalOpen}
+              onOpenTerminal={() => setTerminalOpen(true)}
+              homepageUrl={homepageUrl}
+              isDetecting={isDetecting}
+              onRecheck={onRecheck}
+            />
           ) : null}
           {installed && !connected && signIn !== null ? (
             signingIn ? (

@@ -107,6 +107,7 @@ export function launchAgentInNewTabWithOutcome(
       worktreeId,
       ...(args.focusIntent ? { focusIntent: args.focusIntent } : {}),
       ...(groupId ? { groupId } : {}),
+      ...(args.afterTabId ? { afterTabId: args.afterTabId } : {}),
       ...(beforeSurfaceOpen ? { beforeSurfaceOpen } : {}),
       ...(args.onStructuredHostDeclined ? { onHostDeclined: args.onStructuredHostDeclined } : {}),
       // The host's "no" opens this same launch as a terminal, with the caller's arguments.

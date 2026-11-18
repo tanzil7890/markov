@@ -31,6 +31,20 @@ import { useRightSidebarTabRouting } from './use-right-sidebar-tab-routing'
 import { useWindowWidth } from './use-window-width'
 import { usePluginViewCaptureStore } from '@/store/plugin-view-capture'
 import { selectWorktreeCreationSurfaceShown } from '@/lib/workspace/creation/worktree-creation-surface'
+import { useQuickCommandsShortcut } from '@/components/terminal-quick-commands/quick-commands-shortcut'
+import { RightSidebarSplit } from './bottom-panel/RightSidebarSplit'
+import { RightSidebarBottomPanel } from './bottom-panel/RightSidebarBottomPanel'
+import { useRightSidebarBottomPanel } from './bottom-panel/right-sidebar-bottom-panel-state'
+
+/** The commands shortcut opens the sidebar on Commands and focuses it; again, it goes back to Terminal. */
+function toggleCommandsFromShortcut(show: boolean): void {
+  if (!show) {
+    useRightSidebarBottomPanel.getState().setView('terminal')
+    return
+  }
+  useAppStore.getState().setRightSidebarOpen(true)
+  useRightSidebarBottomPanel.getState().showCommands()
+}
 
 function RightSidebarInner(): React.JSX.Element {
   useUiLanguageRevision()
@@ -48,6 +62,15 @@ function RightSidebarInner(): React.JSX.Element {
   const toggleRightSidebar = useAppStore((s) => s.toggleRightSidebar)
   // Creation keeps the prior worktree active until handoff, so its panels would show that worktree.
   const creatingWorktree = useAppStore(selectWorktreeCreationSurfaceShown)
+  const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
+  const commandsShown = useRightSidebarBottomPanel(
+    (s) => rightSidebarOpen && !s.folded && s.view === 'commands'
+  )
+  useQuickCommandsShortcut({
+    isFocused: true,
+    menuOpen: commandsShown,
+    onOpenChange: toggleCommandsFromShortcut
+  })
   const checksStatus = useAppStore((s) =>
     s.rightSidebarOpen && !creatingWorktree ? getActiveChecksStatus(s) : null
   )
@@ -98,8 +121,21 @@ function RightSidebarInner(): React.JSX.Element {
           )}
         </div>
       ) : (
-        // Keep panels mounted across worktree switches; remounts caused Windows IPC storms and multi-second freezes.
-        <RightSidebarPanelContent effectiveTab={effectiveTab} rightSidebarOpen={rightSidebarOpen} />
+        <RightSidebarSplit
+          // Keep panels mounted across worktree switches; remounts caused Windows IPC storms and multi-second freezes.
+          top={
+            <RightSidebarPanelContent
+              effectiveTab={effectiveTab}
+              rightSidebarOpen={rightSidebarOpen}
+            />
+          }
+          bottom={
+            // A paired web window mirrors the host's tabs; the sidebar's own terminals stay on the desktop.
+            activeWorktreeId && !isPairedWebClientWindow() ? (
+              <RightSidebarBottomPanel worktreeId={activeWorktreeId} visible={rightSidebarOpen} />
+            ) : null
+          }
+        />
       )}
     </div>
   ) : null

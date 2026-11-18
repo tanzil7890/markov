@@ -8,24 +8,33 @@ import { buildSettingsViewModel, useSettingsNavigationActions } from './page/set
 import { renderSettingsLoading, renderSettingsPage } from './page/settings-page-renderer'
 import type {
   LoadedSettingsStoreModel,
+  SettingsPresentation,
   SettingsRenderContext
 } from './page/settings-render-context'
 
-function Settings(): React.JSX.Element {
+function Settings({
+  presentation = 'page',
+  visible = true
+}: {
+  presentation?: SettingsPresentation
+  /** False while a Settings tab stays open behind another tab or workspace. */
+  visible?: boolean
+}): React.JSX.Element {
   const model = useSettingsStoreModel()
   const interactions = useSettingsInteractionController(model)
-  useSettingsPageEffects(model, interactions)
+  useSettingsPageEffects(model, interactions, { presentation, visible })
   const navigation = useSettingsNavigationModel(model, interactions)
   const terminal = useSettingsTerminalModel(model, navigation)
   useSettingsRepoScrollEffects(model, interactions, navigation, terminal)
-  const actions = useSettingsNavigationActions(model, interactions)
+  const actions = useSettingsNavigationActions(model, interactions, navigation)
 
   if (!model.settings) {
-    return renderSettingsLoading(interactions)
+    return renderSettingsLoading(interactions, presentation)
   }
 
   const view = buildSettingsViewModel(model, navigation)
   const context: SettingsRenderContext = {
+    presentation,
     model: model as LoadedSettingsStoreModel,
     interactions,
     navigation,

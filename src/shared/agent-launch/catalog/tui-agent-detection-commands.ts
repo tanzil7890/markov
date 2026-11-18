@@ -1,6 +1,7 @@
 import type { TuiAgent } from './tui-agent'
 import { getTuiAgentDetectCommands, TUI_AGENT_CONFIG } from './tui-agent-config'
 import type { TuiAgentConfig, TuiAgentDetectionRuntime } from './tui-agent-config-types'
+import { isOfferedTuiAgent } from './offered-tui-agents'
 
 export type TuiAgentDetectionCommand = {
   id: TuiAgent
@@ -14,11 +15,14 @@ export type TuiAgentDetectionCommand = {
 export const KNOWN_TUI_AGENT_DETECTION_COMMANDS = buildTuiAgentDetectionCommands()
 
 function buildTuiAgentDetectionCommands(): TuiAgentDetectionCommand[] {
-  return Object.entries(TUI_AGENT_CONFIG).flatMap(([id, config]) =>
-    getTuiAgentDetectCommands(config).map((cmd) =>
-      buildTuiAgentDetectionCommand(id as TuiAgent, cmd, config)
+  // A withheld agent is never probed, so it cannot surface as installed anywhere.
+  return Object.entries(TUI_AGENT_CONFIG)
+    .filter(([id]) => isOfferedTuiAgent(id as TuiAgent))
+    .flatMap(([id, config]) =>
+      getTuiAgentDetectCommands(config).map((cmd) =>
+        buildTuiAgentDetectionCommand(id as TuiAgent, cmd, config)
+      )
     )
-  )
 }
 
 function buildTuiAgentDetectionCommand(

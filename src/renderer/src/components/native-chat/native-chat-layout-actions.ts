@@ -61,11 +61,18 @@ function findSplitSource(
   return null
 }
 
+/** A chat tab can also open its new pane on the left; shortcuts and Cmd+J offer only right and down. */
+export type NativeChatTabSplitDirection = NativeChatSplitDirection | 'left'
+
 export function runNativeChatSplitTarget(
   target: NativeChatSplitTarget,
-  direction: NativeChatSplitDirection
+  direction: NativeChatTabSplitDirection
 ): boolean {
   if (target.kind === 'terminal-pane') {
+    // A terminal pane's split request has no left placement.
+    if (direction === 'left') {
+      return false
+    }
     requestActiveTerminalPaneSplit({
       tabId: target.terminalTabId,
       direction: direction === 'right' ? 'vertical' : 'horizontal'

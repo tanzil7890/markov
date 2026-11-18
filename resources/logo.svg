@@ -1,4 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="164" height="105" viewBox="0 0 164 105">
-<path id="consonants" fill="#161514" d="M0 0H46V46H0ZM118 0H164V46H118ZM0 59H46V105H0ZM118 59H164V105H118Z"/>
-<path id="vowels" fill="#D52B1E" d="M59 23a23 23 0 1 0 46 0a23 23 0 1 0 -46 0ZM59 82a23 23 0 1 0 46 0a23 23 0 1 0 -46 0Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="88" viewBox="0 0 84 88">
+<path id="markie" fill="#D52B1E" fill-rule="evenodd" d="M0 40C0 12 12 0 25 0C35 0 40 7 42 12C44 7 49 0 59 0C72 0 84 12 84 40V60C84 78 72 88 54 88H30C12 88 0 78 0 60ZM25 40.5A5 5 0 0 1 35 40.5V49.5A5 5 0 0 1 25 49.5ZM49 40.5A5 5 0 0 1 59 40.5V49.5A5 5 0 0 1 49 49.5Z"/>
 </svg>

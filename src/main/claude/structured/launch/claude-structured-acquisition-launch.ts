@@ -29,6 +29,7 @@ import {
   claudeCloseReport,
   closeClaudePublishedSessionForDeps
 } from '../claude-structured-session-close'
+import { mcpGatewayServersForClaudeChat } from '../../../mcp-gateway/mcp-gateway-agent-launch'
 
 export type ClaudeAcquisitionLaunch = ClaudeStructuredLaunch & {
   savedOptions: Omit<ClaudeStructuredSpawnOptions, 'sdkOptions'>
@@ -120,9 +121,10 @@ export async function resolveClaudeAcquisitionLaunch(args: {
       effortFlag,
       flagSettingsControl
     })
+    const mcpServers = await mcpGatewayServersForClaudeChat()
     return {
       ...launch,
-      options: sdkOptions,
+      options: mcpServers ? { ...sdkOptions, mcpServers } : sdkOptions,
       savedOptions: { ...savedOptions, cliFlag: launch.cliFlag, flagSettingsControl }
     }
   })

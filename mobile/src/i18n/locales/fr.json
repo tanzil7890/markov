@@ -2232,9 +2232,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Réduire"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Reprendre dans une nouvelle CLI"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "Faire défiler jusqu'au dernier message"
     },

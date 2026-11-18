@@ -1,3 +1,4 @@
+import { codexRuntimeInstallSettled } from './codex-runtime-upkeep'
 import { AcpAtRestCommandCatalog } from '../../../acp/acp-at-rest-commands'
 import { resolveNativeChatVisualsSkillLocation } from '../../../native-chat/native-chat-visuals-skill-location'
 import { withSupportedCodexCli } from '../../../codex/structured/launch/codex-cli-installation-error'
@@ -39,6 +40,17 @@ import type {
   StructuredAgentRuntimeRegistration
 } from './structured-agent-runtime-registration-types'
 
+/** The launch is resolved only once a running install of Markov's Codex has settled, so a chat
+ *  started during the first download runs the whole copy, not the one being replaced. */
+function afterCodexRuntimeInstall<Request, Launch>(
+  resolveLaunch: (request: Request) => Promise<Launch>
+): (request: Request) => Promise<Launch> {
+  return async (request) => {
+    await codexRuntimeInstallSettled()
+    return resolveLaunch(request)
+  }
+}
+
 function createCodexAdapter(context: StructuredAgentAdapterContext): StructuredAgentRuntimeAdapter {
   const { deps, followUps, host } = context
   const providerInvocation = {
@@ -57,16 +69,18 @@ function createCodexAdapter(context: StructuredAgentAdapterContext): StructuredA
         ? { prepareHome: deps.prepareCodexCatalogProbeHome }
         : {})
     }),
-    resolveLaunch: withSupportedCodexCli(
-      composeStructuredLaunch(
-        CODEX_STRUCTURED_AGENT,
-        structuredAgentLaunchSources(context),
-        codexStructuredLaunchPart({
-          resolveLaunchArgs: () => deps.resolveLaunchArgs('codex'),
-          ...(deps.resolveCodexCommand ? { resolveCommand: deps.resolveCodexCommand } : {})
-        })
-      ),
-      deps.readCodexInstallation
+    resolveLaunch: afterCodexRuntimeInstall(
+      withSupportedCodexCli(
+        composeStructuredLaunch(
+          CODEX_STRUCTURED_AGENT,
+          structuredAgentLaunchSources(context),
+          codexStructuredLaunchPart({
+            resolveLaunchArgs: () => deps.resolveLaunchArgs('codex'),
+            ...(deps.resolveCodexCommand ? { resolveCommand: deps.resolveCodexCommand } : {})
+          })
+        ),
+        deps.readCodexInstallation
+      )
     ),
     ...(deps.openCodexConnection ? { openConnection: deps.openCodexConnection } : {}),
     ...(deps.readProcessStartTime ? { readProcessStartTime: deps.readProcessStartTime } : {}),

@@ -12,6 +12,7 @@ import type { PendingWorktreeCreation } from '../creation/pending-worktree-creat
 
 export type WorktreeActivationStore = Partial<WorktreeRuntimeOwnerState> & {
   tabsByWorktree: Record<string, { id: string }[]>
+  unifiedTabsByWorktree?: Record<string, Pick<Tab, 'entityId' | 'groupId' | 'contentType'>[]>
   pendingWorktreeCreations?: Record<string, PendingWorktreeCreation>
   closedTerminalTabTombstonesByTabId?: ClosedTerminalTabTombstonesByTabId
   defaultTerminalTabsAppliedByWorktreeId: Record<string, true>

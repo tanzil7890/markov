@@ -1,13 +1,4 @@
-import {
-  Copy,
-  FileJson,
-  FolderOpen,
-  LocateFixed,
-  MessageSquarePlus,
-  PanelTopOpen,
-  Play,
-  Trash2
-} from 'lucide-react'
+import { Copy, FileJson, FolderOpen, LocateFixed, PanelTopOpen, Play, Trash2 } from 'lucide-react'
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -21,7 +12,6 @@ export function SessionActionMenuItems({
   resumeLabel,
   resumeHidden = false,
   onResume,
-  onContinueInNewSession,
   onResumeInNewChat,
   onResumeInNewCli,
   onJumpToOriginalPane,
@@ -42,7 +32,6 @@ export function SessionActionMenuItems({
   resumeLabel: string
   resumeHidden?: boolean
   onResume: () => void
-  onContinueInNewSession?: () => void
   onResumeInNewChat?: () => void
   // Offered only on rows native chat owns, where it forks: see ai-vault-session-cli-fork.
   onResumeInNewCli?: () => void
@@ -64,15 +53,6 @@ export function SessionActionMenuItems({
   const Item = menuKind === 'context' ? ContextMenuItem : DropdownMenuItem
   const Separator = menuKind === 'context' ? ContextMenuSeparator : DropdownMenuSeparator
   const hasLocalPathActions = Boolean(onOpenLog || onRevealLog || onOpenCwd)
-  // Why: Jump/Resume items act on this conversation; the hand-off starts a new one, so it sits apart.
-  const hasItemsAboveHandOff = Boolean(
-    onJumpToOriginalPane ||
-    showJumpToWorktree ||
-    !resumeHidden ||
-    onResumeInNewChat ||
-    onResumeInNewCli ||
-    onCopyResume
-  )
   const deleteLabel = translate('auto.components.right.sidebar.AiVaultSessionRow.delete', 'Delete')
   const deleteItem = (
     <Item
@@ -133,18 +113,6 @@ export function SessionActionMenuItems({
             'Copy Resume Command'
           )}
         </Item>
-      ) : null}
-      {onContinueInNewSession ? (
-        <>
-          {hasItemsAboveHandOff ? <Separator /> : null}
-          <Item onSelect={onContinueInNewSession}>
-            <MessageSquarePlus className="size-3.5" />
-            {translate(
-              'components.agentSessionContinuation.handOffToAnotherAgent',
-              'Hand Off to Another Agent'
-            )}
-          </Item>
-        </>
       ) : null}
       {hasLocalPathActions ? (
         <>

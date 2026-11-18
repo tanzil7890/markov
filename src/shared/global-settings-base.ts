@@ -20,6 +20,7 @@ import type { WindowMaterialSettings } from './window-material'
 import type { EditorSaveSettings } from './editor-save-settings'
 import type { NestedWorkerDepthSettings } from './nested-worker-depth'
 import type { UserProfileSettings } from './user-profile-settings'
+import type { FloatingTerminalTriggerSettings } from './floating-terminal-trigger-location'
 
 /** Settings groups owned by their feature modules and composed into GlobalSettings. */
 export type GlobalSettingsBase = EmulatorOpeningSettings &
@@ -43,4 +44,5 @@ export type GlobalSettingsBase = EmulatorOpeningSettings &
   EditorSaveSettings &
   BrowserPasswordsGlobalSettings &
   NestedWorkerDepthSettings &
-  UserProfileSettings
+  UserProfileSettings &
+  FloatingTerminalTriggerSettings

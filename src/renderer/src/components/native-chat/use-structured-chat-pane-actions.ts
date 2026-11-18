@@ -20,6 +20,8 @@ export function useStructuredChatPaneActions(tabId: string, worktreeId: string, 
   return {
     onSplitRight: () =>
       runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'right'),
+    onSplitLeft: () =>
+      runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'left'),
     onSplitDown: () =>
       runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'down'),
     canClosePane: groups.length > 1 || !groupTabs.find((tab) => tab.id === tabId)?.isPinned,

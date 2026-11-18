@@ -1527,7 +1527,6 @@
         "2eece16ad1": "Notificaciones",
         "1f452cbd4c": "Comportamiento de selección y edición.",
         "0c6ee88a5f": "Entrada y edición",
-        "b11a5a48a2": "Tema, zoom, apariencia de la aplicación y del terminal, barras laterales y barra de estado.",
         "93d88d20bf": "Apariencia",
         "2d0659f6f0": "Terminal global, navegador y pestañas Markdown.",
         "65b19f5bde": "Espacio de trabajo flotante",
@@ -1540,12 +1539,8 @@
         "c33bfd664c": "Shells, renderizador, sesiones y comportamiento del terminal.",
         "a9fb10afca": "Terminal",
         "85f4fd7710": "Fuentes de tareas",
-        "ab4b21b58e": "Nombres de rama, refs base y Git AI Author.",
         "09607cb0fe": "Git y Source Control",
         "33a5e1d597": "Conecta GitHub, GitLab, Linear y servicios de hosting de código.",
-        "2b043783ef": "Integraciones",
-        "2cd4ea75da": "Ajustes predeterminados del espacio de trabajo, configuración de la app y mantenimiento.",
-        "13241992bd": "General",
         "724c440e72": "primeros pasos",
         "0505d0df29": "empezar con Markov",
         "ea0b1bc7b8": "guía de configuración",
@@ -1559,7 +1554,6 @@
         "cd50cec5d7": "Coordina múltiples coding agents a través de Markov.",
         "58a868e8e4": "Orquestación",
         "7c79d3b7bf": "Opcional",
-        "b1c2f8b0ac": "Configuración opcional de cuentas y uso para Claude, Codex, Gemini, OpenCode Go, MiniMax y Grok.",
         "f70ac54d38": "Cuentas de proveedores de IA",
         "4121f7a0a2": "Administra agentes de IA, define uno predeterminado y personaliza comandos.",
         "b49abbd2f7": "Agentes",
@@ -3858,20 +3852,10 @@
             "searchProvider": "Buscar con {{value0}}"
           },
           "TabBarQuickCommandsButton": {
-            "a2c7a33831": "Comando",
-            "20bbd75896": "Sin comandos",
-            "b82e237a4b": "Más comandos rápidos",
-            "85482c57bc": "Ejecutar comando rápido",
-            "b775303755": "Ejecutar comando rápido: {{value0}}",
             "196593b6a9": "Quitar {{value0}}",
             "15529ede69": "Editar {{value0}}",
-            "1d411fb6a5": "Guarda un comando rápido para este repositorio",
-            "8f1e971966": "Agregar comando rápido",
             "3220e2da27": "Este comando rápido se eliminará de tu lista guardada.",
             "e8e1a52edb": "¿Eliminar \"{{value0}}\"?",
-            "37e1bb90ce": "Ejecutar: {{value0}}",
-            "77ac113df0": "Iniciar {{value0}}: {{value1}}",
-            "7b1c9d6ae1": "Ejecutar",
             "be8f0ff166": "Eliminar",
             "f3a8c2d1e7": "Buscar comandos rápidos...",
             "b4e7f9a2c1": "No hay comandos coincidentes",
@@ -3941,15 +3925,11 @@
             "7ab2964bea": "Finalización de agente sin leer"
           },
           "TabBarQuickCommandAddActions": {
-            "45a2f36d51": "Dominio",
             "b856c833ae": "Comando en {{value0}}"
           },
           "TabBarQuickCommandHostLoadStatus": {
             "82e294f3ca": "Anfitrión no disponible",
             "7c129b08ff": "Cargando host…"
-          },
-          "nativeChatCliFork": {
-            "cannotOpenInCli": "Esta sesión no se puede abrir en la CLI."
           },
           "tabCreateEntry": {
             "fileNotFound": "Archivo no encontrado: {{path}}",
@@ -7241,12 +7221,6 @@
           },
           "2edf606c46": "Minimizar a la bandeja al cerrar",
           "b707773a0d": "Cuando está activado, cerrar la ventana mantiene Markov en ejecución en la bandeja del sistema en lugar de salir.",
-          "interfaceDefaultFont": "Fuente predeterminada",
-          "terminalDefaultFont": "Fuente predeterminada",
-          "interfaceTitle": "Interfaz",
-          "terminalTitle": "Terminal",
-          "windowSidebarTitle": "Ventana y barra lateral",
-          "windowSidebarSummary": "Barra lateral, barra de estado y explorador de archivos",
           "gitIgnoredGlossary": "Archivos que coinciden con .gitignore.",
           "statusBarDescription": "Elige qué indicadores aparecen en la barra de estado.",
           "showPinnedWorktreesInGroups": {
@@ -7670,7 +7644,6 @@
           "nodeDistMirrorDescription": "Opcional. Una copia de nodejs.org/dist que Markov usa primero cuando instala Node en los servidores SSH y WSL. Cada archivo todavía se compara con la versión que espera Markov."
         },
         "GeneralPane": {
-          "d58fccfd84": "Navegación",
           "5cb5475664": "Confirmar antes de cerrar pestañas fijadas",
           "36b2a5dc6d": "Muestra un diálogo de confirmación antes de cerrar una pestaña fijada.",
           "projectRuntime": "Runtime del proyecto",
@@ -8467,7 +8440,6 @@
           "9907545fa3": "Notificaciones",
           "d0b7021d64": "Comportamiento de selección y edición.",
           "d7a3e635b6": "Entrada y edición",
-          "6d1a27e193": "Tema, zoom, apariencia de la aplicación y del terminal, barras laterales y barra de estado.",
           "2b4474780a": "Apariencia",
           "3d9adfe6a5": "Pestañas globales de terminal, navegador y Markdown.",
           "3eb22a3ada": "Espacio de trabajo flotante",
@@ -8480,12 +8452,9 @@
           "b79b5b31e9": "Shells, renderizador, sesiones y comportamiento del terminal.",
           "3de4bbb841": "Terminal",
           "11faa2f7dd": "Fuentes de tareas",
-          "cfa34f4465": "Nombres de rama, refs base y Git AI Author.",
           "70100f94c7": "Git y control de código fuente",
           "b07041697f": "Conecta GitHub, GitLab, Linear y servicios de alojamiento de código fuente.",
           "c9ca101a3b": "Integraciones",
-          "f9b77539fd": "Valores predeterminados del workspace, configuración de la app y mantenimiento.",
-          "7807c11c4d": "General",
           "6855b0f77d": "Termina los flujos de trabajo principales que hacen que Markov sea útil para el trabajo de agentes en paralelo.",
           "6d119427ef": "Lista de verificación de incorporación",
           "eb1176a14e": "Dictado local de voz a texto con modelos en el dispositivo.",
@@ -8502,12 +8471,7 @@
           "acc7bbdefd": "Presiona ESC de nuevo para salir de ajustes",
           "43b68e10f0": "Hay ajustes de IA sin guardar. Se descartarán al salir.",
           "17bdee4ff1": "¿Descartar los ajustes de IA sin guardar?",
-          "084d8fac5b": "Privacidad y seguridad",
-          "23931df7e8": "Hosts remotos",
           "8bd117d669": "Interfaz",
-          "e1578cd4bc": "Flujos de trabajo",
-          "9abb9be3bc": "Configuración inicial",
-          "23c6874fdf": "Capacidades de IA",
           "65358016ea": "Desechar",
           "dev": "Herramientas de desarrollo",
           "devDescription": "Herramientas solo de desarrollo para probar estados de la UI.",
@@ -8543,9 +8507,7 @@
           "dbceaa8840": "Buscar ajustes",
           "60f8a673a7": "Volver a la app",
           "6503182299": "Checklist de onboarding",
-          "82db1b7de4": "Checklist de onboarding, {{value0}} de {{value1}} completados. Mostrar guía de configuración.",
-          "df38d612b7": "Aún no se han agregado proyectos.",
-          "3e483e256b": "No hay ajustes de proyecto coincidentes."
+          "df38d612b7": "Aún no se han agregado proyectos."
         },
         "ShortcutFilterRail": {
           "28b63545bf": "Estado",
@@ -19847,8 +19809,7 @@
         "continueNow": "Continuar ahora",
         "leadIn": "Continúa este chat sin esperar:",
         "switchAccount": "Cambiar de cuenta",
-        "addAccount": "Añadir cuenta…",
-        "accountUnavailable": "Este chat no se puede mover a otra cuenta. Transfiérelo a otro agente."
+        "addAccount": "Añadir cuenta…"
       },
       "usageLimitAutoContinue": {
         "cancelFailed": "No se pudo cancelar la continuación automática. Inténtalo de nuevo.",
@@ -19857,7 +19818,6 @@
         "scheduled": "Markov continuará este chat a las {{time}}.",
         "cancel": "No continuar"
       },
-      "settings": "Configuración del chat",
       "textAttachmentPreview": {
         "copiedContents": "Contenido copiado",
         "textAttachment": "Archivo de texto adjunto",
@@ -20193,28 +20153,7 @@
       }
     },
     "agentSessionContinuation": {
-      "preparingContext": "Preparando el contexto guardado del chat…",
-      "handOffToAnotherAgent": "Pasar a otro agente",
-      "dialogTitle": "Pasar a otro agente",
-      "dialogDescription": "Inicia una sesión nueva del agente desde este punto. La sesión original no cambia.",
-      "untitledSession": "Sesión actual",
-      "originalAgent": "Agente original: {{agent}}",
-      "agent": "Agente",
       "selectAgent": "Selecciona un agente",
-      "detectingAgents": "Detectando agentes en el host de este espacio de trabajo…",
-      "detectionFailed": "No se pudieron detectar agentes en el host de este espacio de trabajo.",
-      "noAgents": "No se detectaron agentes habilitados en el host de este espacio de trabajo.",
-      "onlySourceFamilyDetected": "En el host de este espacio de trabajo solo hay disponibles agentes que comparten el límite de uso con {{agent}}. Activa o instala un agente diferente.",
-      "context": "Contexto",
-      "modeFocused": "Traspaso enfocado (recomendado)",
-      "modeFocusedDescription": "Usa el estado más reciente y el espacio de trabajo actual, y consulta detalles anteriores solo cuando hacen falta.",
-      "modeLoadedDescription": "Usa los mensajes recientes cargados en este chat y el espacio de trabajo actual.",
-      "modeCapturedDescription": "Usa el texto capturado y el espacio de trabajo actual.",
-      "modeFull": "Transcripción completa de la sesión",
-      "modeFullDescription": "Pide al nuevo agente que lea toda la sesión guardada antes de continuar. Puede tardar más y consumir una cantidad considerable de contexto, uso del plan o créditos de API.",
-      "startsIn": "Se inicia en:",
-      "startSession": "Iniciar sesión nueva",
-      "starting": "Iniciando…",
       "noContext": "No hay contexto de sesión disponible para continuar en una sesión nueva.",
       "agentDisabled": "{{agent}} está deshabilitado en la configuración de agentes.",
       "agentUnavailable": "No se detectó {{agent}} en el host de este espacio de trabajo.",

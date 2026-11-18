@@ -1,6 +1,6 @@
-import { createHash, randomBytes } from 'node:crypto'
 import { createServer, type Server, type ServerResponse } from 'node:http'
 import { shell } from 'electron'
+import { createOAuthRandomToken, createPkceCodeChallenge } from '../oauth/pkce-code-pair'
 import type { MarkovCloudAuthConfig } from './profile-cloud-auth-config'
 import {
   MARKOV_CLOUD_CALLBACK_RESPONSE_HEADERS,
@@ -17,18 +17,6 @@ export type MarkovCloudAuthorizationCode = {
 
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000
 
-function base64Url(buffer: Buffer): string {
-  return buffer.toString('base64').replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
-}
-
-function createCodeVerifier(): string {
-  return base64Url(randomBytes(32))
-}
-
-function createCodeChallenge(verifier: string): string {
-  return base64Url(createHash('sha256').update(verifier).digest())
-}
-
 function closeServer(server: Server): void {
   try {
     // Browser keep-alive sockets can delay close and timeout cleanup.
@@ -44,9 +32,9 @@ export function beginMarkovCloudPkceFlow(
   localProfileId: string,
   options: { onAuthorizeUrl?: (url: string) => void; signal?: AbortSignal } = {}
 ): Promise<MarkovCloudAuthorizationCode> {
-  const codeVerifier = createCodeVerifier()
-  const nonce = base64Url(randomBytes(32))
-  const state = base64Url(randomBytes(32))
+  const codeVerifier = createOAuthRandomToken()
+  const nonce = createOAuthRandomToken()
+  const state = createOAuthRandomToken()
 
   return new Promise((resolve, reject) => {
     let settled = false
@@ -145,7 +133,7 @@ export function beginMarkovCloudPkceFlow(
       authorizeUrl.searchParams.set('scope', config.scope)
       authorizeUrl.searchParams.set('nonce', nonce)
       authorizeUrl.searchParams.set('state', state)
-      authorizeUrl.searchParams.set('code_challenge', createCodeChallenge(codeVerifier))
+      authorizeUrl.searchParams.set('code_challenge', createPkceCodeChallenge(codeVerifier))
       authorizeUrl.searchParams.set('code_challenge_method', 'S256')
       authorizeUrl.searchParams.set('local_profile_id', localProfileId)
       options.onAuthorizeUrl?.(authorizeUrl.toString())

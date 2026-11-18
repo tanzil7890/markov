@@ -4,11 +4,6 @@ import { formatAgentTypeLabel } from '../../../../../../shared/agent-status/pres
 import { agentRowDisplayDotState as getAgentDotState } from '@/lib/agent-row-dot-state'
 import { translate } from '@/i18n/i18n'
 
-export type SummaryAgentGroup = {
-  state: AgentDotState
-  agents: DashboardAgentRowData[]
-}
-
 export const SUMMARY_STATE_ORDER: readonly AgentDotState[] = [
   'waiting',
   'blocked',
@@ -196,23 +191,6 @@ function formatAllAgentsInState(state: AgentDotState, count: number): string {
         }
       )
   }
-}
-
-export function buildSummaryAgentGroups(agents: DashboardAgentRowData[]): SummaryAgentGroup[] {
-  const groups = new Map<AgentDotState, DashboardAgentRowData[]>()
-  for (const agent of agents) {
-    const dotState = getAgentDotState(agent)
-    const group = groups.get(dotState)
-    if (group) {
-      group.push(agent)
-    } else {
-      groups.set(dotState, [agent])
-    }
-  }
-  return SUMMARY_STATE_ORDER.flatMap((state) => {
-    const groupAgents = groups.get(state)
-    return groupAgents ? [{ state, agents: groupAgents }] : []
-  })
 }
 
 export function summarizeAgents(agents: DashboardAgentRowData[], subjectLabel: string): string {

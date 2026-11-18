@@ -1,6 +1,7 @@
 import type { DirectoryAccountAgentDefinition } from '../../../native-chat/agent-session-wire/providers/structured-agent-definition'
 import { CODEX_STRUCTURED_HANDLE_NAMESPACE } from '../../../../shared/agent-session/lifecycle/agent-session-provider-handle-encoding'
 import { isCodexTurnOptionKey } from '../turns/codex-turn-option-keys'
+import { CODEX_MANAGED_RUNTIME } from '../../../codex-cli/codex-managed-runtime'
 
 export const CODEX_STRUCTURED_AGENT: DirectoryAccountAgentDefinition = {
   agent: 'codex',
@@ -19,6 +20,8 @@ export const CODEX_STRUCTURED_AGENT: DirectoryAccountAgentDefinition = {
     // Approval and sandbox policy ride on the thread; the app-server enforces them.
     approvalEnforcement: 'provider'
   },
+  // Markov installs its own Codex where the computer has no whole one.
+  managedRuntime: () => CODEX_MANAGED_RUNTIME.pin() !== null,
   restingOptions: {
     acceptsKey: isCodexTurnOptionKey,
     // No built-in list: the client fills the current model from its own unknown-model defaults.

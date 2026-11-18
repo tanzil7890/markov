@@ -2156,9 +2156,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Daralt"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Yeni CLI'de Devam Et"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "En sona kaydır"
     },

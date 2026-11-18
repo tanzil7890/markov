@@ -4,6 +4,8 @@ import { captureWorkspaceEmptiedReaction } from './workspace-emptied-reaction'
 import { isEditorTabContentType } from '@/store/slices/editor/tabs/editor-tab-content-type'
 import { useBulkTabCloseConfirmation } from '../use-bulk-tab-close-confirmation'
 import type { BulkTabCloseScope } from '../../../../shared/bulk-tab-close-confirmation'
+import { SETTINGS_TAB_ID, settingsTabOf, visualTabOrder } from '@/lib/settings-tab-placement'
+import { requestSettingsClose } from '@/lib/settings-close-request'
 
 export function useTabGroupCloseScopeCommands({
   groupId,
@@ -35,22 +37,45 @@ export function useTabGroupCloseScopeCommands({
           .filter((tab) => isEditorTabContentType(tab.contentType) && !tab.isPinned)
           .map((tab) => tab.id)
       }
-      if (itemId === undefined || !tabs.some((tab) => tab.id === itemId)) {
+      // The Settings tab counts as one of the group's tabs: it can be the origin, and it can be closed.
+      const visualOrder = visualTabOrder(state, worktreeId, group)
+      const closesSettingsTab =
+        itemId !== SETTINGS_TAB_ID &&
+        visualOrder.includes(SETTINGS_TAB_ID) &&
+        settingsTabOf(state, worktreeId)?.isPinned === false
+      if (
+        itemId === undefined ||
+        (itemId === SETTINGS_TAB_ID
+          ? !visualOrder.includes(SETTINGS_TAB_ID)
+          : !tabs.some((tab) => tab.id === itemId))
+      ) {
         return []
       }
       if (scope === 'others') {
-        return tabs.filter((tab) => tab.id !== itemId && !tab.isPinned).map((tab) => tab.id)
+        const others = tabs.filter((tab) => tab.id !== itemId && !tab.isPinned).map((tab) => tab.id)
+        return closesSettingsTab ? [...others, SETTINGS_TAB_ID] : others
       }
-      const index = group.tabOrder.indexOf(itemId)
+      const index = visualOrder.indexOf(itemId)
       if (index === -1) {
         return []
       }
-      const order =
-        scope === 'right' ? group.tabOrder.slice(index + 1) : group.tabOrder.slice(0, index)
+      const order = scope === 'right' ? visualOrder.slice(index + 1) : visualOrder.slice(0, index)
       const closableIds = new Set(tabs.filter((tab) => !tab.isPinned).map((tab) => tab.id))
+      if (closesSettingsTab) {
+        closableIds.add(SETTINGS_TAB_ID)
+      }
       return order.filter((id) => closableIds.has(id))
     },
     [groupId, worktreeId]
+  )
+  const closeSelected = useCallback(
+    (ids: string[]) => {
+      closeMany(ids.filter((id) => id !== SETTINGS_TAB_ID))
+      if (ids.includes(SETTINGS_TAB_ID)) {
+        requestSettingsClose()
+      }
+    },
+    [closeMany]
   )
 
   const closeGroup = useCallback(() => {
@@ -81,16 +106,16 @@ export function useTabGroupCloseScopeCommands({
   const closeOthers = useCallback(
     (itemId: string) => {
       // Why: store closeOtherTabs strands dirty files if the save dialog is cancelled; route via closeMany to stay dirty-aware.
-      confirmBulkClose('others', () => selectTabIds('others', itemId), closeMany)
+      confirmBulkClose('others', () => selectTabIds('others', itemId), closeSelected)
     },
-    [closeMany, confirmBulkClose, selectTabIds]
+    [closeSelected, confirmBulkClose, selectTabIds]
   )
 
   const closeInDirection = useCallback(
     (itemId: string, direction: 'left' | 'right') => {
-      confirmBulkClose(direction, () => selectTabIds(direction, itemId), closeMany)
+      confirmBulkClose(direction, () => selectTabIds(direction, itemId), closeSelected)
     },
-    [closeMany, confirmBulkClose, selectTabIds]
+    [closeSelected, confirmBulkClose, selectTabIds]
   )
 
   const closeToRight = useCallback(

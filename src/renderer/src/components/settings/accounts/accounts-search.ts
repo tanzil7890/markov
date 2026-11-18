@@ -3,6 +3,8 @@ import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from '../search/settings-search-keywords'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { getAccountsClaudeSearchEntries } from './accounts-claude-search'
+import { isOfferedTuiAgent } from '../../../../../shared/agent-launch/catalog/offered-tui-agents'
+import { isOfferedUsageProvider } from '../../../../../shared/agent-launch/catalog/offered-usage-trackers'
 
 export const getAccountsLocationSearchEntries = createLocalizedCatalog(() => [
   {
@@ -281,10 +283,10 @@ export const getAccountsPaneSearchEntries = createLocalizedCatalog((): SettingsS
   ...getAccountsClaudeSearchEntries(),
   ...getAccountsCodexSearchEntries(),
   ...getAccountsGeminiSearchEntries(),
-  ...getAccountsOpencodeSearchEntries(),
-  ...getAccountsMiniMaxSearchEntries(),
+  ...(isOfferedTuiAgent('opencode') ? getAccountsOpencodeSearchEntries() : []),
+  ...(isOfferedUsageProvider('minimax') ? getAccountsMiniMaxSearchEntries() : []),
   ...getAccountsGrokSearchEntries(),
-  ...getAccountsAntigravitySearchEntries(),
-  ...getAccountsCursorSearchEntries(),
-  ...getAccountsZcodePlanSearchEntries()
+  ...(isOfferedTuiAgent('antigravity') ? getAccountsAntigravitySearchEntries() : []),
+  ...(isOfferedTuiAgent('cursor') ? getAccountsCursorSearchEntries() : []),
+  ...(isOfferedTuiAgent('zcode') ? getAccountsZcodePlanSearchEntries() : [])
 ])

@@ -158,6 +158,68 @@ export function rankSettingsSearchItems<T>(
     .map(({ item, score }) => ({ item, score }))
 }
 
+export type SettingsSearchHit = {
+  sectionId: string
+  entry: SettingsSearchEntry
+  /** True when the section's own name or summary matched, not a setting inside it. */
+  isSection: boolean
+  score: number
+}
+
+/** Every matching setting across sections, best first; a section's name outranks the settings inside it. */
+export function findSettingsSearchHits(
+  query: string,
+  sections: readonly {
+    id: string
+    title: string
+    description: string
+    searchEntries: readonly SettingsSearchEntry[]
+  }[],
+  limit: number
+): SettingsSearchHit[] {
+  if (isSettingsSearchQueryTooLarge(query)) {
+    return []
+  }
+  const normalizedQuery = normalizeSettingsSearchQuery(query)
+  if (!normalizedQuery) {
+    return []
+  }
+  const hits: SettingsSearchHit[] = []
+  for (const section of sections) {
+    const sectionEntry = { title: section.title, description: section.description }
+    const sectionScore = Math.max(
+      scoreSettingsSearchText(normalizedQuery, section.title, PANE_TITLE_SCORE),
+      scoreSettingsSearchText(normalizedQuery, section.description, DESCRIPTION_SCORE)
+    )
+    if (sectionScore > SETTINGS_SEARCH_NO_MATCH_SCORE) {
+      hits.push({
+        sectionId: section.id,
+        entry: sectionEntry,
+        isSection: true,
+        score: sectionScore
+      })
+    }
+    const seenTitles = new Set<string>()
+    for (const entry of section.searchEntries) {
+      const score = Math.max(
+        scoreSettingsSearchText(normalizedQuery, entry.title, ENTRY_TITLE_SCORE),
+        scoreSettingsSearchText(normalizedQuery, entry.description, DESCRIPTION_SCORE),
+        scoreSettingsSearchValues(normalizedQuery, entry.keywords, KEYWORD_SCORE)
+      )
+      // A pane can list one setting under several headings; show it once.
+      if (score > SETTINGS_SEARCH_NO_MATCH_SCORE && !seenTitles.has(entry.title)) {
+        seenTitles.add(entry.title)
+        hits.push({ sectionId: section.id, entry, isSection: false, score })
+      }
+    }
+  }
+  return hits
+    .map((hit, index) => ({ hit, index }))
+    .sort((a, b) => b.hit.score - a.hit.score || a.index - b.index)
+    .slice(0, limit)
+    .map(({ hit }) => hit)
+}
+
 export function matchesSettingsSearch(
   query: string,
   entries: SettingsSearchEntry | SettingsSearchEntry[]

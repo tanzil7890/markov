@@ -1,36 +1,37 @@
 import type { GhAccountBinding } from '../../../../../shared/github/account-binding'
 import { useCallback, useRef, useState } from 'react'
+import { SettingsTabBar } from '../section-layout/SettingsTabBar'
+import { RepositoryIdentitySection } from './identity/RepositoryIdentitySection'
+import {
+  getRepositoryPaneTabTitles,
+  REPOSITORY_PANE_TAB_IDS,
+  repositoryPaneTabForRequest,
+  type RepositoryPaneTabId
+} from './repository-pane-tabs'
+import type { SettingsSettingRequest } from '../navigation/settings-setting-request'
 import type { MarkovHooks, RepoHookSettings } from '../../../../../shared/markov-yaml-hook-types'
 import type { Project, ProjectUpdateArgs } from '../../../../../shared/project-types'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { SourceControlAiSettingsPatch } from '../../../../../shared/source-control/ai/settings/source-control-ai-settings-types'
-import { getRepoKindLabel, isFolderRepo } from '../../../../../shared/repo-kind'
+import { isFolderRepo } from '../../../../../shared/repo-kind'
 import { getRepoExecutionHostId, type ExecutionHostId } from '../../../../../shared/execution-host'
-import { Label } from '../../ui/label'
-import { Separator } from '../../ui/separator'
 import { useShallow } from 'zustand/react/shallow'
 import { RepositoryHooksSection } from './execution/RepositoryHooksSection'
 import { McpConfigSection } from './mcp/McpConfigSection'
 import { WorktreeSymlinksSection } from './execution/WorktreeSymlinksSection'
 import { SparsePresetSettingsSection } from './execution/SparsePresetSettingsSection'
 import { RepositorySourceControlAiSection } from './source-control/RepositorySourceControlAiSection'
-import { SearchableSetting } from '../section-layout/SearchableSetting'
-import { RepositoryRemoveProjectButton } from './RepositoryRemoveProjectButton'
 import type { SettingsProjectRemovalScope } from '../navigation/settings-project-list'
 import { matchesSettingsSearch } from '../search/settings-search'
 import { useAppStore } from '@/store/index'
-import { getRepositoryIconSectionId } from './repository-settings-targets'
-import { RepositoryIconPicker } from './identity/RepositoryIconPicker'
 import { getRepositoryPaneSearchEntries } from './repository-search'
 import { RepositoryHostSetupsSection } from './execution/RepositoryHostSetupsSection'
-import { RepoSettingsDraftInput } from './RepositorySettingsDraftInput'
 import { RepositoryForkSyncSection } from './execution/RepositoryForkSyncSection'
 import { RepositoryGitHubAccountSection } from './RepositoryGitHubAccountSection'
 import { translate } from '@/i18n/i18n'
 import { RepositoryWindowsRuntimeSection } from './execution/RepositoryWindowsRuntimeSection'
 import { matchesRepositoryIdentitySearch } from './identity/repository-identity-search'
 import { RepositoryWorktreeDefaultsSection } from './execution/RepositoryWorktreeDefaultsSection'
-import { RepositoryJiraProjectSection } from './RepositoryJiraProjectSection'
 import { getProjectRuntimeSessionSummary } from './execution/repository-runtime-session-summary'
 import { getRepoOwnerWorktreeVisibilityDefaults } from '../../../store/worktree-visibility-defaults-by-host'
 import {
@@ -76,6 +77,8 @@ type RepositoryPaneProps = {
   ) => void | Promise<unknown>
   /** Lets the repository's text pickers save model lists its host reports. */
   writeSourceControlAiSettings?: (patch: SourceControlAiSettingsPatch) => Promise<void>
+  /** A setting to open the pane on: the tab that holds it is selected. */
+  settingRequest?: SettingsSettingRequest | null
 }
 
 export function RepositoryPane({
@@ -96,7 +99,8 @@ export function RepositoryPane({
   wslDistros = EMPTY_WSL_DISTROS,
   wslCapabilitiesLoading = false,
   updateProject,
-  writeSourceControlAiSettings
+  writeSourceControlAiSettings,
+  settingRequest = null
 }: RepositoryPaneProps): React.JSX.Element {
   const isFolder = isFolderRepo(repo)
   // Bind writes to the switcher-selected owner; same-ID/self-paired repos must not use focused-host fallback.
@@ -208,6 +212,55 @@ export function RepositoryPane({
   const hostSetupEntries = allEntries.filter((entry) => entry.title === 'Available Hosts')
   const projectRuntimeEntries = allEntries.filter((entry) => entry.title === 'Project Runtime')
 
+  const [activeTab, setActiveTab] = useState<RepositoryPaneTabId>('identity')
+  const [handledRequestToken, setHandledRequestToken] = useState<number | null>(null)
+  if (settingRequest && settingRequest.token !== handledRequestToken) {
+    // A link or a search result names a setting; open the tab that holds it before the scroll looks for it.
+    setHandledRequestToken(settingRequest.token)
+    const worktreeTitles = new Set([
+      translate('auto.components.settings.repository.search.094adbe930', 'Default Worktree Base'),
+      translate('auto.components.settings.repository.search.443d127b5a', 'Worktree Location'),
+      translate(
+        'auto.components.settings.repository.search.externalWorktrees',
+        'External worktrees'
+      ),
+      translate('auto.components.settings.repository.search.projectRuntime', 'Project Runtime')
+    ])
+    const gitTitles = new Set([
+      translate('auto.components.settings.repository.search.githubAccount', 'GitHub Account'),
+      translate(
+        'auto.components.settings.repository.search.keepForkUpToDate',
+        'Keep Fork Up to Date'
+      )
+    ])
+    const requestedTab = repositoryPaneTabForRequest(
+      settingRequest,
+      new Map<string, RepositoryPaneTabId>([
+        ...identityEntries.map(
+          (entry) =>
+            [
+              entry.title,
+              worktreeTitles.has(entry.title)
+                ? 'worktrees'
+                : gitTitles.has(entry.title)
+                  ? 'git'
+                  : 'identity'
+            ] as const
+        ),
+        ...[...hostSetupEntries, ...symlinkEntries, ...sparsePresetEntries].map(
+          (entry) => [entry.title, 'worktrees'] as const
+        ),
+        ...sourceControlAiEntries.map((entry) => [entry.title, 'git'] as const),
+        ...hooksEntries.map((entry) => [entry.title, 'scripts'] as const),
+        [getRepositoryFormatterSearchEntry().title, 'scripts'] as const,
+        ...mcpEntries.map((entry) => [entry.title, 'advanced'] as const)
+      ])
+    )
+    if (requestedTab) {
+      setActiveTab(requestedTab)
+    }
+  }
+
   const hooksSection =
     !isFolder && (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, hooksEntries)) ? (
       <RepositoryHooksSection
@@ -224,97 +277,29 @@ export function RepositoryPane({
       />
     ) : null
 
-  // Lead with identity, then frequently edited setup commands, before secondary repository controls.
-  const visibleSections = [
-    forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, identityEntries) ? (
-      <section key="identity" className="relative space-y-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1 pr-12">
-            <h3 className="text-sm font-semibold">
-              {translate('auto.components.settings.RepositoryPane.499a437335', 'Identity')}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {translate(
-                'auto.components.settings.RepositoryPane.b0a0c14a1c',
-                'Project-specific display details for the sidebar and tabs.'
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {translate('auto.components.settings.RepositoryPane.323debba71', 'Type:')}{' '}
-              <span className="text-foreground">{getRepoKindLabel(repo)}</span>
-            </p>
-            {isFolder ? (
-              <p className="text-xs text-muted-foreground">
-                {translate(
-                  'auto.components.settings.RepositoryPane.ee5a290616',
-                  'Opened as folder. Git features are unavailable for this workspace.'
-                )}
-              </p>
-            ) : null}
-          </div>
-          <RepositoryRemoveProjectButton
-            repo={repo}
-            removalScope={removalScope}
-            forceVisible={forceFullPaneForRepoMatch}
-            removeProject={removeProject}
-          />
-        </div>
-
-        <SearchableSetting
-          title={translate('auto.components.settings.RepositoryPane.c7ef4415de', 'Display Name')}
-          description={translate(
-            'auto.components.settings.RepositoryPane.b0a0c14a1c',
-            'Project-specific display details for the sidebar and tabs.'
-          )}
-          keywords={[repo.displayName, repo.path, 'project name', 'repository name']}
-          className="space-y-2"
-          forceVisible={forceFullPaneForRepoMatch}
-        >
-          <Label htmlFor={`repo-display-name-${repo.id}`} className="text-sm font-semibold">
-            {translate('auto.components.settings.RepositoryPane.c7ef4415de', 'Display Name')}
-          </Label>
-          <RepoSettingsDraftInput
-            id={`repo-display-name-${repo.id}`}
-            repoId={repo.id}
-            storeValue={repo.displayName}
-            onTextChange={(text) => updateSelectedRepo(repo.id, { displayName: text })}
-            className="h-9 text-sm"
-          />
-        </SearchableSetting>
-
-        <SearchableSetting
-          title={translate('auto.components.settings.RepositoryPane.26fef02bf3', 'Project Icon')}
-          description={translate(
-            'auto.components.settings.RepositoryPane.e641c359de',
-            'Project icon and color used in the sidebar and tabs.'
-          )}
-          keywords={[
-            repo.displayName,
-            repo.path,
-            'project icon',
-            'repository icon',
-            'color',
-            'badge',
-            'emoji',
-            'favicon'
-          ]}
-          className="space-y-2"
-          id={getRepositoryIconSectionId(repo.id)}
-          forceVisible={forceFullPaneForRepoMatch}
-        >
-          <RepositoryIconPicker repo={repo} updateRepo={updateSelectedRepo} />
-        </SearchableSetting>
-
-        <RepositoryJiraProjectSection
-          key={`${selectedHostId}:${repo.id}`}
+  const identityShown =
+    forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, identityEntries)
+  const formatterEntry = getRepositoryFormatterSearchEntry()
+  // Folder projects have no Git, so their worktree, Git and MCP settings do not exist.
+  const tabSections: Record<RepositoryPaneTabId, React.ReactNode[]> = {
+    identity: [
+      identityShown ? (
+        <RepositoryIdentitySection
+          key="identity"
           repo={repo}
-          updateRepo={updateSelectedRepo}
+          removalScope={removalScope}
           forceVisible={forceFullPaneForRepoMatch}
+          updateRepo={updateSelectedRepo}
+          removeProject={removeProject}
         />
-
-        {!isFolder ? (
-          <>
+      ) : null
+    ],
+    worktrees:
+      isFolder || !identityShown
+        ? []
+        : [
             <RepositoryHostSetupsSection
+              key="hosts"
               repo={repo}
               selectedProjectSetupId={selectedProjectSetupId}
               settingsSelectionKey={settingsSelectionKey}
@@ -322,9 +307,9 @@ export function RepositoryPane({
               forceVisible={forceFullPaneForRepoMatch}
               searchQuery={searchQuery}
               searchEntries={hostSetupEntries}
-            />
-
+            />,
             <RepositoryWindowsRuntimeSection
+              key="runtime"
               repo={repo}
               repoDisplayName={repo.displayName}
               project={project}
@@ -338,21 +323,9 @@ export function RepositoryPane({
               forceVisible={forceFullPaneForRepoMatch}
               searchQuery={searchQuery}
               searchEntries={projectRuntimeEntries}
-            />
-
-            <RepositoryForkSyncSection
-              repo={repo}
-              updateRepo={updateSelectedRepo}
-              forceVisible={forceFullPaneForRepoMatch}
-            />
-
-            <RepositoryGitHubAccountSection
-              repo={repo}
-              updateRepo={updateSelectedRepo}
-              forceVisible={forceFullPaneForRepoMatch}
-            />
-
+            />,
             <RepositoryWorktreeDefaultsSection
+              key="defaults"
               repo={repo}
               settings={repoOwnerSettings}
               updateRepo={updateSelectedRepo}
@@ -363,52 +336,81 @@ export function RepositoryPane({
                 })
               }
               forceVisible={forceFullPaneForRepoMatch}
+            />,
+            !repo.connectionId &&
+            (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, symlinkEntries)) ? (
+              <WorktreeSymlinksSection key="symlinks" repo={repo} updateRepo={updateSelectedRepo} />
+            ) : null,
+            forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, sparsePresetEntries) ? (
+              <SparsePresetSettingsSection key={`sparse-presets:${repo.id}`} repoId={repo.id} />
+            ) : null
+          ],
+    scripts: [
+      hooksSection,
+      forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, [formatterEntry]) ? (
+        <RepositoryFormatterSection
+          key={`formatter-${repo.id}-${selectedHostId}`}
+          repo={repo}
+          updateRepo={updateSelectedRepo}
+          forceVisible={forceFullPaneForRepoMatch}
+        />
+      ) : null
+    ],
+    git: isFolder
+      ? []
+      : [
+          identityShown ? (
+            <RepositoryForkSyncSection
+              key="fork"
+              repo={repo}
+              updateRepo={updateSelectedRepo}
+              forceVisible={forceFullPaneForRepoMatch}
             />
-          </>
-        ) : null}
-      </section>
-    ) : null,
-    hooksSection,
-    forceFullPaneForRepoMatch ||
-    matchesSettingsSearch(searchQuery, [getRepositoryFormatterSearchEntry()]) ? (
-      <RepositoryFormatterSection
-        key={`formatter-${repo.id}-${selectedHostId}`}
-        repo={repo}
-        updateRepo={updateSelectedRepo}
-        forceVisible={forceFullPaneForRepoMatch}
-      />
-    ) : null,
-    !isFolder &&
-    (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, sourceControlAiEntries)) ? (
-      <RepositorySourceControlAiSection
-        key="source-control-ai"
-        repo={repo}
-        updateRepo={updateSelectedRepo}
-        writeSourceControlAiSettings={writeSourceControlAiSettings}
-      />
-    ) : null,
-    !isFolder &&
-    !repo.connectionId &&
-    (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, symlinkEntries)) ? (
-      <WorktreeSymlinksSection key="symlinks" repo={repo} updateRepo={updateSelectedRepo} />
-    ) : null,
-    !isFolder &&
-    (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, sparsePresetEntries)) ? (
-      <SparsePresetSettingsSection key={`sparse-presets:${repo.id}`} repoId={repo.id} />
-    ) : null,
-    !isFolder && (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, mcpEntries)) ? (
-      <McpConfigSection key={`mcp-configs:${selectedHostId}:${repo.id}`} repo={repo} />
-    ) : null
-  ].filter(Boolean)
+          ) : null,
+          identityShown ? (
+            <RepositoryGitHubAccountSection
+              key="github"
+              repo={repo}
+              updateRepo={updateSelectedRepo}
+              forceVisible={forceFullPaneForRepoMatch}
+            />
+          ) : null,
+          forceFullPaneForRepoMatch ||
+          matchesSettingsSearch(searchQuery, sourceControlAiEntries) ? (
+            <RepositorySourceControlAiSection
+              key="source-control-ai"
+              repo={repo}
+              updateRepo={updateSelectedRepo}
+              writeSourceControlAiSettings={writeSourceControlAiSettings}
+            />
+          ) : null
+        ],
+    advanced: [
+      !isFolder && (forceFullPaneForRepoMatch || matchesSettingsSearch(searchQuery, mcpEntries)) ? (
+        <McpConfigSection key={`mcp-configs:${selectedHostId}:${repo.id}`} repo={repo} />
+      ) : null
+    ]
+  }
+  const tabIds = REPOSITORY_PANE_TAB_IDS.filter((tabId) => tabSections[tabId].some(Boolean))
+  const shownTab = tabIds.includes(activeTab) ? activeTab : tabIds[0]
+  const tabTitles = getRepositoryPaneTabTitles()
 
   return (
     <div ref={setRepositoryPaneRootRef} className="space-y-8">
-      {visibleSections.map((section, index) => (
-        <div key={index} className="space-y-8">
-          {index > 0 ? <Separator /> : null}
-          {section}
-        </div>
-      ))}
+      {tabIds.length > 1 ? (
+        <SettingsTabBar
+          label={repo.displayName}
+          tabs={tabIds.map((tabId) => ({ id: tabId, title: tabTitles[tabId] }))}
+          activeTabId={shownTab}
+          onSelectTab={(tabId) => {
+            const next = REPOSITORY_PANE_TAB_IDS.find((candidate) => candidate === tabId)
+            if (next) {
+              setActiveTab(next)
+            }
+          }}
+        />
+      ) : null}
+      {shownTab ? tabSections[shownTab] : null}
     </div>
   )
 }

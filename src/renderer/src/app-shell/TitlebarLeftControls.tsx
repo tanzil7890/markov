@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, MoreHorizontal, PanelLeft } from 'lucide-react'
-import logo from '../../../../resources/logo.svg'
+import { MarkovMark } from '@/components/brand/MarkovMark'
 import { translate } from '@/i18n/i18n'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -42,7 +42,7 @@ export function TitlebarLeftControls({ layout }: { layout: AppChromeLayout }): R
         ) : hasCustomTitleBar ? (
           /* Replace native Windows/Linux chrome with logo and application-menu access. */
           <>
-            <img src={logo} alt="" aria-hidden className="titlebar-logo" />
+            <MarkovMark live className="titlebar-logo" />
             <Tooltip>
               <TooltipTrigger asChild>
                 <button

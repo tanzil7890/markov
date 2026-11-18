@@ -4,11 +4,12 @@ import { translate } from '@/i18n/i18n'
 import { translateSearchKeyword } from '../search/settings-search-keywords'
 import { getAntigravityStatusBarToggleSearchEntry } from './appearance-status-bar-antigravity-toggle-search'
 import { getMiniMaxStatusBarToggleSearchEntry } from './appearance-status-bar-minimax-toggle-search'
+import { isStatusBarItemOffered } from '../../status-bar/status-bar-agent-gating'
 import { getGrokStatusBarToggleSearchEntry } from './appearance-status-bar-grok-toggle-search'
 import { getCursorStatusBarToggleSearchEntry } from './appearance-status-bar-cursor-toggle-search'
 import { getZcodeStatusBarToggleSearchEntry } from './appearance-status-bar-zcode-toggle-search'
 
-export const getStatusBarToggles = createLocalizedCatalog(
+const getEveryStatusBarToggle = createLocalizedCatalog(
   (): readonly {
     id: StatusBarItem
     title: string
@@ -268,4 +269,9 @@ export const getStatusBarToggles = createLocalizedCatalog(
       )
     }
   ]
+)
+
+/** The status bar toggles Settings shows and searches; a withheld agent's meter has none. */
+export const getStatusBarToggles = createLocalizedCatalog(() =>
+  getEveryStatusBarToggle().filter(({ id }) => isStatusBarItemOffered(id))
 )

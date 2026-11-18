@@ -1,7 +1,6 @@
 import { createPortal } from 'react-dom'
 import NativeChatView from '../native-chat/NativeChatView'
 import { makePaneKey } from '../../../../shared/workspace-layout/stable-pane-id'
-import { canContinueAgentSessionInNewSession } from './terminal-agent-session-continuation'
 import type { TerminalPaneController } from './use-terminal-pane-controller'
 import { useAppStore } from '@/store'
 import { resolvePaneAgentSessionId } from './pane-agent-session-id'
@@ -28,7 +27,6 @@ export function TerminalPaneNativeChatPortal({
     paneTitles,
     readNativeChatTerminalDraft,
     readNativeChatTerminalScreen,
-    resolveAgentForLeaf,
     switchNativeChatToTerminal,
     tabId
   } = controller
@@ -49,11 +47,6 @@ export function TerminalPaneNativeChatPortal({
     canExpandPane: managedPanes.length > 1,
     isPaneExpanded: expandedPaneId === chatPane.id,
     onToggleExpand: () => contextMenu.runForPane(chatPane.id, contextMenu.onToggleExpand),
-    canContinueAgentSessionInNewSession: canContinueAgentSessionInNewSession(
-      resolveAgentForLeaf(chatPane.leafId)
-    ),
-    onContinueAgentSessionInNewSession: () =>
-      contextMenu.runForPane(chatPane.id, contextMenu.onContinueAgentSessionInNewSession),
     onCopyAgentSessionContext: () =>
       void contextMenu.runForPane(chatPane.id, contextMenu.onCopyAgentSessionContext),
     onSetTitle: () => contextMenu.runForPane(chatPane.id, contextMenu.onSetTitle),

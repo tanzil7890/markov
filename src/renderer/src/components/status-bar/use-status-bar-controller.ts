@@ -5,6 +5,7 @@ import { selectFloatingWorkspaceHasUnread } from '../../store/selectors'
 import type { ProviderRateLimits } from '../../../../shared/rate-limit-types'
 import { normalizeUsagePercentageDisplay } from '../../../../shared/usage-percentage-display'
 import { normalizeStatusBarUsageMode } from '../../../../shared/status-bar-usage-mode'
+import { resolveFloatingTerminalTriggerLocation } from '../../../../shared/floating-terminal-trigger-location'
 import { isStatusBarItemAvailable } from './status-bar-agent-gating'
 import { getVisibleUsageProvider, isUsageEmptyState } from './status-bar-provider-visibility'
 import {
@@ -41,7 +42,7 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
   // Why: reuse the floating-button's unread dot so activity shows for either trigger location (see FloatingTerminalToggleButton).
   const hasFloatingUnread = useAppStore(selectFloatingWorkspaceHasUnread)
   const floatingTerminalEnabled = settings?.floatingTerminalEnabled === true
-  const floatingTerminalTriggerLocation = settings?.floatingTerminalTriggerLocation ?? 'top-bar'
+  const floatingTerminalTriggerLocation = resolveFloatingTerminalTriggerLocation(settings)
   // Why: gate per-CLI bars on PATH detection so an uninstalled agent isn't shown a noisy empty bar (auto re-shows when installed).
   const localDetectedAgentIds = useAppStore((s) => s.detectedAgentIds)
   // Why: PATH detection describes this viewer, not the remote host whose bars are shown.

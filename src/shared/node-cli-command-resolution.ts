@@ -153,6 +153,29 @@ export function resolveCliCommand(
   return runCliFsReadsSync(cliCommandLookup(commandName, options))
 }
 
+/** Every runnable match in lookup order (PATH, then install folders), for a caller that must pass
+ *  over a first match it cannot use. */
+export function resolveCliCommandCandidates(
+  commandName: string,
+  options: ResolveCommandOptions = {}
+): string[] {
+  const platform = options.platform ?? process.platform
+  const names = getExecutableNames(platform, commandName)
+  const pathEnv = options.pathEnv ?? process.env.PATH ?? process.env.Path ?? null
+  const directories = [
+    ...splitPath(pathEnv),
+    ...getCliInstallDirectories(platform, options.homePath ?? homedir())
+  ]
+  const found = new Set<string>()
+  for (const directory of directories) {
+    const match = findFirstExecutable(platform, [directory], names)
+    if (match) {
+      found.add(match)
+    }
+  }
+  return [...found]
+}
+
 /** Resolve a literal override without falling back to an unverified command name. */
 export function resolveExecutableCommand(
   command: string,

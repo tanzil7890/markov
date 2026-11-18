@@ -89,16 +89,18 @@ export function StatusBarVisibilityMenu({
             )}
           </DropdownMenuCheckboxItem>
         )}
-        <DropdownMenuCheckboxItem
-          checked={statusBarItems.includes('opencode-go')}
-          onCheckedChange={() => {
-            recordFeatureInteraction('usage-tracking')
-            toggleStatusBarItem('opencode-go')
-          }}
-        >
-          <OpenCodeGoIcon size={14} />
-          {translate('auto.components.status.bar.StatusBar.8c86cd77b0', 'OpenCode Go Usage')}
-        </DropdownMenuCheckboxItem>
+        {isStatusBarItemAvailable('opencode-go', detectedAgentIds) && (
+          <DropdownMenuCheckboxItem
+            checked={statusBarItems.includes('opencode-go')}
+            onCheckedChange={() => {
+              recordFeatureInteraction('usage-tracking')
+              toggleStatusBarItem('opencode-go')
+            }}
+          >
+            <OpenCodeGoIcon size={14} />
+            {translate('auto.components.status.bar.StatusBar.8c86cd77b0', 'OpenCode Go Usage')}
+          </DropdownMenuCheckboxItem>
+        )}
         {isStatusBarItemAvailable('kimi', detectedAgentIds) && (
           <DropdownMenuCheckboxItem
             checked={statusBarItems.includes('kimi')}
@@ -111,16 +113,18 @@ export function StatusBarVisibilityMenu({
             {translate('auto.components.status.bar.StatusBar.5e59007df4', 'Kimi Usage')}
           </DropdownMenuCheckboxItem>
         )}
-        <DropdownMenuCheckboxItem
-          checked={statusBarItems.includes('minimax')}
-          onCheckedChange={() => {
-            recordFeatureInteraction('usage-tracking')
-            toggleStatusBarItem('minimax')
-          }}
-        >
-          <MiniMaxIcon size={14} />
-          {translate('auto.components.status.bar.StatusBar.3bbf140864', 'MiniMax Usage')}
-        </DropdownMenuCheckboxItem>
+        {isStatusBarItemAvailable('minimax', detectedAgentIds) && (
+          <DropdownMenuCheckboxItem
+            checked={statusBarItems.includes('minimax')}
+            onCheckedChange={() => {
+              recordFeatureInteraction('usage-tracking')
+              toggleStatusBarItem('minimax')
+            }}
+          >
+            <MiniMaxIcon size={14} />
+            {translate('auto.components.status.bar.StatusBar.3bbf140864', 'MiniMax Usage')}
+          </DropdownMenuCheckboxItem>
+        )}
         {isStatusBarItemAvailable('grok', detectedAgentIds) && (
           <DropdownMenuCheckboxItem
             checked={statusBarItems.includes('grok')}
@@ -145,16 +149,18 @@ export function StatusBarVisibilityMenu({
             {translate('auto.components.status.bar.StatusBar.zcodeUsageMenu', 'ZCode Usage')}
           </DropdownMenuCheckboxItem>
         )}
-        <DropdownMenuCheckboxItem
-          checked={statusBarItems.includes('cursor')}
-          onCheckedChange={() => {
-            recordFeatureInteraction('usage-tracking')
-            toggleStatusBarItem('cursor')
-          }}
-        >
-          <AgentIcon agent="cursor" size={14} />
-          {translate('auto.components.status.bar.StatusBar.cursorUsageMenu', 'Cursor Usage')}
-        </DropdownMenuCheckboxItem>
+        {isStatusBarItemAvailable('cursor', detectedAgentIds) && (
+          <DropdownMenuCheckboxItem
+            checked={statusBarItems.includes('cursor')}
+            onCheckedChange={() => {
+              recordFeatureInteraction('usage-tracking')
+              toggleStatusBarItem('cursor')
+            }}
+          >
+            <AgentIcon agent="cursor" size={14} />
+            {translate('auto.components.status.bar.StatusBar.cursorUsageMenu', 'Cursor Usage')}
+          </DropdownMenuCheckboxItem>
+        )}
         <DropdownMenuCheckboxItem
           checked={statusBarItems.includes('ssh')}
           onCheckedChange={() => {

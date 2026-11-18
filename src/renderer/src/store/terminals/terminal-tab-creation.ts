@@ -33,6 +33,7 @@ import {
 } from './terminal-tab-create-through-layout-owner'
 import type { AppState } from '../types'
 import { normalizeTabStartupCommand } from './terminal-startup-queues'
+import { isRightSidebarTabGroupId } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 export function createTerminalTabCreationActions(
   set: TerminalStoreSet,
@@ -63,6 +64,11 @@ export function createTerminalTabCreationActions(
         const existing = (s.tabsByWorktree[worktreeId] ?? []).filter(
           (entry) => !orphanTerminalIds.has(entry.id)
         )
+        const sidebarTerminalIds = new Set(
+          (s.unifiedTabsByWorktree[worktreeId] ?? [])
+            .filter((entry) => isRightSidebarTabGroupId(worktreeId, entry.groupId))
+            .map((entry) => entry.entityId)
+        )
         // Trim ID hints: IPC can include empty IDs, which break pane-key routing.
         const trimmedHint = typeof options?.id === 'string' ? options.id.trim() : ''
         // Why: `web-terminal-` ids are reserved for mirrored host tabs, so an IPC-spread hint must not take one.
@@ -87,7 +93,14 @@ export function createTerminalTabCreationActions(
         // Why: name the first pane at creation so the saved layout is never empty; the pane mounts and spawns into this leaf.
         const initialLeafId = requestedInitialLeafId ?? createBrowserUuid()
         const shouldActivate = options?.activate !== false
-        const nextOrdinal = getNextTerminalOrdinal(existing)
+        // The sidebar and the main area number their terminals separately.
+        const nextOrdinal = getNextTerminalOrdinal(
+          existing.filter(
+            (entry) =>
+              sidebarTerminalIds.has(entry.id) ===
+              isRightSidebarTabGroupId(worktreeId, requestedGroupId)
+          )
+        )
         const defaultTitle = `Terminal ${nextOrdinal}`
         const quickCommandLabel = options?.quickCommandLabel?.trim()
         const startupCwd = options?.startupCwd

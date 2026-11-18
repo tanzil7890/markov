@@ -9,7 +9,11 @@ export type LoadedSettingsStoreModel = Omit<SettingsStoreModel, 'settings'> & {
   settings: GlobalSettings
 }
 
+/** A full page of its own, or a tab in a workspace's tab strip. */
+export type SettingsPresentation = 'page' | 'tab'
+
 export type SettingsRenderContext = {
+  presentation: SettingsPresentation
   model: LoadedSettingsStoreModel
   interactions: SettingsInteractionController
   navigation: SettingsNavigationModel

@@ -10,7 +10,10 @@ import {
   useIntegrationSubordinateRowClass
 } from '../presentation/integration-card-presentation'
 import { getProviderAccountScope } from '../../provider-accounts/provider-account-scope'
-import { ProviderHostScopeControl } from '../../provider-accounts/ProviderHostScopeControl'
+import {
+  ProviderHostScopeControl,
+  useProviderHostScopeStatedOnce
+} from '../../provider-accounts/ProviderHostScopeControl'
 import { usePreflightCardStatuses } from './source-control-preflight-card-status'
 import { translate } from '@/i18n/i18n'
 import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
@@ -48,11 +51,16 @@ function ProviderAccountScopeDetails({
   children
 }: {
   children?: React.ReactNode
-}): React.JSX.Element {
+}): React.JSX.Element | null {
   const settings = useAppStore((s) => s.settings)
   const accountScope = getProviderAccountScope(settings)
   const subordinateRowClass = useIntegrationSubordinateRowClass('text-xs')
+  const scopeStatedOnce = useProviderHostScopeStatedOnce()
 
+  // With the scope stated above the list, a connected provider has nothing left to say here.
+  if (scopeStatedOnce && !children) {
+    return null
+  }
   return (
     <IntegrationCardDetails>
       <ProviderHostScopeControl

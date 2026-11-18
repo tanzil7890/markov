@@ -1,9 +1,5 @@
 // @vitest-environment happy-dom
 import { mocks, host, call, launch, params } from './web-runtime-agent-launch-options.test-fixture'
-import { createElement } from 'react'
-import { act, fireEvent, render, waitFor } from '@testing-library/react'
-import { AgentSessionContinuationDialog } from '@/components/agent-session-continuation/AgentSessionContinuationDialog'
-import type { AgentLaunchPicker } from '@/components/agent/AgentLaunchPicker'
 import { expect, it, vi } from 'vitest'
 import {
   WORKTREE_ID,
@@ -317,116 +313,6 @@ it.each(['legacy', 'agent_session_legacy_required'])(
     expect(mocks.seedNativeChatLaunchDraftForAgentTab).toHaveBeenCalledWith(
       expect.objectContaining({ text: 'Keep this draft' })
     )
-  }
-)
-
-it('requests a host-authoritative v1.4.239 continuation through the real Start handler', async () => {
-  host.capabilities = ['agent-session.host-authority.v1']
-  mocks.launched.mockImplementation(launch)
-  const api = window.api
-  vi.stubGlobal('window', document.defaultView)
-  Object.assign(window, { api })
-  const hostSettings = {
-    agentPermissionDefault: 'ask' as const,
-    agentCmdOverrides: { claude: '/host/claude' },
-    agentDefaultArgs: { claude: '--add-dir /host-tools' }
-  }
-  vi.mocked(settingsTransport.readHostAgentLaunchSettings).mockResolvedValue(
-    projectAgentLaunchSettings(hostSettings)
-  )
-  Object.assign(mocks.getState(), { getKnownWorktreeById: () => null })
-  const entry: AgentPickerEntry = {
-    agent: 'claude',
-    label: 'Claude',
-    rows: [],
-    surfaces: ['terminal'],
-    defaultSurface: 'terminal',
-    catalog: { origin: 'unknown' },
-    ...agentPickerChoiceSeeds('claude', hostSettings)
-  }
-  const draft = applyAgentPickerEdit(entry, agentPickerDraft(entry), {
-    kind: 'permission',
-    value: 'full-access'
-  })
-  const row = { agent: 'claude', kind: 'cli', executionHostId: 'runtime:web-env-1' } as const
-  mocks.observation.mockReturnValue({
-    detection: { detectedIds: ['claude'] },
-    model: { state: 'settled', rows: [row] },
-    selectionFor: () => ({
-      ready: true,
-      cli: true,
-      choice: { agent: 'claude', route: 'terminal-tui', executionHostId: row.executionHostId }
-    })
-  })
-  mocks.picker.mockImplementation((props: Parameters<typeof AgentLaunchPicker>[0]) =>
-    createElement('button', { onClick: () => props.onPick('claude', draft, entry) }, 'Full access')
-  )
-  const view = render(
-    createElement(AgentSessionContinuationDialog, {
-      open: true,
-      onOpenChange: () => {},
-      request: {
-        worktreeId: WORKTREE_ID,
-        workspacePath: '/worktree',
-        launchSource: 'sidebar',
-        source: { sourceAgent: 'claude', capturedText: 'Saved continuation context' }
-      }
-    })
-  )
-  fireEvent.click(view.getByText('Full access'))
-  fireEvent.click(view.getByRole('button', { name: 'Start New Session' }))
-  await waitFor(() => expect(mocks.launched).toHaveBeenCalled())
-  await act(async () => {
-    await mocks.launched.mock.results[0].value
-  })
-  const request = params('terminal.createAgentSession')
-  expect(request.agentArgs).toBe('--dangerously-skip-permissions --add-dir /host-tools')
-  expect(request).not.toHaveProperty('command')
-  expect(request.prompt).toContain('Saved continuation context')
-  expect(request.promptDelivery).toBe('draft')
-  expect(
-    call.mock.calls.some(([request]) => request.method === 'session.tabs.createTerminal')
-  ).toBe(false)
-})
-
-it.each([
-  {
-    launchPlatform: 'win32' as const,
-    hostShell: 'cmd.exe',
-    expected:
-      '--model "model with space" --effort high --permission-mode auto --add-dir "C:\\host tools"'
-  },
-  {
-    launchPlatform: 'linux' as const,
-    hostShell: 'wsl.exe',
-    expected:
-      "--model 'model with space' --effort high --permission-mode auto --add-dir /host-tools"
-  }
-])(
-  'uses the host execution platform and shell for snapshot arguments ($hostShell)',
-  async ({ launchPlatform, hostShell, expected }) => {
-    host.capabilities = ['agent-session.host-authority.v1']
-    mocks.getState().runtimeStatusByEnvironmentId = new Map([
-      [ENVIRONMENT_ID, { status: { hostPlatform: 'win32', terminalWindowsShell: hostShell } }]
-    ])
-    vi.mocked(settingsTransport.readHostAgentLaunchSettings).mockResolvedValue(
-      projectAgentLaunchSettings(
-        {
-          agentPermissionDefault: 'auto',
-          agentLaunchChoices: {},
-          agentDefaultArgs: {
-            claude:
-              launchPlatform === 'win32' ? '--add-dir "C:\\host tools"' : '--add-dir /host-tools'
-          }
-        },
-        launchPlatform
-      )
-    )
-    await launch({
-      launchPlatform,
-      sessionOptions: { model: 'model with space', effort: 'high', permissionMode: 'auto' }
-    })
-    expect(params('terminal.createAgentSession').agentArgs).toBe(expected)
   }
 )
 

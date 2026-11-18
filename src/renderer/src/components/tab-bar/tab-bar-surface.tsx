@@ -1,6 +1,6 @@
 import React from 'react'
 import { SortableContext } from '@dnd-kit/sortable'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,10 +25,15 @@ import type { TabBarItemActions } from './use-tab-bar-item-actions'
 import { renderTabBarItems } from './tab-bar-item-surface'
 import { TabBarStaticCreateMenu } from './tab-bar-static-create-menu'
 import ClientHostedBrowserTabRows from './ClientHostedBrowserTabRows'
+import SettingsStripTab from './SettingsStripTab'
+import { SETTINGS_TAB_ID, type SettingsTabStrip } from '@/lib/settings-tab-placement'
 import type { ClientHostedBrowserRow } from '../../../../shared/client-hosted-browser-rows'
 import { advanceAgentSessionsTourPastNewTab } from '@/components/contextual-tours/agent-sessions-tour-new-tab'
+import { openNewChatFromTabBar } from './tab-bar-new-chat'
 
 const EMPTY_CLIENT_HOSTED_ROWS: readonly ClientHostedBrowserRow[] = []
+const CREATE_BUTTON_CLASS =
+  'flex h-7 shrink-0 items-center justify-center text-muted-foreground hover:bg-accent/50 hover:text-foreground'
 
 export function renderTabBarSurface({
   props,
@@ -38,6 +43,8 @@ export function renderTabBarSurface({
   tabStripNavigation,
   tabStripDragScroll,
   activeClientHostedBrowserRowId,
+  settingsTab,
+  settingsTabIndex,
   itemActions,
   surfaceRef
 }: {
@@ -48,6 +55,8 @@ export function renderTabBarSurface({
   tabStripNavigation: ReturnType<typeof useTabStripOverflowNavigation>
   tabStripDragScroll: ReturnType<typeof useTabStripDragScrollHandlers>
   activeClientHostedBrowserRowId: string | null
+  settingsTab: SettingsTabStrip | null
+  settingsTabIndex: number
   itemActions: TabBarItemActions
   surfaceRef: (node: HTMLDivElement | null) => void
 }): React.JSX.Element {
@@ -100,8 +109,15 @@ export function renderTabBarSurface({
     scrollTabStrip,
     subscribeToStripResize
   } = tabStripNavigation
-  const singleTab = orderedItems.length + clientHostedBrowserRows.length === 1
+  const singleTab =
+    orderedItems.length + clientHostedBrowserRows.length + (settingsTab ? 1 : 0) === 1
   const includeTopTabBorder = tabStripChrome !== 'floating-panel'
+  // Why: "+" opens a chat at once where chats can start; the arrow keeps every other kind of tab.
+  const plusOpensChat = !terminalOnly && showAgentLaunchItems
+  const newTabLabel = plusOpensChat
+    ? translate('components.tab-bar.moreTabKinds', 'New terminal, browser or other tab')
+    : translate('auto.components.tab.bar.TabBar.b1a132357f', 'New tab')
+  const newChatLabel = translate('components.tab-bar.newChat', 'New chat')
   const renderedItems = renderTabBarItems({
     items: orderedItems,
     props,
@@ -109,8 +125,26 @@ export function renderTabBarSurface({
     actions: itemActions,
     dropIndicatorByVisibleId,
     includeTopTabBorder,
-    activeClientHostedBrowserRowId
+    activeClientHostedBrowserRowId,
+    settingsTabShown: settingsTab?.shown === true
   })
+  if (settingsTab) {
+    renderedItems.splice(
+      settingsTabIndex,
+      0,
+      <SettingsStripTab
+        key={SETTINGS_TAB_ID}
+        worktreeId={worktreeId}
+        groupId={resolvedGroupId}
+        isActive={settingsTab.shown}
+        isPinned={settingsTab.isPinned}
+        hasOtherTabs={orderedItems.length > 0}
+        dropIndicator={dropIndicatorByVisibleId.get(SETTINGS_TAB_ID) ?? null}
+        includeTopTabBorder={includeTopTabBorder}
+        onCloseOthers={() => props.onCloseOthers(SETTINGS_TAB_ID)}
+      />
+    )
+  }
 
   return (
     <div ref={surfaceRef} className="flex items-stretch h-full overflow-hidden flex-1 min-w-0">
@@ -207,93 +241,119 @@ export function renderTabBarSurface({
           </TooltipContent>
         </Tooltip>
       ) : null}
-      <DropdownMenu
-        open={newTabMenuOpen}
-        onOpenChange={setNewTabMenuOpen}
-        // Why: modal would disable body pointer events, making the Mobile Emulator "Hide" re-enable toast unclickable.
-        modal={false}
+      <div
+        className="my-auto ml-2 flex shrink-0 items-center"
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+        data-contextual-tour-target="tab-create-menu"
+        data-state={newTabMenuOpen ? 'open' : 'closed'}
       >
-        <DropdownMenuTrigger asChild>
+        {plusOpensChat ? (
           <button
-            className="ml-2 my-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-            title={translate('auto.components.tab.bar.TabBar.b1a132357f', 'New tab')}
-            aria-label={translate('auto.components.tab.bar.TabBar.b1a132357f', 'New tab')}
-            data-contextual-tour-target="tab-create-menu"
+            className={`${CREATE_BUTTON_CLASS} w-7 rounded-l-md`}
+            title={newChatLabel}
+            aria-label={newChatLabel}
+            onClick={() => {
+              advanceAgentSessionsTourPastNewTab()
+              openNewChatFromTabBar({
+                worktreeId,
+                groupId: resolvedGroupId,
+                onUnavailable: () => setNewTabMenuOpen(true)
+              })
+            }}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          sideOffset={6}
-          className="w-72 max-w-[calc(100vw-1rem)] rounded-[11px] border-border/80 p-1 shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
-          onCloseAutoFocus={(event) => {
-            // Why: Radix restores focus to the "+" trigger on close, stealing it from the freshly-mounted terminal.
-            event.preventDefault()
-            runPendingNewTabMenuFocusAfterClose()
-            advanceAgentSessionsTourPastNewTab()
-          }}
+        ) : null}
+        <DropdownMenu
+          open={newTabMenuOpen}
+          onOpenChange={setNewTabMenuOpen}
+          // Why: modal would disable body pointer events, making the Mobile Emulator "Hide" re-enable toast unclickable.
+          modal={false}
         >
-          {!terminalOnly && onOpenEntry ? (
-            <>
-              <TabBarAgentPickerEntry
-                inventory={agentPickerInventory}
-                worktreeId={worktreeId}
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`${CREATE_BUTTON_CLASS} ${plusOpensChat ? 'w-4 rounded-r-md' : 'w-7 rounded-md'}`}
+              title={newTabLabel}
+              aria-label={newTabLabel}
+            >
+              {plusOpensChat ? (
+                <ChevronDown className="size-3" />
+              ) : (
+                <Plus className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            sideOffset={6}
+            className="w-72 max-w-[calc(100vw-1rem)] rounded-[11px] border-border/80 p-1 shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
+            onCloseAutoFocus={(event) => {
+              // Why: Radix restores focus to the "+" trigger on close, stealing it from the freshly-mounted terminal.
+              event.preventDefault()
+              runPendingNewTabMenuFocusAfterClose()
+              advanceAgentSessionsTourPastNewTab()
+            }}
+          >
+            {!terminalOnly && onOpenEntry ? (
+              <>
+                <TabBarAgentPickerEntry
+                  inventory={agentPickerInventory}
+                  worktreeId={worktreeId}
+                  groupId={resolvedGroupId}
+                  menuOpen={newTabMenuOpen}
+                  menuOptions={createMenuOptions}
+                  onLaunchAgentOption={launchAgentFromNewTabEntry}
+                  onOpenDefaultTerminal={() => {
+                    queueNewActiveTerminalFocusAfterNewTabMenuClose()
+                    onNewTerminalTab()
+                  }}
+                  onOpenEntry={onOpenEntry}
+                  onQueryChange={setCreateMenuQuery}
+                  onQueueSwitchFocus={queueFocusAfterNewTabMenuClose}
+                  onSelectMenuOption={handleSelectCreateMenuOption}
+                  onDidOpenEntry={() => setNewTabMenuOpen(false)}
+                />
+                {showStaticCreateMenuItems ? <DropdownMenuSeparator /> : null}
+              </>
+            ) : null}
+            {showStaticCreateMenuItems ? (
+              <TabBarStaticCreateMenu
+                props={props}
                 groupId={resolvedGroupId}
-                menuOpen={newTabMenuOpen}
-                menuOptions={createMenuOptions}
-                onLaunchAgentOption={launchAgentFromNewTabEntry}
-                onOpenDefaultTerminal={() => {
-                  queueNewActiveTerminalFocusAfterNewTabMenuClose()
-                  onNewTerminalTab()
-                }}
-                onOpenEntry={onOpenEntry}
-                onQueryChange={setCreateMenuQuery}
-                onQueueSwitchFocus={queueFocusAfterNewTabMenuClose}
-                onSelectMenuOption={handleSelectCreateMenuOption}
-                onDidOpenEntry={() => setNewTabMenuOpen(false)}
+                terminalOnly={terminalOnly}
+                mobileEmulatorEnabled={mobileEmulatorEnabled}
+                managedBrowserCreationEnabled={managedBrowserCreationEnabled}
+                mobileEmulatorCreationEnabled={mobileEmulatorCreationEnabled}
+                workspaceHasSimulatorTab={workspaceHasSimulatorTab}
+                showMobileEmulatorIntroCallout={showMobileEmulatorIntroCallout}
+                windowsShellEntries={windowsShellEntries}
+                defaultWindowsPowerShellImplementation={defaultWindowsPowerShellImplementation}
+                pwshAvailable={windowsTerminalCapabilities.pwshAvailable}
+                newTerminalShortcut={newTerminalShortcut}
+                newBrowserShortcut={newBrowserShortcut}
+                newSimulatorShortcut={newSimulatorShortcut}
+                newFileShortcut={newFileShortcut}
+                openMarkdownShortcut={openMarkdownShortcut}
+                queueNewActiveTerminalFocusAfterNewTabMenuClose={
+                  queueNewActiveTerminalFocusAfterNewTabMenuClose
+                }
               />
-              {showStaticCreateMenuItems ? <DropdownMenuSeparator /> : null}
-            </>
-          ) : null}
-          {showStaticCreateMenuItems ? (
-            <TabBarStaticCreateMenu
-              props={props}
-              groupId={resolvedGroupId}
-              terminalOnly={terminalOnly}
-              mobileEmulatorEnabled={mobileEmulatorEnabled}
-              managedBrowserCreationEnabled={managedBrowserCreationEnabled}
-              mobileEmulatorCreationEnabled={mobileEmulatorCreationEnabled}
-              workspaceHasSimulatorTab={workspaceHasSimulatorTab}
-              showMobileEmulatorIntroCallout={showMobileEmulatorIntroCallout}
-              windowsShellEntries={windowsShellEntries}
-              defaultWindowsPowerShellImplementation={defaultWindowsPowerShellImplementation}
-              pwshAvailable={windowsTerminalCapabilities.pwshAvailable}
-              newTerminalShortcut={newTerminalShortcut}
-              newBrowserShortcut={newBrowserShortcut}
-              newSimulatorShortcut={newSimulatorShortcut}
-              newFileShortcut={newFileShortcut}
-              openMarkdownShortcut={openMarkdownShortcut}
-              queueNewActiveTerminalFocusAfterNewTabMenuClose={
-                queueNewActiveTerminalFocusAfterNewTabMenuClose
-              }
-            />
-          ) : null}
-          {showStaticCreateMenuItems && showAgentLaunchItems ? (
-            <>
-              <DropdownMenuSeparator />
-              <ProjectedAgentMenuItems
-                model={agentMenu}
-                pickerInventory={agentPickerInventory}
-                onSelectPickerAgent={selectPickerAgent}
-                hidePickerSearch={!terminalOnly && Boolean(onOpenEntry)}
-                runLaunch={launchAgentRow}
-              />
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            ) : null}
+            {showStaticCreateMenuItems && showAgentLaunchItems ? (
+              <>
+                <DropdownMenuSeparator />
+                <ProjectedAgentMenuItems
+                  model={agentMenu}
+                  pickerInventory={agentPickerInventory}
+                  onSelectPickerAgent={selectPickerAgent}
+                  hidePickerSearch={!terminalOnly && Boolean(onOpenEntry)}
+                  runLaunch={launchAgentRow}
+                />
+              </>
+            ) : null}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   )
 }

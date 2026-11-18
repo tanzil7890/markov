@@ -81,8 +81,6 @@ function renderMenu(overrides: Record<string, unknown> = {}): string {
     onClosePane: vi.fn(),
     onClearScreen: vi.fn(),
     onResetTerminal: vi.fn(),
-    canContinueAgentSessionInNewSession: false,
-    onContinueAgentSessionInNewSession: vi.fn(),
     onForkAgentSession: vi.fn(),
     canToggleNativeChat: false,
     isNativeChatView: false,
@@ -157,22 +155,6 @@ describe('TerminalContextMenu', () => {
     expect(onCopyAgentSessionContext).toHaveBeenCalledTimes(1)
     // Why: copying context must not go through the fork dialog path.
     expect(onForkAgentSession).not.toHaveBeenCalled()
-  })
-
-  it('shows new-session continuation only for eligible agent panes', () => {
-    const onContinueAgentSessionInNewSession = vi.fn()
-    renderMenu({
-      canContinueAgentSessionInNewSession: true,
-      onContinueAgentSessionInNewSession
-    })
-
-    const handoffItem = items.list.find(
-      (item) => childrenText(item.children) === 'Hand Off to Another Agent'
-    )
-    expect(handoffItem).toBeDefined()
-
-    handoffItem?.onSelect?.()
-    expect(onContinueAgentSessionInNewSession).toHaveBeenCalledTimes(1)
   })
 
   it('hides chat continuation when the pane cannot switch views', () => {

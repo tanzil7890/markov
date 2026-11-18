@@ -14,7 +14,7 @@ export function DocsFooter() {
               aria-label="Markov docs"
               className="mb-4 inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
-              <Image src="/docs/logo.svg" alt="" width={32} height={20} />
+              <Image src="/docs/logo.svg" alt="" width={19} height={20} />
               <span
                 aria-hidden="true"
                 className="font-sans text-xl font-bold tracking-tight text-foreground"

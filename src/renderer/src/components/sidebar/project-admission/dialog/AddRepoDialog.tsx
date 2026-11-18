@@ -21,11 +21,14 @@ import {
 import { routeAddRepoBrowse } from './add-repo-browse-authority'
 import { useAddRepoWslHostPaths } from '../host-selection/use-add-repo-wsl-host-paths'
 import { useAddRepoDialogModalPaths } from './use-add-repo-dialog-modal-paths'
+import { useAddRepoDialogCloseActions } from './use-add-repo-dialog-close-actions'
 import { useAddRepoWindowsDriveRefusal } from '../host-selection/use-add-repo-windows-drive-refusal'
 import { useAddRepoWslHostOffer } from '../host-selection/use-add-repo-wsl-host-offer'
 
-export default React.memo(function AddRepoDialog({ hosted }: AddRepoDialogProps) {
-  const isOpen = useAppStore((s) => (hosted ? hosted.open : s.activeModal === 'add-repo'))
+export default React.memo(function AddRepoDialog({ hosted, embedded = false }: AddRepoDialogProps) {
+  const isOpen = useAppStore((s) =>
+    hosted ? hosted.open : embedded || s.activeModal === 'add-repo'
+  )
   const modalPaths = useAddRepoDialogModalPaths(Boolean(hosted))
   const addRepoPath = useAppStore((s) => s.addRepoPath)
   const addNonGitFolder = useAppStore((s) => s.addNonGitFolder)
@@ -270,28 +273,18 @@ export default React.memo(function AddRepoDialog({ hosted }: AddRepoDialogProps)
     onWindowsDriveRefusal: windowsDrive.showRefusal
   })
 
-  const handleBack = useCallback(() => {
-    if (step === 'nested') {
-      trackNestedBackAction()
-    }
-    resetState()
-  }, [resetState, step, trackNestedBackAction])
-
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (!open) {
-        if (step === 'nested' && !isAdding) {
-          trackNestedBackAction()
-        }
-        closeModal()
-        resetState()
-      }
-    },
-    [closeModal, isAdding, resetState, step, trackNestedBackAction]
-  )
+  const { handleBack, handleOpenChange } = useAddRepoDialogCloseActions({
+    step,
+    isAdding,
+    closeModal,
+    resetState,
+    trackNestedBackAction
+  })
 
   return (
     <AddRepoDialogChrome
+      embedded={embedded}
+      onEmbeddedUnmount={resetState}
       isOpen={isOpen}
       step={step}
       isAdding={isAdding}

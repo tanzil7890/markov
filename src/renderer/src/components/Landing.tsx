@@ -12,7 +12,7 @@ import {
 import { ShortcutKeyCombo } from './ShortcutKeyCombo'
 import { useShortcutKeyDetails, type ShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
 import { useMountedRef } from '@/hooks/useMountedRef'
-import logo from '../../../../resources/logo.svg'
+import { MarkovMark } from '@/components/brand/MarkovMark'
 import { translate } from '@/i18n/i18n'
 import { hasGitHubBackedProject, type PreflightIssue } from './landing-preflight-issues'
 import { useLandingPreflightRuntime } from './landing-preflight-runtime'
@@ -264,10 +264,10 @@ export default function Landing(): React.JSX.Element {
             className="flex items-center justify-center size-20 rounded-2xl border border-border/80 shadow-lg shadow-black/40"
             style={{ backgroundColor: '#12181e' }}
           >
-            <img
-              src={logo}
-              alt={translate('auto.components.Landing.520304a067', 'Markov logo')}
-              className="size-12"
+            <MarkovMark
+              live
+              label={translate('auto.components.Landing.520304a067', 'Markov logo')}
+              className="h-12"
             />
           </div>
           <h1 className="text-4xl font-bold text-foreground tracking-tight">

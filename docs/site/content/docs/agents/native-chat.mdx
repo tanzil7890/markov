@@ -19,16 +19,13 @@ You can also choose whether each supported agent opens as a chat in **Settings â
 
 To open a saved conversation in another form:
 
-1. Open **Agent Session History** in the right sidebar.
+1. Type `/resume` in a chat to open **Agent Session History**.
 1. Open the conversation's menu.
 1. Choose **Resume in New Chat** for a supported CLI conversation, or **Resume in New Terminal** for a supported chat conversation.
 
 Both actions open a new tab with a copy of the conversation; the original stays unchanged. For example, **Resume in New Terminal** copies a Claude or Codex chat into a new CLI session. These actions depend on the agent, saved conversation, and execution host; they are not available for every session. Older Markov versions label them **Resume in New Native Chat** and **Resume in New CLI**.
 
-You can also right-click an open agent tab:
-
-- On a structured chat tab, **Continue with Terminal Agent** starts a new terminal agent with a copy of the conversation.
-- On a supported terminal agent tab, **Continue in Chat UI** opens the conversation in a new structured chat. The terminal pane header shows the same action as a chat button.
+You can also right-click a supported terminal agent tab and choose **Continue in Chat UI** to open the conversation in a new structured chat. The terminal pane header shows the same action as a chat button.
 
 These continuation actions also work for conversations on a paired **Remote Markov Server** that supports conversation-history resume. The chat and its history stay on that server. Direct SSH workspaces without a Markov runtime do not support this action. If the action is unavailable on an older server, update that server as well as the client.
 
@@ -36,7 +33,7 @@ If the terminal agent still owns the conversation, Markov asks you to stop or ex
 
 ## Switch an existing terminal-backed chat
 
-Structured chat tabs have no in-place terminal view; use **Continue with Terminal Agent** above instead.
+Structured chat tabs have no in-place terminal view. To copy one into a terminal agent, use **Resume in New Terminal** from **Agent Session History** above.
 
 A terminal-backed chat is a view over a running terminal agent, so switching it does not create a new session. Use the pane header's **Show terminal** button, or **Continue with Terminal Agent** in its tab menu, to return to the terminal. Right-clicking inside a supported terminal pane offers **Continue in Chat UI**, which shows that same terminal session as a transcript instead of creating a structured chat.
 

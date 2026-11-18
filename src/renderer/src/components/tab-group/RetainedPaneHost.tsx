@@ -3,6 +3,8 @@ import { SYNC_FIT_PANES_EVENT } from '@/constants/terminal'
 import { tabGroupBodyAnchorName } from './tab-group-body-anchor'
 import { subscribeTabGroupBodyRect, type TabGroupBodyRect } from './tab-group-body-geometry'
 import { UNFOCUSED_SPLIT_GROUP_OPACITY } from './split-group-dim'
+import { useAppStore } from '../../store'
+import { selectSettingsTabCoversGroup } from '@/lib/settings-tab-placement'
 
 const HAS_CSS_ANCHOR_POSITIONING =
   typeof CSS !== 'undefined' &&
@@ -27,6 +29,8 @@ type RetainedPaneHostProps = {
   /** Unfocused side of a split: overlays sit outside the group's DOM, so they take its dim here. */
   dimmed?: boolean
   onFocusOwningGroup?: (groupId: string) => void
+  /** This host is Settings open as a tab, which covers the group's pane instead of being covered. */
+  isSettingsTab?: boolean
   children: React.ReactNode
   'data-terminal-overlay-tab-id'?: string
   'data-structured-agent-session-overlay-tab-id'?: string
@@ -39,9 +43,16 @@ export function RetainedPaneHost({
   fitTerminal = false,
   dimmed = false,
   onFocusOwningGroup,
+  isSettingsTab = false,
   children,
   ...identity
 }: RetainedPaneHostProps): React.JSX.Element {
+  // Why: Settings covers this pane without changing the group's active tab, so the tab under it
+  // would still take focus and keys. Inert, not hidden: a hidden terminal would refit to nothing.
+  const coveredBySettingsTab = useAppStore(
+    (state) =>
+      !isSettingsTab && groupId !== undefined && selectSettingsTabCoversGroup(state, groupId)
+  )
   const anchorName = groupId !== undefined ? tabGroupBodyAnchorName(groupId) : undefined
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const [measuredFallbackRect, setMeasuredFallbackRect] = useState<TabGroupBodyRect | null>(null)
@@ -148,8 +159,8 @@ export function RetainedPaneHost({
       className="isolate z-10 min-h-0 min-w-0 overflow-hidden"
       data-retained-pane-host=""
       {...identity}
-      inert={!isVisible}
-      aria-hidden={!isVisible}
+      inert={!isVisible || coveredBySettingsTab}
+      aria-hidden={!isVisible || coveredBySettingsTab}
       onPointerDown={focusGroup}
       onFocusCapture={focusGroup}
     >

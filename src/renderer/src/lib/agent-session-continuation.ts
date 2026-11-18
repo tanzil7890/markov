@@ -1,6 +1,5 @@
 import { splitOpenCodeSqliteCandidate } from '../../../shared/opencode-sqlite-session-path'
 import { buildBoundedSessionTranscript } from '@/lib/agent-session-fork-context'
-import type { LaunchSource } from '../../../shared/telemetry-events'
 import type { TuiAgent } from '../../../shared/agent-launch/catalog/tui-agent'
 
 export type AgentSessionContinuationContextMode = 'focused' | 'full'
@@ -17,27 +16,13 @@ export type AgentSessionContinuationSource = {
   lastAssistantMessage?: string | null
 }
 
-export type AgentSessionContinuationRequest = {
-  source: AgentSessionContinuationSource
-  worktreeId: string
-  groupId?: string | null
-  workspacePath: string
-  initialCwd?: string | null
-  launchSource: LaunchSource
-  avoidSourceAgent?: boolean
-}
-
 function markdownFenceFor(value: string): string {
   const matches = value.match(/`+/g)
   const longest = matches?.reduce((length, fence) => Math.max(length, fence.length), 0) ?? 0
   return '`'.repeat(Math.max(3, longest + 1))
 }
 
-export function hasFullAgentSessionContext(source: AgentSessionContinuationSource): boolean {
-  return resolveAgentSessionContinuationTranscriptPath(source) !== null
-}
-
-export function resolveAgentSessionContinuationTranscriptPath(
+function resolveAgentSessionContinuationTranscriptPath(
   source: Pick<AgentSessionContinuationSource, 'sourceAgent' | 'transcriptPath'>
 ): string | null {
   const path = source.transcriptPath?.trim() || null

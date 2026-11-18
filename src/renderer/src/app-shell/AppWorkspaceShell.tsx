@@ -14,10 +14,12 @@ import { TitlebarLeftControls } from './TitlebarLeftControls'
 import { RightSidebarToggle, TitlebarMainStrip } from './TitlebarMainStrip'
 import {
   FloatingWorkspaceTopBarToggle,
+  useFloatingWorkspaceToggleAt,
   useFloatingWorkspaceTopBarToggle
 } from './FloatingWorkspaceTopBarToggle'
 import type { AppChromeLayout } from './use-app-chrome-layout'
 import type { FloatingWorkspacePanelState } from './use-floating-workspace-panel'
+import { SettingsTabPane } from './SettingsTabPane'
 
 // Skips the shell render each workspace switch causes; its props only change on toggle.
 const MemoFloatingTerminalToggleButton = memo(FloatingTerminalToggleButton)
@@ -93,14 +95,19 @@ function ActivePage({ layout }: { layout: AppChromeLayout }): React.JSX.Element 
   const { activeView, hasActiveWorktree, activePendingCreationId, creationLayoutActive } = layout
   return (
     <>
-      {activeView === 'settings' ? <Settings /> : null}
-      {activeView === 'skills' ? <SkillsPage /> : null}
-      {activeView === 'artifacts' ? <ArtifactsPage /> : null}
-      {activeView === 'tasks' ? <TaskPage /> : null}
-      {activeView === 'automations' ? <AutomationsPage /> : null}
-      {activeView === 'activity' ? <ActivityPrototypePage /> : null}
-      {activeView === 'space' ? <WorkspaceSpacePage /> : null}
-      {activeView === 'mobile' ? <MobilePage /> : null}
+      {activeView === 'terminal' ? null : (
+        // Why keyed: going from one page straight to another replays the shared entry.
+        <div key={activeView} className="page-enter flex min-h-0 min-w-0 flex-1 flex-col">
+          {activeView === 'settings' ? <Settings /> : null}
+          {activeView === 'skills' ? <SkillsPage /> : null}
+          {activeView === 'artifacts' ? <ArtifactsPage /> : null}
+          {activeView === 'tasks' ? <TaskPage /> : null}
+          {activeView === 'automations' ? <AutomationsPage /> : null}
+          {activeView === 'activity' ? <ActivityPrototypePage /> : null}
+          {activeView === 'space' ? <WorkspaceSpacePage /> : null}
+          {activeView === 'mobile' ? <MobilePage /> : null}
+        </div>
+      )}
       {activeView === 'terminal' && creationLayoutActive && activePendingCreationId ? (
         <PendingCreationSurface
           creationId={activePendingCreationId}
@@ -127,9 +134,11 @@ export function AppWorkspaceShell(props: {
     (layout.stackedSidebarOpen &&
       layout.activeView !== 'automations' &&
       layout.activeView !== 'artifacts')
-  // Why: pages that draw their own header have no top bar to hold the toggle.
+  const sidebarFloatingToggle = useFloatingWorkspaceToggleAt('sidebar')
+  // Why: pages that draw their own header have no top bar, and a closed sidebar has no footer, to hold the toggle.
   const floatingToggleFallback =
-    topBarFloatingToggle && !layout.workspaceChromeActive && !titlebarStripMounted
+    (topBarFloatingToggle && !layout.workspaceChromeActive && !titlebarStripMounted) ||
+    (sidebarFloatingToggle && !(layout.showSidebar && layout.sidebarOpen))
   // Keep scroll memory above sidebar view remounts to preserve list position.
   const scrollOffsetRef = useRef(0)
   const scrollAnchorRef = useRef<VirtualizedScrollAnchor>(null)
@@ -258,6 +267,8 @@ export function AppWorkspaceShell(props: {
                     </RecoverableRenderErrorBoundary>
                   </Suspense>
                 </div>
+                {/* After the workbench: it anchors to a group's pane there and paints over that pane's tab. */}
+                <SettingsTabPane workspaceShown={layout.workspaceChromeActive} />
                 {(floatingWorkspace.showToggleButton || floatingToggleFallback) &&
                 !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton

@@ -2,6 +2,7 @@ import type { Tab, TabGroup } from '../../../../../shared/tab-types'
 import type { ExecutionHostId } from '../../../../../shared/execution-host'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import { isExecutionHostAliasForWorktree } from '@/lib/worktree-execution-host-alias'
+import { isRightSidebarTabGroup } from '../../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 type WorktreeHostAliases = Pick<Worktree, 'hostId' | 'runtimeOwnerEnvironmentId'>
 
@@ -49,7 +50,8 @@ function resolveAnchor(input: UnifiedTabCreatePlacementInput): Tab | undefined {
   }
   const anchor = matches[0]
   const group = input.groups.find((candidate) => candidate.id === anchor.groupId)
-  if (!group?.tabOrder.includes(anchor.id)) {
+  // A tab opened beside a sidebar terminal goes to the main area, not into the sidebar.
+  if (!group?.tabOrder.includes(anchor.id) || isRightSidebarTabGroup(group)) {
     return undefined
   }
   return isAnchorHostCompatible(anchor.executionHostId, input) ? anchor : undefined
@@ -61,11 +63,15 @@ export function resolveUnifiedTabCreatePlacement(
 ): UnifiedTabCreatePlacement {
   const isLiveGroup = (groupId: string | undefined): groupId is string =>
     Boolean(groupId && input.groups.some((group) => group.id === groupId))
+  const isLiveLayoutGroup = (groupId: string | undefined): groupId is string =>
+    isLiveGroup(groupId) &&
+    !input.groups.some((group) => group.id === groupId && isRightSidebarTabGroup(group))
   const anchor = resolveAnchor(input)
   // Why validate first: an expired requested id must fall to the active group, not ensureGroup's first group.
   const groupId = isLiveGroup(input.targetGroupId)
     ? input.targetGroupId
-    : (anchor?.groupId ?? (isLiveGroup(input.activeGroupId) ? input.activeGroupId : undefined))
+    : (anchor?.groupId ??
+      (isLiveLayoutGroup(input.activeGroupId) ? input.activeGroupId : undefined))
   return {
     groupId,
     anchorTabId: anchor && anchor.groupId === groupId ? anchor.id : undefined

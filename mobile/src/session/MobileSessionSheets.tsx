@@ -282,10 +282,7 @@ export function MobileSessionSheets({ controller }: { controller: MobileSessionC
         onCloseTab={handleCloseSessionTab}
         bulkCloseActions={bulkCloseActions}
       />
-      <MobileAgentSessionTabActionSheet
-        controller={controller}
-        workspaceOnPairedHost={onPairedHost}
-      />
+      <MobileAgentSessionTabActionSheet controller={controller} />
       <ActionSheetModal
         visible={leaveDrafts != null}
         title={t('session.sheets.unsavedMarkdown', 'Unsaved markdown changes')}

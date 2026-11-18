@@ -4,7 +4,6 @@ import { TerminalPaneFileDropOwner } from './input/file-drop/TerminalPaneFileDro
 import { makePaneKey } from '../../../../shared/workspace-layout/stable-pane-id'
 import TerminalSearch from '@/components/TerminalSearch'
 import { DaemonActionDialog } from '@/components/shared/useDaemonActions'
-import { AgentSessionContinuationDialog } from '@/components/agent-session-continuation/AgentSessionContinuationDialog'
 import { WORKSPACE_FILE_PATH_MIME, WORKSPACE_FILE_PATHS_MIME } from '@/lib/workspace-file-drag'
 import CloseTerminalDialog from './CloseTerminalDialog'
 import TerminalContextMenu from './TerminalContextMenu'
@@ -43,16 +42,13 @@ export function TerminalPaneSurface({
   const {
     activeAgentId,
     activePane,
-    activePaneCanContinueInNewSession,
     activePaneCanResumeInChat,
     activePaneIsChatLeaf,
     activatePaneTitleInteraction,
-    agentSessionContinuation,
     agentSessionFork,
     beginPaneDragFromHeader,
     closeTerminalLinkActions,
     contextMenu,
-    contextMenuCanContinueInNewSession,
     contextMenuCanToggleChat,
     contextMenuIsChatView,
     cwd,
@@ -105,7 +101,6 @@ export function TerminalPaneSurface({
     searchInputRef,
     sessionRestoredBannerPaneIds,
     sessionStateSaveFailureMessage,
-    setAgentSessionContinuation,
     setAgentSessionFork,
     setContainerRef,
     setQuickCommandEditorOpen,
@@ -294,8 +289,6 @@ export function TerminalPaneSurface({
         onClosePane={contextMenu.onClosePane}
         onClearScreen={contextMenu.onClearScreen}
         onResetTerminal={contextMenu.onResetTerminal}
-        canContinueAgentSessionInNewSession={contextMenuCanContinueInNewSession}
-        onContinueAgentSessionInNewSession={contextMenu.onContinueAgentSessionInNewSession}
         onForkAgentSession={() => void contextMenu.onForkAgentSession()}
         canToggleNativeChat={contextMenuCanToggleChat}
         isNativeChatView={contextMenuIsChatView}
@@ -338,17 +331,6 @@ export function TerminalPaneSurface({
           }
         }}
       />
-      {agentSessionContinuation ? (
-        <AgentSessionContinuationDialog
-          open
-          request={agentSessionContinuation}
-          onOpenChange={(open) => {
-            if (!open) {
-              setAgentSessionContinuation(null)
-            }
-          }}
-        />
-      ) : null}
       <TerminalPaneHeaderOverlay
         tabId={tabId}
         worktreeId={worktreeId}
@@ -373,10 +355,6 @@ export function TerminalPaneSurface({
         canShowTerminal={activePaneIsChatLeaf}
         onShowTerminal={handleToggleNativeChat}
         canResumeInNewNativeChat={activePaneCanResumeInChat}
-        canContinueAgentSessionInNewSession={activePaneCanContinueInNewSession}
-        onContinueAgentSessionInNewSession={(pane) =>
-          contextMenu.runForPane(pane.id, contextMenu.onContinueAgentSessionInNewSession)
-        }
         onSplitPane={splitTerminalPaneFromHeader}
         onBeginPaneDrag={beginPaneDragFromHeader}
         onActivatePaneTitleInteraction={activatePaneTitleInteraction}

@@ -1,8 +1,4 @@
-export type OnboardingSetupAgent = 'claude' | 'codex'
-
-export function isOnboardingSetupAgent(agent: string): agent is OnboardingSetupAgent {
-  return agent === 'claude' || agent === 'codex'
-}
+import type { AgentCliInstallAgent } from '../../../../shared/agent-cli-install-types'
 
 export type AgentCliInstallPlan = {
   command: string
@@ -10,9 +6,9 @@ export type AgentCliInstallPlan = {
   shellOverride?: string
 }
 
-/** Each vendor's documented install command for this OS. */
+/** Each vendor's documented install command for this OS, typed into a terminal the person runs. */
 export function getAgentCliInstallPlan(
-  agent: OnboardingSetupAgent,
+  agent: AgentCliInstallAgent,
   platform: 'darwin' | 'linux' | 'win32'
 ): AgentCliInstallPlan {
   if (agent === 'claude') {

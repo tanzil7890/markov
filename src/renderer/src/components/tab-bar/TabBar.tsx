@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useTabStripOverflowNavigation } from './tab-strip-overflow-navigation'
 import { useTabStripDragScrollHandlers } from './tab-strip-drag-scroll'
 import type { TabBarProps } from './tab-bar-props'
@@ -11,6 +11,15 @@ import { renderTabBarSurface } from './tab-bar-surface'
 import { useTabBarItemActions } from './use-tab-bar-item-actions'
 import { useActiveClientHostedBrowserRowId } from '@/lib/pane-manager/client-hosted-browser-row-state'
 import { useEditorGroupFileDropOwner } from '../editor/use-editor-group-file-drop-owner'
+import { useAppStore } from '../../store'
+import { useShallow } from 'zustand/react/shallow'
+import {
+  SETTINGS_TAB_ID,
+  selectSettingsTabStrip,
+  settingsTabInsertIndex
+} from '@/lib/settings-tab-placement'
+import { resolveTabIndicatorEdges } from '../tab-group/tab-insertion'
+import type { DropIndicator } from './drop-indicator'
 
 function TabBarInner(props: TabBarProps): React.JSX.Element {
   const {
@@ -58,7 +67,7 @@ function TabBarInner(props: TabBarProps): React.JSX.Element {
     createMenuOptions: pluginCreateMenu.menuOptions,
     handleSelectCreateMenuOption: pluginCreateMenu.onSelectMenuOption
   }
-  const itemProjection = useTabBarItemProjection({
+  const baseItemProjection = useTabBarItemProjection({
     props,
     resolvedGroupId: runtime.resolvedGroupId,
     unifiedTabs: runtime.unifiedTabs,
@@ -89,12 +98,59 @@ function TabBarInner(props: TabBarProps): React.JSX.Element {
     groupId: runtime.resolvedGroupId,
     groupActiveTabId: props.groupActiveTabId ?? null
   })
+  // Settings is not a layout tab, so the strip slots it in among them here.
+  const settingsTab = useAppStore(
+    useShallow((state) => selectSettingsTabStrip(state, worktreeId, runtime.resolvedGroupId))
+  )
+  const realItems = baseItemProjection.orderedItems
+  const settingsTabIndex = useMemo(
+    () =>
+      settingsTab
+        ? settingsTabInsertIndex(
+            realItems.map((item) => item.unifiedTabId),
+            settingsTab.leftTabIds
+          )
+        : -1,
+    [realItems, settingsTab]
+  )
+  const hoveredTabInsertion =
+    props.hoveredTabInsertion?.groupId === runtime.resolvedGroupId
+      ? props.hoveredTabInsertion
+      : null
+  // Why memoized apart: dnd-kit re-renders every tab when the sortable ids change identity.
+  const sortableIds = useMemo(() => {
+    if (settingsTabIndex < 0) {
+      return baseItemProjection.sortableIds
+    }
+    const ids = [...baseItemProjection.sortableIds]
+    ids.splice(settingsTabIndex, 0, SETTINGS_TAB_ID)
+    return ids
+  }, [baseItemProjection.sortableIds, settingsTabIndex])
+  const dropIndicatorByVisibleId = useMemo(() => {
+    if (settingsTabIndex < 0) {
+      return baseItemProjection.dropIndicatorByVisibleId
+    }
+    const indicators = new Map<string, DropIndicator>()
+    for (const edge of resolveTabIndicatorEdges(sortableIds, hoveredTabInsertion)) {
+      indicators.set(edge.visibleTabId, edge.side)
+    }
+    return indicators
+  }, [
+    baseItemProjection.dropIndicatorByVisibleId,
+    hoveredTabInsertion,
+    settingsTabIndex,
+    sortableIds
+  ])
+  const itemProjection = { ...baseItemProjection, sortableIds, dropIndicatorByVisibleId }
   const tabStripNavigation = useTabStripOverflowNavigation({
     activeVisibleTabId: itemProjection.activeVisibleTabId,
-    activeDockSlotId: activeClientHostedBrowserRowId ?? itemProjection.activeVisibleTabId,
+    activeDockSlotId: settingsTab?.shown
+      ? SETTINGS_TAB_ID
+      : (activeClientHostedBrowserRowId ?? itemProjection.activeVisibleTabId),
     layoutKey: [
       itemProjection.tabStripLayoutKey,
-      ...(props.clientHostedBrowserRows ?? []).map((row) => row.browserPageId)
+      ...(props.clientHostedBrowserRows ?? []).map((row) => row.browserPageId),
+      ...(settingsTab ? [`${SETTINGS_TAB_ID}:${settingsTabIndex}:${settingsTab.isPinned}`] : [])
     ].join('|'),
     worktreeId
   })
@@ -120,6 +176,8 @@ function TabBarInner(props: TabBarProps): React.JSX.Element {
     tabStripNavigation,
     tabStripDragScroll,
     activeClientHostedBrowserRowId,
+    settingsTab,
+    settingsTabIndex,
     itemActions,
     surfaceRef
   })

@@ -141,7 +141,7 @@ export function MarkovLogo(): React.JSX.Element {
       xmlns="http://www.w3.org/2000/svg"
       style={{ opacity: 0.9, verticalAlign: 'middle' }}
     >
-      <path style={{ fill: '#ffffff' }} d={MARKOV_MARK_PATH} />
+      <path style={{ fill: '#ffffff' }} fillRule="evenodd" d={MARKOV_MARK_PATH} />
     </svg>
   )
 }

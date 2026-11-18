@@ -3,29 +3,28 @@ import { translate } from '@/i18n/i18n'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { FloatingTerminalIconContextMenu } from '@/components/floating-terminal/FloatingTerminalIconContextMenu'
 import { TOGGLE_FLOATING_TERMINAL_EVENT } from '@/lib/floating-terminal'
+import { resolveFloatingTerminalTriggerLocation } from '../../../shared/floating-terminal-trigger-location'
+import type { FloatingTerminalTriggerLocation } from '../../../shared/ui-chrome-types'
 import { selectFloatingWorkspaceHasUnread } from '@/store/selectors'
 import { useShortcutLabel } from '../hooks/useShortcutLabel'
 import { useAppStore } from '../store'
 
-/** True when the floating workspace's toggle belongs in the window's top bar. */
-export function useFloatingWorkspaceTopBarToggle(): boolean {
+/** True when the floating workspace is on and its toggle belongs at `location`. */
+export function useFloatingWorkspaceToggleAt(location: FloatingTerminalTriggerLocation): boolean {
   return useAppStore(
     (s) =>
       s.settings?.floatingTerminalEnabled === true &&
-      (s.settings.floatingTerminalTriggerLocation ?? 'top-bar') === 'top-bar'
+      resolveFloatingTerminalTriggerLocation(s.settings) === location
   )
 }
 
-export function FloatingWorkspaceTopBarToggle(): React.JSX.Element | null {
-  const shown = useFloatingWorkspaceTopBarToggle()
-  const open = useAppStore((s) => s.floatingWorkspacePanelOpen)
-  const hasUnread = useAppStore(selectFloatingWorkspaceHasUnread)
-  const shortcutLabel = useShortcutLabel('floatingTerminal.toggle')
-  if (!shown) {
-    return null
-  }
-  const showAttentionDot = !open && hasUnread
-  const label = open
+/** True when the floating workspace's toggle belongs in the window's top bar. */
+export function useFloatingWorkspaceTopBarToggle(): boolean {
+  return useFloatingWorkspaceToggleAt('top-bar')
+}
+
+export function floatingWorkspaceToggleLabel(open: boolean, showAttentionDot: boolean): string {
+  return open
     ? translate(
         'auto.components.floating.terminal.FloatingTerminalToggleButton.5785dd9148',
         'Minimize floating workspace'
@@ -39,6 +38,18 @@ export function FloatingWorkspaceTopBarToggle(): React.JSX.Element | null {
           'auto.components.floating.terminal.FloatingTerminalToggleButton.3b04b065b5',
           'Show floating workspace'
         )
+}
+
+export function FloatingWorkspaceTopBarToggle(): React.JSX.Element | null {
+  const shown = useFloatingWorkspaceTopBarToggle()
+  const open = useAppStore((s) => s.floatingWorkspacePanelOpen)
+  const hasUnread = useAppStore(selectFloatingWorkspaceHasUnread)
+  const shortcutLabel = useShortcutLabel('floatingTerminal.toggle')
+  if (!shown) {
+    return null
+  }
+  const showAttentionDot = !open && hasUnread
+  const label = floatingWorkspaceToggleLabel(open, showAttentionDot)
   return (
     <FloatingTerminalIconContextMenu currentLocation="top-bar" className="relative flex">
       <Tooltip>

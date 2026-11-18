@@ -17,7 +17,6 @@ import {
   nativeChatLeafOwnsTabWideEvidence,
   resolveNativeChatLeafRoute
 } from '../native-chat/native-chat-leaf-routing'
-import { canContinueAgentSessionInNewSession } from './terminal-agent-session-continuation'
 import type { TerminalPaneMobileController } from './use-terminal-pane-mobile-actions'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '@/store'
@@ -168,10 +167,6 @@ export function useTerminalPaneProjection(controller: TerminalPaneMobileControll
     )
   }
   const activeAgentId = resolveAgentForLeaf(activePane?.leafId ?? null)
-  const activePaneCanContinueInNewSession = canContinueAgentSessionInNewSession(activeAgentId)
-  const contextMenuCanContinueInNewSession = canContinueAgentSessionInNewSession(
-    resolveAgentForLeaf(contextMenuLeafId)
-  )
   // The menu switcher gates on the leaf it opened over, so mixed splits show it only where chat can render.
   const contextMenuCanToggleChat = canToggleChatForLeaf(contextMenuLeafId)
   const activeLeafId = activePane?.leafId ?? null
@@ -224,8 +219,6 @@ export function useTerminalPaneProjection(controller: TerminalPaneMobileControll
     activePaneIsChatLeaf,
     activeAgentId,
     resolveAgentForLeaf,
-    activePaneCanContinueInNewSession,
-    contextMenuCanContinueInNewSession,
     activePaneCanResumeInChat,
     contextMenuCanToggleChat,
     contextMenuIsChatView,

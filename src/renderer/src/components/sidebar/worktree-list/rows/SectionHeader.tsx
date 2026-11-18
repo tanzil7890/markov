@@ -188,10 +188,13 @@ export function renderWorktreeSectionHeaderRow(args: {
   const showHeaderCollapseAffordance =
     row.count > 0 &&
     (isRepoHeader || isProjectGroupHeader || headerWorkspaceStatus !== null || isPinnedHeader)
-  // Project rows lead with their chevron; a repo keeps its glyph only when the user chose one.
-  const leadsWithChevron = showHeaderCollapseAffordance && (isRepoHeader || isProjectGroupHeader)
-  const hasCustomRepoGlyph = hasChosenRepoGlyph(row.repo, repoHeaderColor)
-  const collapseChevron = <HeaderChevron collapsed={isHeaderCollapsed} onToggle={toggleHeader} />
+  // Project rows start with their name; a repo keeps its glyph only when the user chose one.
+  const hidesDefaultGlyph =
+    (isRepoHeader || isProjectGroupHeader) && !hasChosenRepoGlyph(row.repo, repoHeaderColor)
+  // Every collapsible row ends with its chevron, so the rows above and below line up.
+  const collapseChevron = showHeaderCollapseAffordance ? (
+    <HeaderChevron collapsed={isHeaderCollapsed} onToggle={toggleHeader} />
+  ) : null
   return (
     <div
       key={vItem.key}
@@ -332,12 +335,11 @@ export function renderWorktreeSectionHeaderRow(args: {
                 'cursor-grab active:cursor-grabbing'
             )}
           >
-            {leadsWithChevron ? collapseChevron : null}
             <div
               className={cn(
                 'flex size-4 shrink-0 items-center justify-center rounded-[4px]',
                 repoHeaderColor ? 'text-muted-foreground' : headerVisual.tone,
-                leadsWithChevron && !hasCustomRepoGlyph && 'hidden'
+                hidesDefaultGlyph && 'hidden'
               )}
             >
               {row.repo ? (
@@ -364,9 +366,8 @@ export function renderWorktreeSectionHeaderRow(args: {
             {isRepoHeader && row.repo ? <HeaderMeta repo={row.repo} count={row.count} /> : null}
           </div>
 
-          <ProjectHeaderActions>
-            {showHeaderCollapseAffordance && !leadsWithChevron ? collapseChevron : null}
-
+          {/* Hover actions slide in just before the chevron (pr-2 + size-5) instead of over it. */}
+          <ProjectHeaderActions className={collapseChevron ? 'can-hover:right-7' : undefined}>
             {isProjectGroupHeader && !row.repo && projectGroupIdForHeader ? (
               <ProjectGroupHeaderMenu
                 groupId={projectGroupIdForHeader}
@@ -408,6 +409,7 @@ export function renderWorktreeSectionHeaderRow(args: {
               />
             ) : null}
           </ProjectHeaderActions>
+          {collapseChevron}
         </div>
       </ProjectHeaderHostTooltip>
     </div>

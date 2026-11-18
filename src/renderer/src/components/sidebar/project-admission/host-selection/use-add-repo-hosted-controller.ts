@@ -16,6 +16,8 @@ export type AddRepoDialogHostedController = {
 
 export type AddRepoDialogProps = {
   hosted?: AddRepoDialogHostedController
+  /** The Project side of the Create dialog: store-modal behavior without a dialog of its own. */
+  embedded?: boolean
 }
 
 export function useAddRepoHostedController(hosted: AddRepoDialogHostedController | undefined): {

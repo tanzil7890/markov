@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { EyeOff, PanelBottom, PanelTop, PictureInPicture2 } from 'lucide-react'
+import { EyeOff, PanelBottom, PanelLeft, PanelTop, PictureInPicture2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,14 @@ export function FloatingTerminalIconContextMenu({
   const moveActions = useMemo(
     () =>
       [
+        {
+          location: 'sidebar' as const,
+          icon: <PanelLeft className="size-3.5" />,
+          label: translate(
+            'auto.components.floating.terminal.FloatingTerminalIconContextMenu.moveToSidebar',
+            'Move to Sidebar'
+          )
+        },
         {
           location: 'top-bar' as const,
           icon: <PanelTop className="size-3.5" />,

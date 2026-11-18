@@ -75,7 +75,12 @@ function spawnableOn(platform: NodeJS.Platform, command: string): boolean {
   return platform !== 'win32' || /\.(exe|com|cmd|bat)$/i.test(command)
 }
 
-export type StructuredAgentCommand = { command: string; prefixArgs: string[] }
+export type StructuredAgentCommand = {
+  command: string
+  prefixArgs: string[]
+  /** The copy found first, when it could not be used and `command` runs in its place. */
+  replaced?: string
+}
 
 /** Read live settings on every lookup; invalid explicit commands must refuse instead of launching stock CLI. */
 export function resolveStructuredAgentCommand(

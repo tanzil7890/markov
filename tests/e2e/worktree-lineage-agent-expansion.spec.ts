@@ -18,7 +18,7 @@ async function captureSidebar(page: Page, name: string): Promise<void> {
   await sidebar(page).screenshot({ path: resolve(SHOT_DIR, name) })
 }
 
-// Seed two parent agents for the compact summary alongside the child-workspace chip.
+// Seed two parent agents for the chats toggle alongside the child-workspace chip.
 async function seedTwoParentAgents(page: Page, worktreeId: string): Promise<void> {
   await page.evaluate((worktreeId) => {
     const store = window.__store
@@ -58,7 +58,7 @@ function sidebar(page: Page) {
 }
 
 function compactSummary(page: Page, parentId: string) {
-  return worktreeRow(page, parentId).locator('button.compact-agent-summary-button').first()
+  return worktreeRow(page, parentId).locator('button[data-worktree-chats-toggle]').first()
 }
 
 function childWorkspacesChip(page: Page, parentId: string) {
@@ -75,9 +75,7 @@ test.describe('Worktree lineage agent-list expansion independence', () => {
     await waitForActiveWorktree(markovPage)
   })
 
-  test('toggling child worktrees does not collapse the expanded agent summary', async ({
-    markovPage
-  }) => {
+  test('toggling child worktrees does not close the open chat list', async ({ markovPage }) => {
     const { parentId, childId } = await seedLineageScenario(markovPage)
     const parentRow = worktreeRow(markovPage, parentId)
     const childRow = worktreeRow(markovPage, childId)
@@ -97,7 +95,7 @@ test.describe('Worktree lineage agent-list expansion independence', () => {
     await expect(compactSummary(markovPage, parentId)).toHaveAttribute('aria-expanded', 'true')
     await captureSidebar(markovPage, '2-agents-expanded.png')
 
-    // Collapse children to remount the parent card; require expanded agent summary to survive.
+    // Collapse children to remount the parent card; require the open chat list to survive.
     await childWorkspacesChip(markovPage, parentId).click()
     await expect(childRow).toBeHidden()
 

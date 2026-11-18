@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { mainAreaTerminalRows } from '../../../shared/workspace-layout/right-sidebar-tab-group'
 import type { TerminalTab } from '../../../shared/workspace-layout/terminal-tab-types'
 import { useAppStore } from '../store'
 import TabBar from './tab-bar/TabBar'
@@ -10,7 +12,20 @@ const EMPTY_TERMINAL_TABS: TerminalTab[] = []
 function LiveTerminalTabBar(
   props: Omit<React.ComponentProps<typeof TabBar>, 'tabs'>
 ): React.JSX.Element {
-  const tabs = useAppStore((state) => state.tabsByWorktree[props.worktreeId] ?? EMPTY_TERMINAL_TABS)
+  const terminalRows = useAppStore((state) => state.tabsByWorktree[props.worktreeId])
+  const unifiedTabs = useAppStore((state) => state.unifiedTabsByWorktree[props.worktreeId])
+  // The right sidebar shows its own terminals; this strip lists the main area's.
+  const tabs = useMemo(
+    () =>
+      (mainAreaTerminalRows(
+        {
+          tabsByWorktree: { [props.worktreeId]: terminalRows },
+          unifiedTabsByWorktree: { [props.worktreeId]: unifiedTabs }
+        },
+        props.worktreeId
+      ) ?? EMPTY_TERMINAL_TABS) as TerminalTab[],
+    [props.worktreeId, terminalRows, unifiedTabs]
+  )
   return <TabBar {...props} tabs={tabs} />
 }
 

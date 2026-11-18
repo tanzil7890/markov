@@ -1,4 +1,5 @@
 import type { TabGroup, TabGroupLayoutNode } from '../../../../shared/tab-types'
+import { isRightSidebarTabGroupId } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 export function getEffectiveLayoutForWorktree(
   worktreeId: string,
@@ -10,8 +11,13 @@ export function getEffectiveLayoutForWorktree(
   if (layout) {
     return layout
   }
-  const groups = groupsByWorktree[worktreeId] ?? []
-  const fallbackGroupId = activeGroupIdByWorktree[worktreeId] ?? groups[0]?.id ?? null
+  // The sidebar's group is never drawn in the main area.
+  const groups = (groupsByWorktree[worktreeId] ?? []).filter(
+    (group) => !isRightSidebarTabGroupId(worktreeId, group.id)
+  )
+  const activeGroupId = activeGroupIdByWorktree[worktreeId]
+  const fallbackGroupId =
+    (groups.some((group) => group.id === activeGroupId) ? activeGroupId : groups[0]?.id) ?? null
   if (!fallbackGroupId) {
     return undefined
   }

@@ -28,6 +28,8 @@ import {
 import { useTerminalConfigImport } from '../terminal/configuration/useTerminalConfigImport'
 import { useWarpThemeImport } from '../terminal/themes/useWarpThemeImport'
 import { getInitialMountedSectionIds } from './settings-load-performance'
+import { recallSettingsSection } from './settings-last-section'
+import type { SettingsSettingRequest } from '../navigation/settings-setting-request'
 import {
   buildRepoIdToHostSelection,
   buildRepoIdToRepresentative,
@@ -146,11 +148,14 @@ export function useSettingsStoreModel() {
     () => fontSuggestions.filter((font) => font !== DEFAULT_APP_FONT_FAMILY),
     [fontSuggestions]
   )
-  const [activeSectionId, setActiveSectionId] = useState('general')
+  const [activeSectionId, setActiveSectionId] = useState(
+    () => recallSettingsSection() ?? 'overview'
+  )
   const [mountedSectionIds, setMountedSectionIds] = useState<Set<string>>(
     getInitialMountedSectionIds
   )
   const [pendingNavRequestTick, setPendingNavRequestTick] = useState(0)
+  const [settingRequest, setSettingRequest] = useState<SettingsSettingRequest | null>(null)
   const [highlightedSettingsTargetId, setHighlightedSettingsTargetId] = useState<string | null>(
     null
   )
@@ -251,6 +256,8 @@ export function useSettingsStoreModel() {
     setMountedSectionIds,
     pendingNavRequestTick,
     setPendingNavRequestTick,
+    settingRequest,
+    setSettingRequest,
     highlightedSettingsTargetId,
     setHighlightedSettingsTargetId,
     quickCommandAddIntentSignal,

@@ -3,7 +3,8 @@ import { disposeCodexServerRequest } from '../prompts/codex-server-request-dispo
 import type { CodexJournalTranslationAdmission } from '../journal/codex-structured-journal-contracts'
 import * as codexRewind from '../threads/codex-structured-rewind'
 import type { CodexSession, CodexStructuredSessionEvent } from './codex-structured-session-state'
-import { readCodexThreadId } from '../../app-server/codex-structured-thread-facts'
+import { readCodexThreadId, readCodexTurnId } from '../../app-server/codex-structured-thread-facts'
+import { codexMcpApprovalChat } from '../prompts/codex-mcp-approval-memory'
 
 type EmitCodexEvent = (
   session: CodexSession,
@@ -67,7 +68,12 @@ export function deliverCodexServerRequest(
   if (!session) {
     return { accepted: true }
   }
-  const disposition = disposeCodexServerRequest(session.prompts, session.connection, request)
+  const disposition = disposeCodexServerRequest(
+    session.prompts,
+    session.connection,
+    request,
+    codexMcpApprovalChat(sessionId, session)
+  )
   const threadId = readCodexThreadId(request.params) ?? session.threadId
   if (disposition.kind === 'responded') {
     const admission = emit(session, {
@@ -75,7 +81,14 @@ export function deliverCodexServerRequest(
       sessionId,
       threadId,
       method: request.method,
-      params: request.params
+      // The chat keeps a line for an approval nobody was asked about.
+      params: disposition.allowed
+        ? {
+            threadId,
+            turnId: readCodexTurnId(request.params),
+            message: `Allowed without asking: ${disposition.allowed}`
+          }
+        : request.params
     })
     if (!admission.accepted) {
       void session.forceCloseUnexpected?.(

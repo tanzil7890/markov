@@ -1,4 +1,7 @@
 import { RateLimitServiceResultPolicy } from './service-result-policy'
+import { fetchCursorRateLimits } from '../cursor-fetcher'
+import { readCursorAuthSession } from '../cursor-auth'
+import { withheldUsageSnapshot } from '../withheld-usage-snapshot'
 import { fetchCodexRateLimits } from '../codex-fetcher'
 import { fetchKimiRateLimits } from '../kimi-fetcher'
 import {
@@ -57,12 +60,38 @@ export abstract class RateLimitServiceFetchTargets extends RateLimitServiceResul
       : { skip: false, homePath: resolution.codexHomePath }
   }
 
+  protected isProviderWithheld(provider: ProviderRateLimits['provider']): boolean {
+    return this.providerOfferedResolver?.(provider) === false
+  }
+
+  /** Runs a provider's fetch unless it is withheld; then none of its sign-in is read or sent. */
+  protected unlessWithheld(
+    provider: ProviderRateLimits['provider'],
+    fetch: () => Promise<ProviderRateLimits>
+  ): Promise<ProviderRateLimits> {
+    return this.isProviderWithheld(provider)
+      ? Promise.resolve(withheldUsageSnapshot(provider))
+      : fetch()
+  }
+
   // WSL home resolution probes wsl.exe; chain it so other providers start immediately.
   protected fetchKimiWithResolvedHome(): Promise<ProviderRateLimits> {
-    const pendingHome = this.kimiHomeResolver?.()
-    return pendingHome
-      ? pendingHome.then((home) => fetchKimiRateLimits({ home }))
-      : fetchKimiRateLimits({ home: undefined })
+    return this.unlessWithheld('kimi', () => {
+      const pendingHome = this.kimiHomeResolver?.()
+      return pendingHome
+        ? pendingHome.then((home) => fetchKimiRateLimits({ home }))
+        : fetchKimiRateLimits({ home: undefined })
+    })
+  }
+
+  // Async Keychain/worker DB reads must not delay other providers.
+  protected fetchCursorWithLocalSignIn(signal: AbortSignal): Promise<ProviderRateLimits> {
+    return this.unlessWithheld('cursor', () =>
+      readCursorAuthSession().then((authReadResult) => {
+        this.cursorAuthConfigured = authReadResult.status === 'ok'
+        return fetchCursorRateLimits({ signal, authReadResult })
+      })
+    )
   }
 
   protected isSameCodexTarget(

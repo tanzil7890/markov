@@ -10,13 +10,10 @@ import type { AgentLaunchSurface } from '@/lib/agent-session/launch/routing/agen
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
+import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CreateDialog } from '@/components/create-dialog/CreateDialog'
+import type { CreateDialogKind } from '@/components/create-dialog/create-dialog-host'
+import { useWorkspaceCreateDialogHandlers } from '@/components/create-dialog/use-workspace-create-dialog-handlers'
 import NewWorkspaceComposerCard from '@/components/NewWorkspaceComposerCard'
 import AgentSettingsDialog, {
   restoreAgentSettingsInvoker
@@ -38,7 +35,6 @@ import type { WorkspaceSource as WorkspaceCreateTelemetrySource } from '../../..
 import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { TaskSourceContext } from '../../../shared/task-source-context'
 import { translate } from '@/i18n/i18n'
-import { getWorkspaceComposerInitialFocusTarget } from '@/lib/workspace-composer-initial-focus'
 import '@/components/sidebar/workspace-creation/folder/folder-workspace-source-repos'
 import { getFolderWorkspacePrimaryActionLabel } from '@/components/sidebar/workspace-creation/folder/folder-workspace-source-selection'
 import type { WorkspaceCreationTargetHint } from '@/lib/project-host-workspace-target'
@@ -73,32 +69,41 @@ type ComposerModalData = {
   setupGuideTourRequestId?: string
 }
 
+/** New workspace and Add project open the one Create dialog, each on its own side. */
 export default function NewWorkspaceComposerModal(): React.JSX.Element | null {
-  const visible = useAppStore((s) => s.activeModal === 'new-workspace-composer')
+  const activeModal = useAppStore((s) => s.activeModal)
   const modalData = useAppStore((s) => s.modalData as ComposerModalData | undefined)
   const closeModal = useAppStore((s) => s.closeModal)
 
-  if (!visible) {
+  if (activeModal !== 'new-workspace-composer' && activeModal !== 'add-repo') {
     return null
   }
 
-  if (modalData?.directSetup) {
+  if (activeModal === 'new-workspace-composer' && modalData?.directSetup) {
     return (
       <DirectWorkItemSetupDialog key={modalData.directSetup.id} request={modalData.directSetup} />
     )
   }
 
-  return <ComposerModalBody modalData={modalData ?? {}} onClose={closeModal} />
+  return (
+    <ComposerModalBody
+      initialKind={activeModal === 'add-repo' ? 'project' : 'workspace'}
+      // Add project's data names dropped paths, not a composer draft.
+      modalData={activeModal === 'new-workspace-composer' ? (modalData ?? {}) : {}}
+      onClose={closeModal}
+    />
+  )
 }
 
 function ComposerModalBody({
+  initialKind,
   modalData,
   onClose
 }: {
+  initialKind: CreateDialogKind
   modalData: ComposerModalData
   onClose: () => void
 }): React.JSX.Element {
-  const dialogRef = useRef<HTMLDivElement>(null)
   const submitCancelledRef = useRef(false)
   const handleDismiss = useCallback(() => {
     submitCancelledRef.current = true
@@ -107,44 +112,41 @@ function ComposerModalBody({
   const isSubmissionCancelled = useCallback(() => submitCancelledRef.current, [])
 
   return (
-    <Dialog open onOpenChange={(open) => !open && handleDismiss()}>
-      <DialogContent
-        ref={dialogRef}
-        className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden sm:max-w-lg"
-        onEscapeKeyDown={(event) => {
-          if (dialogRef.current?.querySelector('[data-sparse-preset-editor]')) {
-            event.preventDefault()
-          }
-        }}
-        onOpenAutoFocus={(event) => {
-          // Override Radix’s first-tabbable close button with the name/source field for immediate typing.
-          event.preventDefault()
-          const content = event.currentTarget as HTMLElement
-          getWorkspaceComposerInitialFocusTarget(content)?.focus({ preventScroll: true })
-        }}
-      >
+    <CreateDialog
+      initialKind={initialKind}
+      onClose={handleDismiss}
+      workspace={
         <QuickTabBody
           modalData={modalData}
           onClose={onClose}
+          onDismiss={handleDismiss}
           isSubmissionCancelled={isSubmissionCancelled}
           active
         />
-      </DialogContent>
-    </Dialog>
+      }
+      project={
+        <Suspense fallback={null}>
+          <HostedAddRepoDialog embedded />
+        </Suspense>
+      }
+    />
   )
 }
 
 function QuickTabBody({
   modalData,
   onClose,
+  onDismiss,
   isSubmissionCancelled,
   active
 }: {
   modalData: ComposerModalData
   onClose: () => void
+  onDismiss: () => void
   isSubmissionCancelled: () => boolean
   active: boolean
 }): React.JSX.Element {
+  useWorkspaceCreateDialogHandlers(onDismiss)
   const settings = useAppStore((s) => s.settings)
   const {
     cardProps,

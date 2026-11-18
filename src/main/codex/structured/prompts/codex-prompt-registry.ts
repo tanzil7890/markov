@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import {
-  codexMcpToolApprovalDecisions,
+  CODEX_MCP_TOOL_APPROVAL_DECISIONS,
+  codexMcpToolApprovalPersistsSession,
   isCodexMcpToolApproval,
   type CodexMcpToolApprovalDecision
 } from './codex-mcp-tool-approval'
+import { codexMcpApprovalQuestion } from './codex-mcp-approval-memory'
 import {
   MAX_CODEX_PROMPT_JOURNAL_BINDINGS,
   MAX_CODEX_PROMPT_REGISTRY_BYTES,
@@ -41,6 +43,8 @@ export type CodexPendingPrompt = {
   answers: Map<string, string>
   /** Set when the request limits the decisions, so an unoffered one is refused. */
   offeredDecisions?: readonly CodexMcpToolApprovalDecision[]
+  /** An MCP tool approval: what it asks, and whether Codex keeps a session-wide Allow itself. */
+  mcpApproval?: { question: string; persistsSession: boolean }
 }
 
 export type CodexAbandonedCommand = { threadId: string; itemId: string }
@@ -133,7 +137,13 @@ export class CodexPromptRegistry {
         ? codexItemId
         : (readString(request.params, 'approvalId') ?? codexItemId),
       ...(isMcpElicitation
-        ? { offeredDecisions: codexMcpToolApprovalDecisions(request.params) }
+        ? {
+            offeredDecisions: CODEX_MCP_TOOL_APPROVAL_DECISIONS,
+            mcpApproval: {
+              question: codexMcpApprovalQuestion(request.params),
+              persistsSession: codexMcpToolApprovalPersistsSession(request.params)
+            }
+          }
         : {}),
       questionIds,
       questionIdAliases:

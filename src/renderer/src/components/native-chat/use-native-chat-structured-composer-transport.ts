@@ -13,6 +13,16 @@ import type { AgentType } from '../../../../shared/agent-status/contracts/agent-
 import type { AgentSessionThreadGoalChange } from '../../../../shared/agent-session/agent-session-thread-goal-wire'
 import { translate } from '@/i18n/i18n'
 import { structuredAgentLabel } from '@/lib/agent-session/launch/structured-agent-session-launch-label'
+import { recordChatModelUse } from '@/lib/chat-model-usage'
+import { useNativeChatAgentSwitch } from './use-native-chat-agent-switch'
+import type { SessionOptionDescriptor } from '../../../../shared/native-chat/input/native-chat-session-options'
+
+/** The model the user chose for this chat; null while it runs the agent's own default. */
+function chosenModel(snapshot: readonly SessionOptionDescriptor[]): string | null {
+  const model = snapshot.find((descriptor) => descriptor.category === 'model')
+  const chosen = model?.valueSource !== 'default' && model?.valueSource !== 'unknown'
+  return (chosen && model?.kind.type === 'select' && model.kind.currentValue) || null
+}
 
 function nativeChatSessionAttachmentNotReadyNotice(agent: AgentType, starting: boolean): string {
   const label = structuredAgentLabel(agent)
@@ -30,7 +40,7 @@ function nativeChatSessionAttachmentNotReadyNotice(agent: AgentType, starting: b
 }
 
 export function useNativeChatStructuredComposerTransport(args: {
-  props: Pick<NativeChatStructuredViewProps, 'agent' | 'sessionId' | 'target'>
+  props: Pick<NativeChatStructuredViewProps, 'agent' | 'sessionId' | 'target' | 'tabId' | 'groupId'>
   controller: ReturnType<typeof useStructuredAgentSession>
   /** Sends now, restarts a failed start with the message, or refuses while the chat starts. */
   sendThroughLaunch: (
@@ -58,6 +68,11 @@ export function useNativeChatStructuredComposerTransport(args: {
     props.agent,
     controller.acceptsImages
   )
+  const otherAgents = useNativeChatAgentSwitch({ pane: props, session: controller })
+  const optionsSurface = useMemo(
+    () => (otherAgents ? { ...controller.optionSurface, otherAgents } : controller.optionSurface),
+    [controller.optionSurface, otherAgents]
+  )
   return useMemo((): NativeChatStructuredComposerTransport => {
     const threadGoal = controller.threadGoal
     // A held host takes no turn; pausing or clearing a goal starts none.
@@ -81,24 +96,30 @@ export function useNativeChatStructuredComposerTransport(args: {
             }
           : undefined,
       capturePresentation: controller.capturePresentation,
-      send: (text, attachments, ...request) =>
-        sendBlockedReason === null &&
-        sendThroughLaunch(
-          text,
-          attachments.length > 0 ||
-            request[0]?.prepareAttachments !== undefined ||
-            Boolean(request[0]?.skills?.length),
-          () =>
-            controller.send(
-              text,
-              attachments.map(({ path, connectionId }) => ({
-                path,
-                previewUri: path,
-                ...(connectionId ? { connectionId } : {})
-              })),
-              ...request
-            )
-        ),
+      send: (text, attachments, ...request) => {
+        const sent =
+          sendBlockedReason === null &&
+          sendThroughLaunch(
+            text,
+            attachments.length > 0 ||
+              request[0]?.prepareAttachments !== undefined ||
+              Boolean(request[0]?.skills?.length),
+            () =>
+              controller.send(
+                text,
+                attachments.map(({ path, connectionId }) => ({
+                  path,
+                  previewUri: path,
+                  ...(connectionId ? { connectionId } : {})
+                })),
+                ...request
+              )
+          )
+        if (sent) {
+          recordChatModelUse(props.agent, chosenModel(controller.optionSnapshot))
+        }
+        return sent
+      },
       dispatchCommand: (text: string) =>
         dispatchStructuredAgentSessionComposerCommand(text, {
           agent: props.agent,
@@ -124,7 +145,7 @@ export function useNativeChatStructuredComposerTransport(args: {
       sendOut: controller.sendOut || starting,
       sendFollowUp: controller.sendFollowUp,
       ...(sendBlockedReason !== null ? { sendBlockedReason } : {}),
-      optionsSurface: controller.optionSurface,
+      optionsSurface,
       conversationCommands: controller.conversationCommands,
       compactInstructions: controller.compactInstructions,
       optionSnapshot: controller.optionSnapshot,
@@ -157,6 +178,7 @@ export function useNativeChatStructuredComposerTransport(args: {
     onSubmitted,
     captureAdmittedReveal,
     optionPickerRequest,
+    optionsSurface,
     props.agent,
     props.sessionId,
     props.target,

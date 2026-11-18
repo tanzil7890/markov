@@ -6,6 +6,11 @@ import { dedupeTabOrder } from '../../../shared/workspace-layout/tab-order'
 import type { Tab } from '../../../shared/tab-types'
 import { activateWebRuntimeSessionTab } from '@/runtime/web-runtime-session-tab-lifecycle'
 import { isWebRuntimeSessionActive } from '@/runtime/web-runtime-session-environment'
+import {
+  resolveSettingsTabGroup,
+  selectCyclableSettingsTab,
+  settingsTabInsertIndex
+} from '@/lib/settings-tab-placement'
 
 type TabNumberShortcutState = Pick<
   AppState,
@@ -50,9 +55,29 @@ export function resolveTabNumberShortcutTarget(
   return tabById.get(orderedIds[index] ?? '') ?? null
 }
 
+/** The strip counts the Settings tab, so its number picks it and later numbers skip past it. */
+function resolveStripIndex(state: AppState, index: number): number | 'settings' {
+  const worktreeId = state.activeWorktreeId
+  const settings =
+    state.activeView === 'terminal' && worktreeId
+      ? selectCyclableSettingsTab(state, worktreeId)
+      : null
+  const group = worktreeId ? resolveSettingsTabGroup(state, worktreeId) : null
+  if (!settings || !group) {
+    return index
+  }
+  const settingsIndex = settingsTabInsertIndex(group.tabOrder, settings.tab.leftTabIds)
+  return index === settingsIndex ? 'settings' : index > settingsIndex ? index - 1 : index
+}
+
 export function activateTabNumberShortcut(index: number): boolean {
   const store = useAppStore.getState()
-  const target = resolveTabNumberShortcutTarget(store, index)
+  const stripIndex = resolveStripIndex(store, index)
+  if (stripIndex === 'settings') {
+    store.showSettingsTab(store.activeWorktreeId!)
+    return true
+  }
+  const target = resolveTabNumberShortcutTarget(store, stripIndex)
   if (!target) {
     return false
   }

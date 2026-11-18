@@ -1,5 +1,6 @@
 import type { Tab, TabGroup, TabGroupLayoutNode } from '../../../../shared/tab-types'
 import { createNonSecureContextUuid as createBrowserUuid } from '../../../../shared/non-secure-context-uuid'
+import { layoutTabGroups } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 function collectLayoutGroupIds(node: TabGroupLayoutNode, groupIds: Set<string>): void {
   if (node.type === 'leaf') {
@@ -70,7 +71,8 @@ export function adoptGrouplessTabs(
       }
     }
     const orphanIds = tabs.filter((tab) => !owningGroupIdByTabId.has(tab.id)).map((tab) => tab.id)
-    const host: TabGroup = groups[0] ?? {
+    // Orphans belong to the main area, never to the sidebar's group.
+    const host: TabGroup = layoutTabGroups(groups)[0] ?? {
       id: createBrowserUuid(),
       worktreeId,
       activeTabId: null,
@@ -94,7 +96,9 @@ export function adoptGrouplessTabs(
         : tab
     })
     if (orphanIds.length) {
-      groupsByWorktree[worktreeId] = [adopted, ...groups.slice(1)]
+      groupsByWorktree[worktreeId] = groups.some((group) => group.id === host.id)
+        ? groups.map((group) => (group.id === host.id ? adopted : group))
+        : [adopted, ...groups]
       activeGroupIdByWorktree[worktreeId] ??= adopted.id
       layoutByWorktree[worktreeId] ??= { type: 'leaf', groupId: adopted.id }
     }

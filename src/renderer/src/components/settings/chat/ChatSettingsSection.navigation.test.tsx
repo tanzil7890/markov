@@ -12,6 +12,7 @@ import { getChatAppearanceSearchEntries } from '../appearance/chat/chat-appearan
 import { getChatNamingSearchEntry } from './chat-naming-search'
 import { getChatInlineVisualsSearchEntry } from './chat-inline-visuals-search'
 import { useSettingsRepoScrollEffects } from '../navigation/use-settings-repo-scroll-effects'
+import { resolveSettingsDestinations } from '../navigation/settings-destinations'
 import type { SettingsStoreModel } from '../page/use-settings-store-model'
 import type { SettingsInteractionController } from '../page/use-settings-interaction-controller'
 import type { SettingsNavigationModel } from '../navigation/use-settings-navigation-model'
@@ -44,6 +45,7 @@ function NavigationHarness({
     isWebClient: false,
     repos: []
   })
+  const sectionIds = new Set(sections.map((s) => s.id))
   const pendingNavSectionRef = useRef<string | null>('chat')
   const pendingScrollTargetRef = useRef<string | null>(targetSection)
   const contentScrollRef = useRef<HTMLDivElement>(null)
@@ -84,10 +86,11 @@ function NavigationHarness({
     model as SettingsStoreModel,
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Supplies every interaction ref read by this hook.
     interactions as SettingsInteractionController,
-    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This hook only reads the visible navigation sections and IDs.
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This hook only reads the navigation sections, their IDs and the destinations built from them.
     {
-      visibleNavSections: sections,
-      visibleSectionIds: new Set(sections.map((s) => s.id))
+      navSections: sections,
+      navSectionIds: sectionIds,
+      destinations: resolveSettingsDestinations(sectionIds)
     } as SettingsNavigationModel,
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: This hook only reads neededRepos; an empty list skips remote loading.
     terminal as SettingsTerminalModel

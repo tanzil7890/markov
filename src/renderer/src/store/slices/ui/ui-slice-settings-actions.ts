@@ -1,11 +1,35 @@
 import type { UISlice, UISliceGet, UISliceSet } from './ui-slice-contract'
 import { isSettingsNavigationTarget } from '../../../lib/settings-navigation-types'
+import { closeFullPageViews } from '../../../lib/full-page-view-exit'
+import {
+  resolveSettingsTabOpenTarget,
+  settingsTabsWithPinned,
+  settingsTabsWithTabPlaced,
+  settingsTabsWithTabShown,
+  settingsTabsWithout
+} from '../../../lib/settings-tab-placement'
+import { readPersistedSettingsTabs } from '../../../lib/settings-tab-storage'
 
 export function createUiSettingsActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
     openSettingsPage: () => {
       // Why: settings search is a transient filter; opening Settings shouldn't inherit hidden sections from last visit.
       get().setSettingsSearchQuery('')
+      // Why not while the page is open: swapping it for a tab would remount Settings and drop unsaved edits.
+      const target = get().activeView === 'settings' ? null : resolveSettingsTabOpenTarget(get())
+      if (target) {
+        // Why: the tab lives in the workspace view, so Tasks or any other page leaves first.
+        closeFullPageViews(get)
+        set((state) => ({
+          activeView: 'terminal',
+          ...settingsTabsWithTabShown(state, target.worktreeId, target.groupId, Date.now())
+        }))
+        const groupId = get().settingsTabsByWorktree[target.worktreeId]?.groupId
+        if (groupId) {
+          get().focusGroup(target.worktreeId, groupId)
+        }
+        return
+      }
       set((state) => ({
         activeView: 'settings',
         // Why: preserve the originating view so Settings back returns there (e.g. in-progress draft), not always terminal.
@@ -15,8 +39,24 @@ export function createUiSettingsActions(set: UISliceSet, get: UISliceGet): Parti
     },
     closeSettingsPage: () =>
       set((state) => {
-        return { activeView: state.previousViewBeforeSettings }
+        const tabClosed =
+          state.activeView !== 'settings' && state.activeWorktreeId
+            ? settingsTabsWithout(state, state.activeWorktreeId)
+            : null
+        return tabClosed ?? { activeView: state.previousViewBeforeSettings }
       }),
+    settingsTabsByWorktree: readPersistedSettingsTabs(),
+    showSettingsTab: (worktreeId) =>
+      set((state) => {
+        const groupId = state.settingsTabsByWorktree[worktreeId]?.groupId
+        return (
+          (groupId && settingsTabsWithTabShown(state, worktreeId, groupId, Date.now())) || state
+        )
+      }),
+    placeSettingsTab: (worktreeId, groupId, visualOrder) =>
+      set((state) => settingsTabsWithTabPlaced(state, worktreeId, groupId, visualOrder) ?? state),
+    setSettingsTabPinned: (worktreeId, isPinned) =>
+      set((state) => settingsTabsWithPinned(state, worktreeId, isPinned) ?? state),
     settingsNavigationTarget: null,
     openSettingsTarget: (target) => {
       if (!isSettingsNavigationTarget(target)) {
@@ -54,9 +94,6 @@ export function createUiSettingsActions(set: UISliceSet, get: UISliceGet): Parti
           settingsProjectHostSelection: nextHostSelections,
           settingsProjectSetupSelection: nextSetupSelections
         }
-      }),
-    appearanceAccordionDeepLink: null,
-    setAppearanceAccordionDeepLink: (section) => set({ appearanceAccordionDeepLink: section }),
-    clearAppearanceAccordionDeepLink: () => set({ appearanceAccordionDeepLink: null })
+      })
   }
 }

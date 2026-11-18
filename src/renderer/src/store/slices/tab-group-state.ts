@@ -3,6 +3,7 @@ import type { WorkspaceSessionState } from '../../../../shared/workspace-session
 import { createNonSecureContextUuid as createBrowserUuid } from '../../../../shared/non-secure-context-uuid'
 import { MARKOV_LAYOUT_OWNER_IS_MAIN } from '../../../../shared/layout-owner-switch'
 import { workspaceRootGroupId } from '../../../../shared/workspace-layout/workspace-layout-minted-ids'
+import { layoutTabGroups } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 
 export function findTabAndWorktree(
   tabsByWorktree: Record<string, Tab[]>,
@@ -67,9 +68,10 @@ export function ensureGroup(
   groupsByWorktree: Record<string, TabGroup[]>
   activeGroupIdByWorktree: Record<string, string>
 } {
+  const groups = groupsByWorktree[worktreeId] ?? []
+  // An explicit request may name the sidebar's group; a fallback never lands there.
   const existing =
-    groupsByWorktree[worktreeId]?.find((group) => group.id === preferredGroupId) ??
-    groupsByWorktree[worktreeId]?.[0]
+    groups.find((group) => group.id === preferredGroupId) ?? layoutTabGroups(groups)[0]
   if (existing) {
     return { group: existing, groupsByWorktree, activeGroupIdByWorktree }
   }
@@ -80,7 +82,7 @@ export function ensureGroup(
   const group: TabGroup = { id: groupId, worktreeId, activeTabId: null, tabOrder: [] }
   return {
     group,
-    groupsByWorktree: { ...groupsByWorktree, [worktreeId]: [group] },
+    groupsByWorktree: { ...groupsByWorktree, [worktreeId]: [group, ...groups] },
     activeGroupIdByWorktree: { ...activeGroupIdByWorktree, [worktreeId]: groupId }
   }
 }

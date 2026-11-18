@@ -1,13 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import { useAppStore } from '../../../store/index'
 import { keybindingMatchesAction } from '../../../../../shared/keybindings/matching'
-import { resolveAppearanceAccordionDeepLink } from '../appearance/appearance-usage-percentage-search'
+import { resolveSplitSettingsSection } from '../navigation/settings-split-section-targets'
+import { nextSettingsSettingRequest } from '../navigation/settings-setting-request'
 import { registerWindowCloseGuard } from '../../window-close-request-coordinator'
 import { isIntentionalAppRestartInProgress } from '@/lib/updater-beforeunload'
 import { getShortcutPlatform } from '@/lib/shortcut-platform'
 import { hasVisibleOverlay } from '@/lib/visible-overlay'
 import { translate } from '@/i18n/i18n'
+import { registerSettingsCloseHandler } from '@/lib/settings-close-request'
+import { rememberSettingsSection } from './settings-last-section'
+import type { SettingsPresentation } from './settings-render-context'
 import {
   getSettingsTargetHostSelection,
   resolveSettingsTargetRepoId
@@ -22,7 +25,8 @@ import {
 
 export function useSettingsPageEffects(
   model: SettingsStoreModel,
-  interactions: SettingsInteractionController
+  interactions: SettingsInteractionController,
+  { presentation, visible }: { presentation: SettingsPresentation; visible: boolean }
 ): void {
   const {
     activeSectionId,
@@ -41,6 +45,7 @@ export function useSettingsPageEffects(
     setSettingsProjectHostSelection,
     setSshHostAddIntentSignal,
     setPendingNavRequestTick,
+    setSettingRequest,
     setVoiceModelStatesLoading,
     settings,
     settingsNavigationTarget,
@@ -62,6 +67,8 @@ export function useSettingsPageEffects(
     fetchKeybindings()
   }, [fetchKeybindings, fetchSettings])
 
+  useEffect(() => rememberSettingsSection(activeSectionId), [activeSectionId])
+
   useEffect(() => {
     if (!showDesktopOnlySettings) {
       setVoiceModelStatesLoading(false)
@@ -80,7 +87,17 @@ export function useSettingsPageEffects(
     }
   }, [refreshModelStates, setVoiceModelStatesLoading, showDesktopOnlySettings])
 
+  // Closing from outside Settings (its tab's close button, the close-tab shortcut) keeps the unsaved-edits prompt.
+  useEffect(
+    () => registerSettingsCloseHandler(() => void closeSettingsPageWithPromptGuard()),
+    [closeSettingsPageWithPromptGuard]
+  )
+
   useEffect(() => {
+    // Why: a tab closes like its neighbours, and Escape belongs to the terminals and chats beside it.
+    if (presentation === 'tab') {
+      return
+    }
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || event.defaultPrevented) {
         return
@@ -121,7 +138,12 @@ export function useSettingsPageEffects(
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [activeSectionId, closeSettingsPageWithPromptGuard, shortcutsEscapeConfirmUntilRef])
+  }, [
+    activeSectionId,
+    closeSettingsPageWithPromptGuard,
+    presentation,
+    shortcutsEscapeConfirmUntilRef
+  ])
 
   // Use the discard dialog for close/quit; a bare unload veto offers no way to resolve dirty state.
   useEffect(() => {
@@ -137,6 +159,10 @@ export function useSettingsPageEffects(
   }, [hasUnsavedSourceControlAiPromptChangesRef, promptDiscardSourceControlAiPromptChanges])
 
   useEffect(() => {
+    // Why: a Settings tab behind another tab must leave the find shortcut to the tab on screen.
+    if (!visible) {
+      return
+    }
     const handleFindShortcut = (event: KeyboardEvent): void => {
       if (event.defaultPrevented) {
         return
@@ -155,19 +181,35 @@ export function useSettingsPageEffects(
 
     document.addEventListener('keydown', handleFindShortcut)
     return () => document.removeEventListener('keydown', handleFindShortcut)
-  }, [keybindings, searchInputRef])
+  }, [keybindings, searchInputRef, visible])
+
+  // Why: Settings reopens on its last section, so the request that opened it must not read as
+  // "already showing" and close it again.
+  const openedByRequestRef = useRef(settingsNavigationTarget !== null)
+  useEffect(() => {
+    if (!settingsNavigationTarget) {
+      openedByRequestRef.current = false
+    }
+  }, [settingsNavigationTarget])
 
   useEffect(() => {
     if (!settings || !settingsNavigationTarget) {
       return
     }
 
-    const paneSectionId = getSettingsSectionId(
-      settingsNavigationTarget.pane,
-      settingsNavigationTarget.repoId,
-      repoIdToRepresentative
+    const paneSectionId = resolveSplitSettingsSection(
+      getSettingsSectionId(
+        settingsNavigationTarget.pane,
+        settingsNavigationTarget.repoId,
+        repoIdToRepresentative
+      ),
+      settingsNavigationTarget.sectionId
     )
-    if (settingsNavigationTarget.intent === 'toggle' && activeSectionId === paneSectionId) {
+    if (
+      settingsNavigationTarget.intent === 'toggle' &&
+      !openedByRequestRef.current &&
+      activeSectionId === paneSectionId
+    ) {
       clearSettingsTarget()
       void closeSettingsPageWithPromptGuard()
       return
@@ -194,6 +236,12 @@ export function useSettingsPageEffects(
       }
     }
     consumeSettingsNavigation(settingsNavigationTarget)
+    const { sectionId: targetId } = settingsNavigationTarget
+    if (targetId) {
+      setSettingRequest((previous) =>
+        nextSettingsSettingRequest(previous, { sectionId: paneSectionId, targetId })
+      )
+    }
     pendingNavSectionRef.current = paneSectionId
     pendingScrollTargetRef.current = settingsNavigationTarget.sectionId ?? paneSectionId
     setHighlightedSettingsTargetId(
@@ -201,13 +249,6 @@ export function useSettingsPageEffects(
         ? (settingsNavigationTarget.sectionId ?? null)
         : null
     )
-    // Open Appearance’s nested status-bar section before scrolling to its rows.
-    if (settingsNavigationTarget.pane === 'appearance') {
-      const accordion = resolveAppearanceAccordionDeepLink(settingsNavigationTarget.sectionId)
-      if (accordion) {
-        useAppStore.getState().setAppearanceAccordionDeepLink(accordion)
-      }
-    }
     if (settingsNavigationTarget.intent === 'add-quick-command') {
       setQuickCommandAddIntentSignal((signal) => signal + 1)
     } else if (settingsNavigationTarget.intent === 'add-ssh-host') {
@@ -238,6 +279,7 @@ export function useSettingsPageEffects(
     setQuickCommandAddIntentSignal,
     setRemoteServerAddIntentSignal,
     consumeSettingsNavigation,
+    setSettingRequest,
     setSettingsProjectHostSelection,
     setSshHostAddIntentSignal,
     settings,

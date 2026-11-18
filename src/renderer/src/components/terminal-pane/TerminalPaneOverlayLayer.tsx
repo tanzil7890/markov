@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { Tab, TabGroup } from '../../../../shared/tab-types'
+import { isRightSidebarTabGroup } from '../../../../shared/workspace-layout/right-sidebar-tab-group'
 import type { TerminalTab } from '../../../../shared/workspace-layout/terminal-tab-types'
 import { useAppStore } from '../../store'
 import { useThemeBackgroundStore } from '@/store/theme-background'
@@ -85,10 +86,15 @@ const TerminalPaneOverlayLayer = memo(function TerminalPaneOverlayLayer({
   const groupActiveTabById = useMemo(() => {
     const lookup: Record<string, string | null | undefined> = {}
     for (const group of groups) {
-      lookup[group.id] = group.activeTabId
+      // The right sidebar shows its own tabs through a portal; here they are never the group's visible tab.
+      if (!isRightSidebarTabGroup(group)) {
+        lookup[group.id] = group.activeTabId
+      }
     }
     return lookup
   }, [groups])
+
+  const hasSplitGroups = groups.filter((group) => !isRightSidebarTabGroup(group)).length > 1
 
   const assignments = useMemo(() => {
     const entries = new Map<string, TerminalOverlayAssignment>()
@@ -174,7 +180,7 @@ const TerminalPaneOverlayLayer = memo(function TerminalPaneOverlayLayer({
             isActive={isActive}
             hiddenPrewarm={assignment?.isActiveInGroup === true ? hiddenTerminalPrewarm : null}
             // Why not over a theme image: a chat there is translucent, so a dim would bleed the image in.
-            dimmed={groups.length > 1 && isVisible && !isActive && !themeBackgroundActive}
+            dimmed={hasSplitGroups && isVisible && !isActive && !themeBackgroundActive}
             activityTerminalPortal={activityTerminalPortal}
             onFocusOwningGroup={focusOwningGroup}
             consumeSuppressedPtyExit={consumeSuppressedPtyExit}

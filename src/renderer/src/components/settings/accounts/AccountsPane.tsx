@@ -40,6 +40,8 @@ import {
 import { GrokAccountsSection } from './providers/GrokAccountsSection'
 import { AntigravityAccountsSection } from './providers/AntigravityAccountsSection'
 import type { RuntimeClientTarget } from '../../../../../shared/runtime-client-target'
+import { isOfferedTuiAgent } from '../../../../../shared/agent-launch/catalog/offered-tui-agents'
+import { isOfferedUsageProvider } from '../../../../../shared/agent-launch/catalog/offered-usage-trackers'
 import { runtimeTargetEnvironmentId } from '@/runtime/runtime-client-target'
 import { CursorAccountsSection } from './providers/CursorAccountsSection'
 import { ZcodePlanAccountsSection } from './usage/ZcodePlanAccountsSection'
@@ -327,8 +329,12 @@ export function AccountsPane({
   const visibleSections = [
     !searchQuery || /opencode|devin|account/i.test(searchQuery) ? (
       <div key={accountOwnerKey} className="space-y-8">
-        <ManagedDataAccountsSection provider="opencode" target={accountOwner} />
-        <ManagedDataAccountsSection provider="devin" target={accountOwner} />
+        {isOfferedTuiAgent('opencode') ? (
+          <ManagedDataAccountsSection provider="opencode" target={accountOwner} />
+        ) : null}
+        {isOfferedTuiAgent('devin') ? (
+          <ManagedDataAccountsSection provider="devin" target={accountOwner} />
+        ) : null}
       </div>
     ) : null,
     wslSupportedPlatform &&
@@ -346,6 +352,7 @@ export function AccountsPane({
     matchesSettingsSearch(searchQuery, getAccountsGeminiSearchEntries())
       ? renderGeminiAccountsSection(model)
       : null,
+    isOfferedTuiAgent('antigravity') &&
     matchesSettingsSearch(searchQuery, getAccountsAntigravitySearchEntries()) ? (
       <AntigravityAccountsSection
         key={`antigravity:${accountOwnerKey}:${accountRuntime.runtime}:${accountRuntime.wslDistro ?? ''}`}
@@ -355,9 +362,11 @@ export function AccountsPane({
         ownerPlatform={accountOwnerPlatform}
       />
     ) : null,
+    isOfferedTuiAgent('opencode') &&
     matchesSettingsSearch(searchQuery, getAccountsOpencodeSearchEntries())
       ? renderOpenCodeAccountsSection(model)
       : null,
+    isOfferedUsageProvider('minimax') &&
     matchesSettingsSearch(searchQuery, getAccountsMiniMaxSearchEntries()) ? (
       <MiniMaxAccountsSection
         key={`minimax:${accountOwnerKey}`}
@@ -370,9 +379,11 @@ export function AccountsPane({
     matchesSettingsSearch(searchQuery, getAccountsGrokSearchEntries()) ? (
       <GrokAccountsSection key="grok" />
     ) : null,
+    isOfferedTuiAgent('cursor') &&
     matchesSettingsSearch(searchQuery, getAccountsCursorSearchEntries()) ? (
       <CursorAccountsSection key="cursor" />
     ) : null,
+    isOfferedTuiAgent('zcode') &&
     matchesSettingsSearch(searchQuery, getAccountsZcodePlanSearchEntries()) ? (
       <ZcodePlanAccountsSection
         key={`zcode:${accountOwnerKey}`}

@@ -2231,9 +2231,6 @@
     "nativeChatCardHeaderAction": {
       "collapse": "Contraer"
     },
-    "nativeChatCliFork": {
-      "resumeInNewCli": "Reanudar en una nueva CLI"
-    },
     "nativeChatFloatingControls": {
       "scrollToLatest": "Ir a lo más reciente"
     },

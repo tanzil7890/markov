@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FolderOpen } from 'lucide-react'
 import type { GlobalSettings } from '../../../../../shared/global-settings-types'
 import type { FloatingTerminalTriggerLocation } from '../../../../../shared/ui-chrome-types'
+import { resolveFloatingTerminalTriggerLocation } from '../../../../../shared/floating-terminal-trigger-location'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { ToggleGroup, ToggleGroupItem } from '../../ui/toggle-group'
@@ -171,7 +172,7 @@ export function FloatingWorkspacePane({
           control={
             <ToggleGroup
               type="single"
-              value={settings.floatingTerminalTriggerLocation ?? 'top-bar'}
+              value={resolveFloatingTerminalTriggerLocation(settings)}
               onValueChange={(value) => {
                 if (!value) {
                   return
@@ -182,6 +183,9 @@ export function FloatingWorkspacePane({
                 useAppStore.getState().recordFeatureInteraction('floating-workspace')
               }}
             >
+              <ToggleGroupItem value="sidebar">
+                {translate('auto.components.settings.FloatingWorkspacePane.sidebar', 'Sidebar')}
+              </ToggleGroupItem>
               <ToggleGroupItem value="top-bar">
                 {translate('auto.components.settings.FloatingWorkspacePane.topBar', 'Top Bar')}
               </ToggleGroupItem>

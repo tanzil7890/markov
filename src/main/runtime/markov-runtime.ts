@@ -1,3 +1,4 @@
+import { installCodexRuntimeUpkeep } from './agent-session/installation/codex-runtime-upkeep'
 import type { SessionOptionValue } from '../../shared/native-chat/input/native-chat-session-options'
 import { conversationRecordReader } from './orchestration/addressing/session-lineage/structured-session-lineage'
 import type { RuntimeLinearCommandSurface } from './integrations/linear/runtime-linear-command-surface'
@@ -179,7 +180,11 @@ class MarkovRuntimeService extends MarkovRuntimeSidebarBase {
 
   /** Subscribe from first use; returns the release function. */
   subscribeStructuredAgentAvailability(read: AvailabilityReader): () => void {
-    this.structuredAgentAvailability ??= installAvailability(this.store, this)
+    if (!this.structuredAgentAvailability) {
+      this.structuredAgentAvailability = installAvailability(this.store, this)
+      // Why here: the first client is when a chat becomes possible, so Codex is made ready then.
+      installCodexRuntimeUpkeep(this.store, this)
+    }
     return this.structuredAgentAvailability.subscribe(read)
   }
 
