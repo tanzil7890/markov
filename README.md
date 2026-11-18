@@ -274,29 +274,6 @@ Pair with your desktop app to monitor and steer your agents from your phone.
 - **iOS:** [Download on the App Store](https://markov.outhad.com/download/ios)
 - **Android:** [Download APK](https://markov.outhad.com/download/android) · [Install guide](https://markov.outhad.com/docs/android-apk)
 
----
-
-## Community &amp; Support
-
-- **GitHub:** [Report a bug or request a feature](https://github.com/tanzil7890/markov/issues).
-- **Feedback &amp; Ideas:** We ship fast. Missing something? [Request a new feature](https://github.com/tanzil7890/markov/issues).
-- **Privacy:** See the [privacy &amp; telemetry docs](https://markov.outhad.com/docs/telemetry) for what anonymous usage data Markov collects and how to opt out.
-- **Show Support:** [Star](https://github.com/tanzil7890/markov) this repo to follow along with our daily ships.
-
----
-
-## Developing
-
-Want to contribute or run locally? See our [CONTRIBUTING.md](.github/CONTRIBUTING.md) guide.
-
-<a href="https://github.com/tanzil7890/markov/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tanzil7890/markov&max=500&columns=30" alt="Markov contributors" />
-</a>
-
-<p align="center">
-  <img src="https://api.star-history.com/svg?repos=tanzil7890/markov&type=Date" alt="Star history chart for tanzil7890/markov" width="880" />
-</p>
-
 ## Signed Builds
 
 Windows code signing sponsored/provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
